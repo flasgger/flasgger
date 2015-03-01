@@ -69,7 +69,7 @@ def spec():
 
 [Swagger-UI](https://github.com/swagger-api/swagger-ui)
 
-Swagger-UI is the reason we embarked on this mission to begin with, flask-swagger does not however include Swagger-UI. Simply follow the awesome documentation over at https://github.com/swagger-api/swagger-ui and point your [swaggerUi.url](https://github.com/swagger-api/swagger-ui:swaggerui) to your new flask-swagger endpoint and enjoy.
+Swagger-UI is the reason we embarked on this mission to begin with, flask-swagger does not however include Swagger-UI. Simply follow the awesome documentation over at https://github.com/swagger-api/swagger-ui and point your [swaggerUi.url](https://github.com/swagger-api/swagger-ui#swaggerui) to your new flask-swagger endpoint and enjoy.
 
 
 Acknowledgments
