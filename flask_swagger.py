@@ -76,29 +76,34 @@ def swagger(app):
 
     paths = output['paths']
     definitions = output['definitions']
+    ignore_verbs = {"HEAD", "OPTIONS"}
 
     for rule in app.url_map.iter_rules():
         endpoint = app.view_functions[rule.endpoint]
+        methods = dict()
         if hasattr(endpoint, 'methods'):
-            operations = dict()
             for verb in endpoint.methods:
                 verb = verb.lower()
-                method = endpoint.view_class.__dict__.get(verb)
-                summary, description, swag = _parse_docstring(method)
-                if swag is not None:  # we only add endpoints with swagger data in the docstrings
-                    params, defs = _extract_definitions(swag.get('parameters', {}))
-                    for definition in defs:
-                        name = definition.get('name')
-                        if name is not None:
-                            definitions[name] = definition
-                    operations[verb] = dict(
-                        summary=summary,
-                        description=description,
-                        responses=swag.get('responses', {}),
-                        tags=swag.get('tags', []),
-                        parameters=params
-                    )
-            if len(operations):
-                paths[str(rule)] = operations
-
+                methods[verb.lower()] = endpoint.view_class.__dict__.get(verb)
+        else:
+            for verb in rule.methods.difference(ignore_verbs):
+                methods[verb.lower()] = endpoint
+        operations = dict()
+        for verb, method in methods.iteritems():
+            summary, description, swag = _parse_docstring(method)
+            if swag is not None:  # we only add endpoints with swagger data in the docstrings
+                params, defs = _extract_definitions(swag.get('parameters', {}))
+                for definition in defs:
+                    name = definition.get('name')
+                    if name is not None:
+                        definitions[name] = definition
+                operations[verb] = dict(
+                    summary=summary,
+                    description=description,
+                    responses=swag.get('responses', {}),
+                    tags=swag.get('tags', []),
+                    parameters=params
+                )
+        if len(operations):
+            paths[str(rule)] = operations
     return output

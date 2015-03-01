@@ -60,6 +60,18 @@ def after_request(response):
 
 app.add_url_rule('/users/', view_func=UserAPI.as_view('users'))
 
+@app.route("/hacky")
+def bla():
+    """
+    An endpoint that isn't using method view
+    ---
+    tags:
+    - hacks
+    responses:
+    200:
+      description: Hacked some hacks
+    """
+    return jsonify(['hacky'])
 
 @app.route("/")
 def hello():
@@ -71,4 +83,3 @@ def spec():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
