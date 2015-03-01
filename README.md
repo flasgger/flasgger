@@ -39,9 +39,9 @@ class UserAPI(MethodView):
 ```
 flask-swagger supports docstrings in MethodView classes and regular flask view functions.
 
-Following YAML conventions, flask-swagger searches for `---`, everything preceding is provided as summary (first line) and description (following lines) for the endpoint while everything after is parsed as a swagger Path object.
+Following YAML conventions, flask-swagger searches for `---`, everything preceding is provided as `summary` (first line) and `description` (following lines) for the endpoint while everything after is parsed as a swagger [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) object.
 
-In order to support inline definition of [Schema ](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) objects in [Path](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathItemObject) items, flask-swagger veers a little off from the standard. We add (and require) a "name" field for the inline Schema which is then used to correctly place the [Schema](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) object in the [Definitions](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject) object.
+In order to support inline definition of [Schema ](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) objects in [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) items, flask-swagger veers a little off from the standard. We add (and require) a "name" field for the inline Schema which is then used to correctly place the [Schema](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) object in the [Definitions](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject) object.
 
 To expose your swagger specification to the world you provide a flask route that does something along these lines
 
