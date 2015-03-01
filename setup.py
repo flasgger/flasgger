@@ -12,7 +12,7 @@ setup(name='flask-swagger',
       description='Extract swagger specs from your flast-restful project',
       author='Atli Thorbjornsson',
       license='MIT',
-      py_modules=['swagger'],
+      py_modules=['flask_swagger'],
       long_description=long_description,
       install_requires=['Flask>=0.10', 'PyYAML>=3.0'])
       
