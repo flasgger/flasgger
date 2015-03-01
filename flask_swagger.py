@@ -2,7 +2,8 @@
 What's the big idea?
 
 An endpoint that traverses all restful endpoints producing a swagger 2.0 schema
-if a swagger yaml description is found in the docstrings
+If a swagger yaml description is found in the docstrings for an endpoint
+we add the endpoint to swagger specification output
 
 """
 import inspect

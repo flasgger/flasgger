@@ -41,7 +41,7 @@ class UserAPI(MethodView):
                 name:
                   type: string
                   description: name for user
-        reponses:
+        responses:
           201:
             description: User created
         """
