@@ -39,16 +39,18 @@ def _extract_definitions(parameter_list):
     We require a 'name' field for the schema to be correctly
     added to the definitions list.
     """
+
     defs = list()
-    for params in parameter_list:
-        schema = params.get("schema")
-        if schema is not None:
-            schema_name = schema.get("name")
-            if schema_name is not None:
-                defs.append(schema)
-                params['schema'] = {
-                    "$ref": "#/definitions/{}".format(schema_name)
-                }
+    if parameter_list is not None:
+        for params in parameter_list:
+            schema = params.get("schema")
+            if schema is not None:
+                schema_name = schema.get("name")
+                if schema_name is not None:
+                    defs.append(schema)
+                    params['schema'] = {
+                        "$ref": "#/definitions/{}".format(schema_name)
+                    }
     return parameter_list, defs
 
 
@@ -92,7 +94,7 @@ def swagger(app):
         for verb, method in methods.iteritems():
             summary, description, swag = _parse_docstring(method)
             if swag is not None:  # we only add endpoints with swagger data in the docstrings
-                params, defs = _extract_definitions(swag.get('parameters', {}))
+                params, defs = _extract_definitions(swag.get('parameters', []))
                 for definition in defs:
                     name = definition.get('name')
                     if name is not None:
