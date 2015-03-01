@@ -5,7 +5,7 @@ Install:
 ```
 pip install flask-swagger
 ```
-flask-swagger provides a method (swagger) that inspects the flask app for endpoints that contain YAML docstrings with swagger 2.0 [Path](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathsObject) objects. 
+flask-swagger provides a method (swagger) that inspects the flask app for endpoints that contain YAML docstrings with swagger 2.0 [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) objects. 
 
 ```
 class UserAPI(MethodView):
