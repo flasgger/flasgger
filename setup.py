@@ -1,0 +1,18 @@
+try:
+    from setuptools import setup
+except ImportError:
+    from distutils.core import setup
+
+with open('README') as file:
+    long_description = file.read()
+
+setup(name='flask-swagger',
+      version='0.1.0',
+      url='https://github.com/gangverk/flask-swagger',
+      description='Extract swagger specs from your flast-restful project',
+      author='Atli Thorbjornsson',
+      license='MIT',
+      py_modules=['swagger'],
+      long_description=long_description,
+      install_requires=['Flask>=0.10', 'PyYAML>=3.0'])
+      
