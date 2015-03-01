@@ -9,8 +9,10 @@ we add the endpoint to swagger specification output
 import inspect
 import yaml
 
+
 def _sanitize(comment):
     return comment.replace('\n', '<br/>') if comment else comment
+
 
 def _parse_docstring(obj):
     first_line, other_lines, swag = None, None, None
@@ -49,6 +51,7 @@ def _extract_definitions(parameter_list):
                 }
     return parameter_list, defs
 
+
 def swagger(app):
     """
     Call this from an @app.route method like this
@@ -62,10 +65,10 @@ def swagger(app):
     """
 
     output = {
-        "swagger":"2.0",
-        "info":{
-            "version":"0.0.0",
-            "title":"Cool product name",
+        "swagger": "2.0",
+        "info": {
+            "version": "0.0.0",
+            "title": "Cool product name",
         },
         "paths": dict(),
         "definitions": dict()
@@ -82,8 +85,8 @@ def swagger(app):
                 verb = verb.lower()
                 method = endpoint.view_class.__dict__.get(verb)
                 summary, description, swag = _parse_docstring(method)
-                if swag is not None: # we only add endpoints with swagger data in the docstrings
-                    params, defs = _extract_definitions(swag.get('parameters',{}))
+                if swag is not None:  # we only add endpoints with swagger data in the docstrings
+                    params, defs = _extract_definitions(swag.get('parameters', {}))
                     for definition in defs:
                         name = definition.get('name')
                         if name is not None:
@@ -91,8 +94,8 @@ def swagger(app):
                     operations[verb] = dict(
                         summary=summary,
                         description=description,
-                        responses=swag.get('responses',{}),
-                        tags=swag.get('tags',[]),
+                        responses=swag.get('responses', {}),
+                        tags=swag.get('tags', []),
                         parameters=params
                     )
             if len(operations):
