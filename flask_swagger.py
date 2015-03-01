@@ -38,19 +38,16 @@ def _extract_definitions(parameter_list):
     added to the definitions list.
     """
     defs = list()
-    parameters = list()
     for params in parameter_list:
-        copy = params.copy()
-        schema = copy.get("schema")
+        schema = params.get("schema")
         if schema is not None:
             schema_name = schema.get("name")
             if schema_name is not None:
                 defs.append(schema)
-                copy['schema'] = {
+                params['schema'] = {
                     "$ref": "#/definitions/{}".format(schema_name)
                 }
-        parameters.append(copy)
-    return parameters, defs
+    return parameter_list, defs
 
 def swagger(app):
     """
