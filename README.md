@@ -1,5 +1,5 @@
 # flask-swagger
-A swagger spec extractor for flask
+A swagger 2.0 spec extractor for flask
 
 Install:
 ````
@@ -42,6 +42,8 @@ flask-swagger supports docstrings in MethodView classes and regular flask view f
 
 Following YAML conventions, flask-swagger searches for ---, everything preceding is provided as summary (first line) and description (following lines) for the endpoint while everything after is parsed as a swagger Path object.
 
+In order to support inline definition of [Schema ](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) objects in [Path](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#pathItemObject) items, flask-swagger veers a little off from the standard. We add (and require) a "name" field for the inline Schema which is then used to correctly place the [Schema](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) object in the [Definitions](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject) object.
+
 To expose your swagger specification to the world you provide a flask route that does something along these lines
 
 ````
@@ -68,9 +70,9 @@ def spec():
 ````
 
 
-Swagger-UI
+[Swagger-UI](https://github.com/swagger-api/swagger-ui)
 
-Swagger-UI is the reason we embarked on this mission to begin with, flask-swagger does not however include Swagger-UI. Simply follow the awesome documentation over at https://github.com/swagger-api/swagger-ui and point your swaggerUi.url to your new flask-swagger endpoint and enjoy.
+Swagger-UI is the reason we embarked on this mission to begin with, flask-swagger does not however include Swagger-UI. Simply follow the awesome documentation over at https://github.com/swagger-api/swagger-ui and point your [swaggerUi.url](https://github.com/swagger-api/swagger-ui:swaggerui) to your new flask-swagger endpoint and enjoy.
 
 
 
