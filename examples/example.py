@@ -68,8 +68,14 @@ def bla():
     tags:
     - hacks
     responses:
-    200:
-      description: Hacked some hacks
+      200:
+        description: Hacked some hacks
+        schema:
+          name: Hack
+          properties:
+            hack:
+              type: string
+              description: it's a hack
     """
     return jsonify(['hacky'])
 

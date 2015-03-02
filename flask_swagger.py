@@ -32,7 +32,7 @@ def _parse_docstring(obj):
     return first_line, other_lines, swag
 
 
-def _extract_definitions(parameter_list):
+def _extract_definitions(alist):
     """
     Since we couldn't be bothered to register models elsewhere
     our definitions need to be extracted from the parameters.
@@ -41,8 +41,8 @@ def _extract_definitions(parameter_list):
     """
 
     defs = list()
-    if parameter_list is not None:
-        for params in parameter_list:
+    if alist is not None:
+        for params in alist:
             schema = params.get("schema")
             if schema is not None:
                 schema_name = schema.get("name")
@@ -51,7 +51,7 @@ def _extract_definitions(parameter_list):
                     params['schema'] = {
                         "$ref": "#/definitions/{}".format(schema_name)
                     }
-    return parameter_list, defs
+    return defs
 
 
 def swagger(app):
@@ -94,7 +94,11 @@ def swagger(app):
         for verb, method in methods.iteritems():
             summary, description, swag = _parse_docstring(method)
             if swag is not None:  # we only add endpoints with swagger data in the docstrings
-                params, defs = _extract_definitions(swag.get('parameters', []))
+                params = swag.get('parameters', [])
+                defs = _extract_definitions(params)
+                responses = swag.get('responses', {})
+                if responses is not None:
+                    defs = defs + _extract_definitions(responses.values())
                 for definition in defs:
                     name = definition.get('name')
                     if name is not None:
@@ -102,7 +106,7 @@ def swagger(app):
                 operations[verb] = dict(
                     summary=summary,
                     description=description,
-                    responses=swag.get('responses', {}),
+                    responses=responses,
                     tags=swag.get('tags', []),
                     parameters=params
                 )
