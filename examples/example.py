@@ -30,7 +30,7 @@ class UserAPI(MethodView):
           - in: body
             name: body
             schema:
-              name: User
+              id: User
               required:
                 - email
                 - name
@@ -71,7 +71,7 @@ def bla():
       200:
         description: Hacked some hacks
         schema:
-          name: Hack
+          id: Hack
           properties:
             hack:
               type: string

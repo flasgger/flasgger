@@ -45,11 +45,11 @@ def _extract_definitions(alist):
         for params in alist:
             schema = params.get("schema")
             if schema is not None:
-                schema_name = schema.get("name")
-                if schema_name is not None:
+                schema_id = schema.get("id")
+                if schema_id is not None:
                     defs.append(schema)
                     params['schema'] = {
-                        "$ref": "#/definitions/{}".format(schema_name)
+                        "$ref": "#/definitions/{}".format(schema_id)
                     }
     return defs
 
@@ -100,9 +100,9 @@ def swagger(app):
                 if responses is not None:
                     defs = defs + _extract_definitions(responses.values())
                 for definition in defs:
-                    name = definition.get('name')
-                    if name is not None:
-                        definitions[name] = definition
+                    def_id = definition.get('id')
+                    if def_id is not None:
+                        definitions[def_id] = definition
                 operations[verb] = dict(
                     summary=summary,
                     description=description,

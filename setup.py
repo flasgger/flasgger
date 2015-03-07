@@ -7,7 +7,7 @@ with open('README') as file:
     long_description = file.read()
 
 setup(name='flask-swagger',
-      version='0.1.1',
+      version='0.2.0',
       url='https://github.com/gangverk/flask-swagger',
       description='Extract swagger specs from your flast-restful project',
       author='Atli Thorbjornsson',
@@ -15,4 +15,3 @@ setup(name='flask-swagger',
       py_modules=['flask_swagger'],
       long_description=long_description,
       install_requires=['Flask>=0.10', 'PyYAML>=3.0'])
-      
