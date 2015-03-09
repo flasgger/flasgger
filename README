@@ -45,8 +45,8 @@ objects.
             """
             return {}
 
-flask-swagger supports docstrings in MethodView classes and regular
-flask view functions.
+flask-swagger supports docstrings in methods of MethodView classes and
+regular flask view functions.
 
 Following YAML conventions, flask-swagger searches for ``---``,
 everything preceding is provided as ``summary`` (first line) and
@@ -58,12 +58,12 @@ object.
 In order to support inline definition of
 `Schema <https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject>`__
 objects in
-`Operation <https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object>`__
+`Parameter <https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#parameterObject>`__
 and
 `Response <https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responsesObject>`__
-items, flask-swagger veers a little off from the standard. We require an
-``id`` field for the inline Schema which is then used to correctly place
-the
+objects, flask-swagger veers a little off from the standard. We require
+an ``id`` field for the inline Schema which is then used to correctly
+place the
 `Schema <https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject>`__
 object in the
 `Definitions <https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject>`__
