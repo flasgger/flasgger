@@ -80,6 +80,9 @@ def swagger(app):
     paths = output['paths']
     definitions = output['definitions']
     ignore_verbs = {"HEAD", "OPTIONS"}
+    # technically only responses is non-optional
+    optional_fields = ['tags', 'consumes', 'produces', 'schemes', 'security',
+                       'deprecated', 'operationId', 'externalDocs']
 
     for rule in app.url_map.iter_rules():
         endpoint = app.view_functions[rule.endpoint]
@@ -104,13 +107,18 @@ def swagger(app):
                     def_id = definition.get('id')
                     if def_id is not None:
                         definitions[def_id] = definition
-                operations[verb] = dict(
+                operation = dict(
                     summary=summary,
                     description=description,
-                    responses=responses,
-                    tags=swag.get('tags', []),
-                    parameters=params
+                    parameters=params,
+                    responses=responses
                 )
+                # optionals
+                for key in optional_fields:
+                    if key in swag:
+                        operation[key] = swag.get(key)
+                operations[verb] = operation
+
         if len(operations):
             rule = str(rule)
             for arg in re.findall('(<(.*?\:)?(.*?)>)', rule):

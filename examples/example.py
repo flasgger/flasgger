@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 class UserAPI(MethodView):
 
-    def get(self):
+    def get(self, team_id):
         """
         Get a list of users
         First line is the summary
@@ -20,7 +20,7 @@ class UserAPI(MethodView):
         """
         return []
 
-    def post(self):
+    def post(self, team_id):
         """
         Create a new user
         ---
@@ -58,7 +58,7 @@ def after_request(response):
     response.headers.add('Access-Control-Max-Age', 60 * 60 * 24 * 20)
     return response
 
-app.add_url_rule('/users/', view_func=UserAPI.as_view('users'))
+app.add_url_rule('/users/<int:team_id>', view_func=UserAPI.as_view('users'))
 
 @app.route("/hacky")
 def bla():
