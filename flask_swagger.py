@@ -37,7 +37,7 @@ def _extract_definitions(alist):
     """
     Since we couldn't be bothered to register models elsewhere
     our definitions need to be extracted from the parameters.
-    We require a 'name' field for the schema to be correctly
+    We require an 'id' field for the schema to be correctly
     added to the definitions list.
     """
 
