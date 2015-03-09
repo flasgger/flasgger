@@ -8,6 +8,7 @@ we add the endpoint to swagger specification output
 """
 import inspect
 import yaml
+import re
 
 
 def _sanitize(comment):
@@ -111,5 +112,8 @@ def swagger(app):
                     parameters=params
                 )
         if len(operations):
-            paths[str(rule)] = operations
+            rule = str(rule)
+            for arg in re.findall('(<(.*?\:)?(.*?)>)', rule):
+                rule = rule.replace(arg[0], '{%s}' % arg[2])
+            paths[rule] = operations
     return output
