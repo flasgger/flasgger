@@ -110,10 +110,12 @@ def swagger(app):
                 operation = dict(
                     summary=summary,
                     description=description,
-                    parameters=params,
                     responses=responses
                 )
-                # optionals
+                # parameters - swagger ui dislikes empty parameter lists
+                if len(params) > 0:
+                    operation['parameters'] = params
+                # other optionals
                 for key in optional_fields:
                     if key in swag:
                         operation[key] = swag.get(key)
