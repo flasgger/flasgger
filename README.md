@@ -5,7 +5,7 @@ Install:
 ```
 pip install flask-swagger
 ```
-flask-swagger provides a method (swagger) that inspects the Flask app for endpoints that contain YAML docstrings with Swagger 2.0 [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) objects.
+Flask-swagger provides a method (swagger) that inspects the Flask app for endpoints that contain YAML docstrings with Swagger 2.0 [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) objects.
 
 ```
 class UserAPI(MethodView):
@@ -37,13 +37,13 @@ class UserAPI(MethodView):
         """
         return {}
 ```
-flask-swagger supports docstrings in methods of MethodView classes and regular Flask view functions.
+Flask-swagger supports docstrings in methods of MethodView classes and regular Flask view functions.
 
 Following YAML conventions, flask-swagger searches for `---`, everything preceding is provided as `summary` (first line) and `description` (following lines) for the endpoint while everything after is parsed as a swagger [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) object.
 
 In order to support inline definition of [Schema ](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) objects in [Parameter](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#parameterObject)  and [Response](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#responsesObject) objects, flask-swagger veers a little off from the standard. We require an `id` field for the inline Schema which is then used to correctly place the [Schema](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) object in the [Definitions](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#definitionsObject) object.
 
-To expose your swagger specification to the world you provide a Flask route that does something along these lines
+To expose your Swagger specification to the world you provide a Flask route that does something along these lines
 
 ```
 from flask import Flask, jsonify
@@ -56,7 +56,7 @@ def spec():
     return jsonify(swagger(app))
 ```
 
-Note that the swagger specification returned by `swagger(app)` is as minimal as it can be. It's your job to override and add to the specification as you see fit.
+Note that the Swagger specification returned by `swagger(app)` is as minimal as it can be. It's your job to override and add to the specification as you see fit.
 ```
 @app.route("/spec")
 def spec():
@@ -74,4 +74,4 @@ Swagger-UI is the reason we embarked on this mission to begin with, flask-swagge
 
 Acknowledgments
 
-flask-swagger builds on ideas and code from [flask-sillywalk](https://github.com/hobbeswalsh/flask-sillywalk) and [flask-restful-swagger](https://github.com/rantav/flask-restful-swagger)
+Flask-swagger builds on ideas and code from [flask-sillywalk](https://github.com/hobbeswalsh/flask-sillywalk) and [flask-restful-swagger](https://github.com/rantav/flask-restful-swagger)
