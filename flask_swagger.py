@@ -10,6 +10,7 @@ import inspect
 import yaml
 import re
 
+from collections import defaultdict
 
 def _sanitize(comment):
     return comment.replace('\n', '<br/>') if comment else comment
@@ -73,8 +74,8 @@ def swagger(app):
             "version": "0.0.0",
             "title": "Cool product name",
         },
-        "paths": dict(),
-        "definitions": dict()
+        "paths": defaultdict(dict),
+        "definitions": defaultdict(dict)
     }
 
     paths = output['paths']
@@ -106,7 +107,7 @@ def swagger(app):
                 for definition in defs:
                     def_id = definition.get('id')
                     if def_id is not None:
-                        definitions[def_id] = definition
+                        definitions[def_id].update(definition)
                 operation = dict(
                     summary=summary,
                     description=description,
@@ -125,8 +126,5 @@ def swagger(app):
             rule = str(rule)
             for arg in re.findall('(<(.*?\:)?(.*?)>)', rule):
                 rule = rule.replace(arg[0], '{%s}' % arg[2])
-            if rule in paths:
-                paths[rule].update(operations)
-            else:
-                paths[rule] = operations
+            paths[rule].update(operations)
     return output
