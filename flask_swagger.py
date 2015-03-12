@@ -34,13 +34,26 @@ def _parse_docstring(obj):
     return first_line, other_lines, swag
 
 
-def _extract_definitions(alist):
+def _extract_definitions(alist, level=None):
     """
     Since we couldn't be bothered to register models elsewhere
     our definitions need to be extracted from the parameters.
     We require an 'id' field for the schema to be correctly
     added to the definitions list.
     """
+
+    def _extract_array_defs(source):
+        # extract any definitions that are within arrays
+        # this occurs recursively
+        ret = []
+        items = source.get('items')
+        if items is not None and 'schema' in items:
+            ret += _extract_definitions([items], level+1)
+        return ret
+
+    # for tracking level of recursion
+    if level is None:
+        level = 0
 
     defs = list()
     if alist is not None:
@@ -50,9 +63,27 @@ def _extract_definitions(alist):
                 schema_id = schema.get("id")
                 if schema_id is not None:
                     defs.append(schema)
-                    params['schema'] = {
-                        "$ref": "#/definitions/{}".format(schema_id)
-                    }
+                    ref = {"$ref": "#/definitions/{}".format(schema_id)}
+
+                    # only add the reference as a schema if we are in a response or
+                    # a parameter i.e. at the top level
+                    # directly ref if a definition is used within another definition
+                    if level == 0:
+                        params['schema'] = ref
+                    else:
+                        params.update(ref)
+                        del params['schema']
+
+                # extract any definitions that are within properties
+                # this occurs recursively
+                properties = schema.get('properties')
+                if properties is not None:
+                    defs += _extract_definitions(properties.values(), level+1)
+
+                defs += _extract_array_defs(schema)
+
+            defs += _extract_array_defs(params)
+
     return defs
 
 
