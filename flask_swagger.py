@@ -10,6 +10,7 @@ import inspect
 import yaml
 import re
 
+from collections import defaultdict
 
 def _sanitize(comment):
     return comment.replace('\n', '<br/>') if comment else comment
@@ -33,13 +34,26 @@ def _parse_docstring(obj):
     return first_line, other_lines, swag
 
 
-def _extract_definitions(alist):
+def _extract_definitions(alist, level=None):
     """
     Since we couldn't be bothered to register models elsewhere
     our definitions need to be extracted from the parameters.
     We require an 'id' field for the schema to be correctly
     added to the definitions list.
     """
+
+    def _extract_array_defs(source):
+        # extract any definitions that are within arrays
+        # this occurs recursively
+        ret = []
+        items = source.get('items')
+        if items is not None and 'schema' in items:
+            ret += _extract_definitions([items], level+1)
+        return ret
+
+    # for tracking level of recursion
+    if level is None:
+        level = 0
 
     defs = list()
     if alist is not None:
@@ -49,9 +63,27 @@ def _extract_definitions(alist):
                 schema_id = schema.get("id")
                 if schema_id is not None:
                     defs.append(schema)
-                    params['schema'] = {
-                        "$ref": "#/definitions/{}".format(schema_id)
-                    }
+                    ref = {"$ref": "#/definitions/{}".format(schema_id)}
+
+                    # only add the reference as a schema if we are in a response or
+                    # a parameter i.e. at the top level
+                    # directly ref if a definition is used within another definition
+                    if level == 0:
+                        params['schema'] = ref
+                    else:
+                        params.update(ref)
+                        del params['schema']
+
+                # extract any definitions that are within properties
+                # this occurs recursively
+                properties = schema.get('properties')
+                if properties is not None:
+                    defs += _extract_definitions(properties.values(), level+1)
+
+                defs += _extract_array_defs(schema)
+
+            defs += _extract_array_defs(params)
+
     return defs
 
 
@@ -73,8 +105,8 @@ def swagger(app):
             "version": "0.0.0",
             "title": "Cool product name",
         },
-        "paths": dict(),
-        "definitions": dict()
+        "paths": defaultdict(dict),
+        "definitions": defaultdict(dict)
     }
 
     paths = output['paths']
@@ -106,7 +138,7 @@ def swagger(app):
                 for definition in defs:
                     def_id = definition.get('id')
                     if def_id is not None:
-                        definitions[def_id] = definition
+                        definitions[def_id].update(definition)
                 operation = dict(
                     summary=summary,
                     description=description,
@@ -125,8 +157,5 @@ def swagger(app):
             rule = str(rule)
             for arg in re.findall('(<(.*?\:)?(.*?)>)', rule):
                 rule = rule.replace(arg[0], '{%s}' % arg[2])
-            if rule in paths:
-                paths[rule].update(operations)
-            else:
-                paths[rule] = operations
+            paths[rule].update(operations)
     return output
