@@ -57,8 +57,8 @@ def _extract_definitions(alist, level=None):
 
     defs = list()
     if alist is not None:
-        for params in alist:
-            schema = params.get("schema")
+        for item in alist:
+            schema = item.get("schema")
             if schema is not None:
                 schema_id = schema.get("id")
                 if schema_id is not None:
@@ -69,10 +69,10 @@ def _extract_definitions(alist, level=None):
                     # a parameter i.e. at the top level
                     # directly ref if a definition is used within another definition
                     if level == 0:
-                        params['schema'] = ref
+                        item['schema'] = ref
                     else:
-                        params.update(ref)
-                        del params['schema']
+                        item.update(ref)
+                        del item['schema']
 
                 # extract any definitions that are within properties
                 # this occurs recursively
@@ -82,7 +82,7 @@ def _extract_definitions(alist, level=None):
 
                 defs += _extract_array_defs(schema)
 
-            defs += _extract_array_defs(params)
+            defs += _extract_array_defs(item)
 
     return defs
 

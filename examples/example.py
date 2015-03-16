@@ -76,6 +76,19 @@ def bla():
             hack:
               type: string
               description: it's a hack
+            subitems:
+              type: array
+              items:
+                schema:
+                  id: SubItem
+                  properties:
+                    bla:
+                      type: string
+                      description: Bla
+                    blu:
+                      type: integer
+                      description: Blu
+
     """
     return jsonify(['hacky'])
 
