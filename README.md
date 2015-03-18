@@ -50,7 +50,7 @@ class UserAPI(MethodView):
         """
         return {}
 ```
-Flask-swagger supports docstrings in methods of MethodView classes and regular Flask view functions.
+Flask-swagger supports docstrings in methods of MethodView classes (ala [Flask-RESTful](https://github.com/flask-restful/flask-restful)) and regular Flask view functions.
 
 Following YAML conventions, flask-swagger searches for `---`, everything preceding is provided as `summary` (first line) and `description` (following lines) for the endpoint while everything after is parsed as a swagger [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) object.
 
