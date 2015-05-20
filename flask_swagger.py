@@ -16,19 +16,19 @@ def _sanitize(comment):
     return comment.replace('\n', '<br/>') if comment else comment
 
 
-def _parse_docstring(obj):
+def _parse_docstring(obj, process_doc):
     first_line, other_lines, swag = None, None, None
     full_doc = inspect.getdoc(obj)
     if full_doc:
         line_feed = full_doc.find('\n')
         if line_feed != -1:
-            first_line = _sanitize(full_doc[:line_feed])
+            first_line = process_doc(full_doc[:line_feed])
             yaml_sep = full_doc[line_feed+1:].find('---')
             if yaml_sep != -1:
-                other_lines = _sanitize(full_doc[line_feed+1:line_feed+yaml_sep])
+                other_lines = process_doc(full_doc[line_feed+1:line_feed+yaml_sep])
                 swag = yaml.load(full_doc[line_feed+yaml_sep:])
             else:
-                other_lines = _sanitize(full_doc[line_feed+1:])
+                other_lines = process_doc(full_doc[line_feed+1:])
         else:
             first_line = full_doc
     return first_line, other_lines, swag
@@ -87,7 +87,7 @@ def _extract_definitions(alist, level=None):
     return defs
 
 
-def swagger(app):
+def swagger(app, process_doc=_sanitize):
     """
     Call this from an @app.route method like this
     @app.route('/spec.json')
@@ -128,7 +128,7 @@ def swagger(app):
                 methods[verb.lower()] = endpoint
         operations = dict()
         for verb, method in methods.iteritems():
-            summary, description, swag = _parse_docstring(method)
+            summary, description, swag = _parse_docstring(method, process_doc)
             if swag is not None:  # we only add endpoints with swagger data in the docstrings
                 params = swag.get('parameters', [])
                 defs = _extract_definitions(params)
