@@ -97,6 +97,12 @@ def swagger(app, process_doc=_sanitize):
     We go through all endpoints of the app searching for swagger endpoints
     We provide the minimum required data according to swagger specs
     Callers can and should add and override at will
+    
+    Arguments:
+    app -- the flask app to inspect
+
+    Keyword arguments:
+    process_doc -- text sanitization method, the default simply replaces \n with <br>
     """
 
     output = {
