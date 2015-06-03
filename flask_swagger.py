@@ -133,7 +133,7 @@ def swagger(app, process_doc=_sanitize):
             for verb in rule.methods.difference(ignore_verbs):
                 methods[verb.lower()] = endpoint
         operations = dict()
-        for verb, method in methods.iteritems():
+        for verb, method in methods.items():
             summary, description, swag = _parse_docstring(method, process_doc)
             if swag is not None:  # we only add endpoints with swagger data in the docstrings
                 params = swag.get('parameters', [])
