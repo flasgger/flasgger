@@ -125,12 +125,11 @@ def swagger(app, process_doc=_sanitize):
     for rule in app.url_map.iter_rules():
         endpoint = app.view_functions[rule.endpoint]
         methods = dict()
-        if hasattr(endpoint, 'methods'):
-            for verb in endpoint.methods:
+        for verb in rule.methods.difference(ignore_verbs):
+            if hasattr(endpoint, 'methods') and verb in endpoint.methods:
                 verb = verb.lower()
-                methods[verb.lower()] = endpoint.view_class.__dict__.get(verb)
-        else:
-            for verb in rule.methods.difference(ignore_verbs):
+                methods[verb] = endpoint.view_class.__dict__.get(verb)
+            else:
                 methods[verb.lower()] = endpoint
         operations = dict()
         for verb, method in methods.items():
