@@ -58,7 +58,9 @@ def after_request(response):
     response.headers.add('Access-Control-Max-Age', 60 * 60 * 24 * 20)
     return response
 
-app.add_url_rule('/users/<int:team_id>', view_func=UserAPI.as_view('users'))
+view = UserAPI.as_view('users')
+app.add_url_rule('/users/<int:team_id>', view_func=view, methods=["GET"])
+app.add_url_rule('/testing/<int:team_id>', view_func=view)
 
 @app.route("/hacky")
 def bla():
