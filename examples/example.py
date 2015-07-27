@@ -1,8 +1,28 @@
 from flask import Flask, jsonify
 from flask.views import MethodView
-from flask_swagger import swagger
+from flasgger import Swagger
 
 app = Flask(__name__)
+
+app.config['SWAGGER'] = {
+    "version": "0.0.1",
+    "title": "Example site title",
+    "specs": [
+        {
+            "endpoint": 'v1_spec',
+            "route": '/v1/spec',
+            "rule_filter": lambda rule: rule.endpoint.startswith('should_be_v1_only')
+        },
+        {
+            "endpoint": 'v2_spec',
+            "route": '/v2/spec',
+            "rule_filter": lambda rule: rule.endpoint.startswith('should_be_v2_only')
+        }
+    ]
+}
+
+swagger = Swagger()
+
 
 class UserAPI(MethodView):
 
@@ -50,19 +70,33 @@ class UserAPI(MethodView):
 
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin','*')
-    response.headers.add('Access-Control-Allow-Headers', "Authorization, Content-Type")
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add(
+        'Access-Control-Allow-Headers', "Authorization, Content-Type"
+    )
     response.headers.add('Access-Control-Expose-Headers', "Authorization")
-    response.headers.add('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS")
+    response.headers.add(
+        'Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"
+    )
     response.headers.add('Access-Control-Allow-Credentials', "true")
     response.headers.add('Access-Control-Max-Age', 60 * 60 * 24 * 20)
     return response
 
 view = UserAPI.as_view('users')
-app.add_url_rule('/users/<int:team_id>', view_func=view, methods=["GET"])
-app.add_url_rule('/testing/<int:team_id>', view_func=view)
+app.add_url_rule(
+    '/v1/users/<int:team_id>', 
+    view_func=view, 
+    methods=["GET"],
+    endpoint='should_be_v1_only_users'
+)
+app.add_url_rule(
+    '/v1/testing/<int:team_id>', 
+    view_func=view,
+    endpoint='should_be_v1_only_testing'
+)
 
-@app.route("/hacky")
+
+@app.route("/v2/resource", endpoint="should_be_v2_only")
 def bla():
     """
     An endpoint that isn't using method view
@@ -92,15 +126,16 @@ def bla():
                       description: Blu
 
     """
-    return jsonify(['hacky'])
+    return jsonify(['only_in_v2'])
+
 
 @app.route("/")
 def hello():
     return "Hello World!"
 
-@app.route("/spec")
-def spec():
-    return jsonify(swagger(app))
+
+swagger.init_app(app)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
