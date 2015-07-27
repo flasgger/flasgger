@@ -11,12 +11,16 @@ app.config['SWAGGER'] = {
         {
             "endpoint": 'v1_spec',
             "route": '/v1/spec',
-            "rule_filter": lambda rule: rule.endpoint.startswith('should_be_v1_only')
+            "rule_filter": lambda rule: rule.endpoint.startswith(
+                'should_be_v1_only'
+            )
         },
         {
             "endpoint": 'v2_spec',
             "route": '/v2/spec',
-            "rule_filter": lambda rule: rule.endpoint.startswith('should_be_v2_only')
+            "rule_filter": lambda rule: rule.endpoint.startswith(
+                'should_be_v2_only'
+            )
         }
     ]
 }
@@ -84,13 +88,13 @@ def after_request(response):
 
 view = UserAPI.as_view('users')
 app.add_url_rule(
-    '/v1/users/<int:team_id>', 
-    view_func=view, 
+    '/v1/users/<int:team_id>',
+    view_func=view,
     methods=["GET"],
     endpoint='should_be_v1_only_users'
 )
 app.add_url_rule(
-    '/v1/testing/<int:team_id>', 
+    '/v1/testing/<int:team_id>',
     view_func=view,
     endpoint='should_be_v1_only_testing'
 )

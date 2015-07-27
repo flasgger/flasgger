@@ -84,7 +84,9 @@ def _extract_definitions(alist, level=None):
                 # this occurs recursively
                 properties = schema.get('properties')
                 if properties is not None:
-                    defs += _extract_definitions(properties.values(), level+1)
+                    defs += _extract_definitions(
+                        properties.values(), level + 1
+                    )
 
                 defs += _extract_array_defs(schema)
 
@@ -127,7 +129,7 @@ class Output(MethodView):
             'tags', 'consumes', 'produces', 'schemes', 'security',
             'deprecated', 'operationId', 'externalDocs'
         ]
-        
+
         for rule in url_mappings:
             endpoint = app.view_functions[rule.endpoint]
             methods = dict()
@@ -201,7 +203,7 @@ class Swagger(object):
 
     def register_views(self, app):
         for spec in self.config['specs']:
-            endpoint = spec['endpoint']            
+            endpoint = spec['endpoint']
             self.endpoints.append(endpoint)
             url_mappings = self.get_url_mappings(
                 app, rule_filter=spec['rule_filter']
@@ -210,16 +212,16 @@ class Swagger(object):
                 spec['route'],
                 endpoint,
                 view_func=Output().as_view(
-                    endpoint, 
-                    view_args=dict(app=app, 
-                                   config=self.config, 
+                    endpoint,
+                    view_args=dict(app=app,
+                                   config=self.config,
                                    url_mappings=url_mappings)
                 )
             )
 
     def get_url_mappings(self, app, rule_filter):
         app_rules = [
-            rule for rule in app.url_map.iter_rules() 
+            rule for rule in app.url_map.iter_rules()
             if rule.endpoint not in self.endpoints and rule_filter(rule)
         ]
         return app_rules
