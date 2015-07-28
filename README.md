@@ -220,6 +220,7 @@ if __name__ == "__main__":
 
 ```
 
+then access [http://localhost:5000/apidocs/index.html](http://localhost:5000/apidocs/index.html) to see api docs in action
 
 Acknowledgments
 
