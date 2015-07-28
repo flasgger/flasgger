@@ -221,11 +221,9 @@ if __name__ == "__main__":
 ```
 
 
-[Swagger-UI](https://github.com/swagger-api/swagger-ui)
-
-Swagger-UI is the reason we embarked on this mission to begin with, flasgger does not however include Swagger-UI. Simply follow the awesome documentation over at https://github.com/swagger-api/swagger-ui and point your [swaggerUi.url](https://github.com/swagger-api/swagger-ui#swaggerui) to your new flasgger endpoint and enjoy.
-
-
 Acknowledgments
+
+Flassger uses Swagger UI [Swagger-UI](https://github.com/swagger-api/swagger-ui)
+
 
 Flasgger is a fork of [Flask-Swagger](https://github.com/gangverk/flask-swagger) which is a simpler solution, consider it if you just want to expose specs json.
