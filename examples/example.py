@@ -79,8 +79,8 @@ class UserAPI(MethodView):
         """
         data = {
             "users": [
-                {"name": "Steven Wilson", "team": team_id}, 
-                {"name": "Mikael Akerfeldt", "team": team_id}, 
+                {"name": "Steven Wilson", "team": team_id},
+                {"name": "Mikael Akerfeldt", "team": team_id},
                 {"name": "Daniel Gildenlow", "team": team_id}
             ]
         }
@@ -171,13 +171,13 @@ def bla():
     """
 
     data = {
-      "hack": "string",
-      "subitems": [
-        {
-          "bla": "string",
-          "blu": 0
-        }
-      ]
+        "hack": "string",
+        "subitems": [
+            {
+                "bla": "string",
+                "blu": 0
+            }
+        ]
     }
     return jsonify(data)
 

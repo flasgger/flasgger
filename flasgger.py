@@ -186,7 +186,8 @@ class Swagger(object):
             ('Access-Control-Allow-Origin', '*'),
             ('Access-Control-Allow-Headers', "Authorization, Content-Type"),
             ('Access-Control-Expose-Headers', "Authorization"),
-            ('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"),
+            ('Access-Control-Allow-Methods',
+             "GET, POST, PUT, DELETE, OPTIONS"),
             ('Access-Control-Allow-Credentials', "true"),
             ('Access-Control-Max-Age', 60 * 60 * 24 * 20),
         ],
@@ -211,11 +212,11 @@ class Swagger(object):
         self.add_headers(app)
 
     def load_config(self, app):
-        self.config.update(app.config.get('SWAGGER',{}))
+        self.config.update(app.config.get('SWAGGER', {}))
 
     def register_views(self, app):
         blueprint = Blueprint(
-            self.config.get('endpoint', 'swagger'), 
+            self.config.get('endpoint', 'swagger'),
             __name__,
             url_prefix=self.config.get('url_prefix', None),
             subdomain=self.config.get('subdomain', None),
