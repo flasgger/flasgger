@@ -5,4 +5,3 @@ __email__ = 'rochacbruno@gmail.com'
 
 
 from .base import Swagger  # noqa
-from .example_app import app  # noqa
