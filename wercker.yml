@@ -1,0 +1,19 @@
+box: wercker/python
+build:
+  steps:
+    - virtualenv:
+        name: flasgger env
+        install_wheel: false
+    - script:
+        name: install main requirements
+        code: |
+          pip install -r requirements.txt
+    - script:
+        name: Run Tests
+        code: |
+          make test
+    - script:
+        name: echo python information
+        code: |
+          echo "python version $(python --version) running"
+          echo "pip version $(pip --version) running"

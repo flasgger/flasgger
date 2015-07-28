@@ -1,17 +1,17 @@
 .PHONY: run
 run:
-	python examples/example.py
+	python wsgi.py
 
 .PHONY: install
 install:
 	python setup.py develop
 
-.PHONY: pep8
-pep8:
+.PHONY: test
+test:
 	@flake8 . --ignore=F403
 
 .PHONY: sdist
-sdist: pep8
+sdist: test
 	@python setup.py sdist upload
 
 .PHONY: clean
