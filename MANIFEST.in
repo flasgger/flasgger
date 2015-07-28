@@ -1,6 +1,6 @@
 include *.md LICENSE
 recursive-include flasgger/swaggerui *
-recursive-include flasgger/swaggerui/lib *
+recursive-include flasgger/swaggerui/js *
 recursive-include flasgger/swaggerui/lang *
 recursive-include flasgger/swaggerui/images *
 recursive-include flasgger/swaggerui/fonts *
