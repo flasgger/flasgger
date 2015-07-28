@@ -3,7 +3,7 @@ import os
 import sys
 import argparse
 from werkzeug.serving import run_simple
-from flasgger import app
+from flasgger.example_app import app
 
 
 # If running on PAAS such as OpenShift or heroku may require venv activation

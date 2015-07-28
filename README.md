@@ -1,6 +1,10 @@
 # flasgger
 A Swagger 2.0 spec extractor for Flask
 
+
+[![wercker status](https://app.wercker.com/status/d86586341ba8b313162b36f84b192a9c/m "wercker status")](https://app.wercker.com/project/bykey/d86586341ba8b313162b36f84b192a9c)
+
+
 Install:
 ```
 pip install flasgger

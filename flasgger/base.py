@@ -106,17 +106,11 @@ class OutputView(MethodView):
         super(OutputView, self).__init__(*args, **kwargs)
 
     def get(self):
-        app = self.app
-        config = self.config
-        url_mappings = self.url_mappings
-        spec = self.spec
-        process_doc = self.process_doc
-
         data = {
-            "swagger": config.get('swagger_version', "2.0"),
+            "swagger": self.config.get('swagger_version', "2.0"),
             "info": {
-                "version": spec.get('version', "0.0.0"),
-                "title": spec.get('title', "A swagger API"),
+                "version": self.spec.get('version', "0.0.0"),
+                "title": self.spec.get('title', "A swagger API"),
             },
             "paths": defaultdict(dict),
             "definitions": defaultdict(dict)
@@ -132,8 +126,8 @@ class OutputView(MethodView):
             'deprecated', 'operationId', 'externalDocs'
         ]
 
-        for rule in url_mappings:
-            endpoint = app.view_functions[rule.endpoint]
+        for rule in self.url_mappings:
+            endpoint = self.app.view_functions[rule.endpoint]
             methods = dict()
             for verb in rule.methods.difference(ignore_verbs):
                 if hasattr(endpoint, 'methods') and verb in endpoint.methods:
@@ -144,7 +138,7 @@ class OutputView(MethodView):
             operations = dict()
             for verb, method in methods.items():
                 summary, description, swag = _parse_docstring(
-                    method, process_doc
+                    method, self.process_doc
                 )
                 # we only add endpoints with swagger data in the docstrings
                 if swag is not None:
@@ -202,7 +196,7 @@ class Swagger(object):
         ]
     }
 
-    def __init__(self, config=None, *args, **kwargs):
+    def __init__(self, config=None):
         self.endpoints = []
         self.config = config or self.DEFAULT_CONFIG.copy()
 
@@ -245,7 +239,7 @@ class Swagger(object):
 
     def add_headers(self, app):
         @app.after_request
-        def after_request(response):
+        def after_request(response):  # noqa
             for header, value in self.config.get('headers'):
                 response.headers.add(header, value)
             return response

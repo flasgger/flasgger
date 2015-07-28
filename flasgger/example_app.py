@@ -122,7 +122,7 @@ class UserAPI(MethodView):
                 items:
                     $ref: '#/definitions/User'
         """
-        return jsonify({"newuser": request.json})
+        return jsonify({"newuser": request.json, "team_id": team_id})
 
 
 view = UserAPI.as_view('users')
