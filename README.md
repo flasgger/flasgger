@@ -228,4 +228,4 @@ Swagger-UI is the reason we embarked on this mission to begin with, flasgger doe
 
 Acknowledgments
 
-Flasgger is a fork of Flask-Swagger that builds on ideas and code from [flask-sillywalk](https://github.com/hobbeswalsh/flask-sillywalk) and [flask-restful-swagger](https://github.com/rantav/flask-restful-swagger)
+Flasgger is a fork of [Flask-Swagger](https://github.com/gangverk/flask-swagger) which is a simpler solution, consider it if you just want to expose specs json.
