@@ -1,3 +1,5 @@
 Flask>=0.10
 PyYAML>=3.0
+pep8==1.5.7
+pyflakes==0.8.1
 -e .
