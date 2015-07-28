@@ -11,7 +11,7 @@ import yaml
 import re
 
 from collections import defaultdict
-from flask import jsonify, Blueprint
+from flask import jsonify, Blueprint, url_for
 from flask.views import MethodView
 
 
@@ -93,6 +93,26 @@ def _extract_definitions(alist, level=None):
             defs += _extract_array_defs(item)
 
     return defs
+
+
+class SpecsView(MethodView):
+    def __init__(self, *args, **kwargs):
+        view_args = kwargs.pop('view_args', {})
+        self.config = view_args.get('config')
+        super(SpecsView, self).__init__(*args, **kwargs)
+
+    def get(self):
+        base_endpoint = self.config.get('endpoint', 'swagger')
+        specs = [
+            {
+                "url": url_for(".".join((base_endpoint, spec['endpoint']))),
+                "title": spec.get('title'),
+                "version": spec.get("version"),
+                "endpoint": spec.get('endpoint')
+            }
+            for spec in self.config.get('specs', [])
+        ]
+        return jsonify({"specs": specs})
 
 
 class OutputView(MethodView):
@@ -193,7 +213,10 @@ class Swagger(object):
                 "route": '/spec',
                 "rule_filter": lambda rule: True  # all in
             }
-        ]
+        ],
+        "static_url_path": "/apidocs",
+        "static_folder": "swaggerui",
+        "specs_route": "/specs"
     }
 
     def __init__(self, config=None):
@@ -235,6 +258,16 @@ class Swagger(object):
                                    spec=spec)
                 )
             )
+
+        blueprint.add_url_rule(
+            self.config.get('specs_route', '/specs'),
+            'specs',
+            view_func=SpecsView().as_view(
+                'specs',
+                view_args=dict(config=self.config)
+            )
+        )
+
         app.register_blueprint(blueprint)
 
     def add_headers(self, app):

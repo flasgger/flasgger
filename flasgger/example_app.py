@@ -29,7 +29,7 @@ app.config['SWAGGER'] = {
     "specs": [
         {
             "version": "0.0.1",
-            "title": "Example api v1",
+            "title": "Api v1",
             "endpoint": 'v1_spec',
             "route": '/v1/spec',
             # rule_filter is optional
@@ -40,7 +40,7 @@ app.config['SWAGGER'] = {
         },
         {
             "version": "0.0.2",
-            "title": "Example api v2",
+            "title": "Api v2",
             "endpoint": 'v2_spec',
             "route": '/v2/spec',
             "rule_filter": lambda rule: rule.endpoint.startswith(
@@ -184,7 +184,22 @@ def bla():
 
 @app.route("/")
 def hello():
-    return "Hello World!"
+    return """
+      <h1> Welcome to Flasgger demo application</h1>
+      This app exposes two API versions
+      <ul>
+         <li><a href="/apidocs/index.html?url=/v1/spec">Api Version 1</a></li>
+         <li><a href="/apidocs/index.html?url=/v2/spec">Api Version 2</a></li>
+      </ul>
+    <p>
+      As you can see the APIs is served by the same swagger UI on
+      <a href="/apidocs/index.html">Api docs</a>
+     </p>
+     <p>
+      Flasgger <a href="https://github.com/rochacbruno/flasgger">
+      https://github.com/rochacbruno/flasgger</a>
+    </p>
+    """
 
 
 swagger.init_app(app)
