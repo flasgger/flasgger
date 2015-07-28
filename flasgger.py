@@ -11,7 +11,7 @@ import yaml
 import re
 
 from collections import defaultdict
-from flask import jsonify
+from flask import jsonify, Blueprint
 from flask.views import MethodView
 
 
@@ -95,26 +95,28 @@ def _extract_definitions(alist, level=None):
     return defs
 
 
-class Output(MethodView):
+class OutputView(MethodView):
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
         self.app = view_args.get('app')
         self.config = view_args.get('config')
         self.url_mappings = view_args.get('url_mappings')
+        self.spec = view_args.get('spec')
         self.process_doc = _sanitize
-        super(Output, self).__init__(*args, **kwargs)
+        super(OutputView, self).__init__(*args, **kwargs)
 
     def get(self):
         app = self.app
         config = self.config
         url_mappings = self.url_mappings
+        spec = self.spec
         process_doc = self.process_doc
 
         data = {
-            "swagger": "2.0",
+            "swagger": config.get('swagger_version', "2.0"),
             "info": {
-                "version": config.get('version', "0.0.0"),
-                "title": config.get('title', "A swagger API"),
+                "version": spec.get('version', "0.0.0"),
+                "title": spec.get('title', "A swagger API"),
             },
             "paths": defaultdict(dict),
             "definitions": defaultdict(dict)
@@ -180,10 +182,18 @@ class Output(MethodView):
 class Swagger(object):
 
     DEFAULT_CONFIG = {
-        "version": "0.0.0",
-        "title": "A swagger API",
+        "headers": [
+            ('Access-Control-Allow-Origin', '*'),
+            ('Access-Control-Allow-Headers', "Authorization, Content-Type"),
+            ('Access-Control-Expose-Headers', "Authorization"),
+            ('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"),
+            ('Access-Control-Allow-Credentials', "true"),
+            ('Access-Control-Max-Age', 60 * 60 * 24 * 20),
+        ],
         "specs": [
             {
+                "version": "1.0.1",
+                "title": "A swagger API",
                 "endpoint": 'spec',
                 "route": '/spec',
                 "rule_filter": lambda rule: True  # all in
@@ -191,33 +201,53 @@ class Swagger(object):
         ]
     }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, config=None, *args, **kwargs):
         self.endpoints = []
+        self.config = config or self.DEFAULT_CONFIG.copy()
 
     def init_app(self, app):
         self.load_config(app)
         self.register_views(app)
+        self.add_headers(app)
 
     def load_config(self, app):
-        self.config = app.config.get('SWAGGER', self.DEFAULT_CONFIG)
+        self.config.update(app.config.get('SWAGGER',{}))
 
     def register_views(self, app):
+        blueprint = Blueprint(
+            self.config.get('endpoint', 'swagger'), 
+            __name__,
+            url_prefix=self.config.get('url_prefix', None),
+            subdomain=self.config.get('subdomain', None),
+            template_folder=self.config.get('template_folder', 'templates'),
+            static_folder=self.config.get('static_folder', 'static'),
+            static_url_path=self.config.get('static_url_path', None)
+        )
         for spec in self.config['specs']:
             endpoint = spec['endpoint']
             self.endpoints.append(endpoint)
             url_mappings = self.get_url_mappings(
                 app, rule_filter=spec['rule_filter']
             )
-            app.add_url_rule(
+            blueprint.add_url_rule(
                 spec['route'],
                 endpoint,
-                view_func=Output().as_view(
+                view_func=OutputView().as_view(
                     endpoint,
                     view_args=dict(app=app,
                                    config=self.config,
-                                   url_mappings=url_mappings)
+                                   url_mappings=url_mappings,
+                                   spec=spec)
                 )
             )
+        app.register_blueprint(blueprint)
+
+    def add_headers(self, app):
+        @app.after_request
+        def after_request(response):
+            for header, value in self.config.get('headers'):
+                response.headers.add(header, value)
+            return response
 
     def get_url_mappings(self, app, rule_filter):
         app_rules = [

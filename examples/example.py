@@ -1,21 +1,46 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask.views import MethodView
 from flasgger import Swagger
 
 app = Flask(__name__)
 
+
+# config your API specs
+# you can define multiple specs in the case your api has multiple versions
+# ommit configs to get the default (all views exposed in /spec url)
+# rule_filter is a callable that receives "Rule" object and
+#   returns a boolean to filter in only desired views
+
 app.config['SWAGGER'] = {
-    "version": "0.0.1",
-    "title": "Example site title",
+    "swagger_version": "2.0",
+    # headers are optional, the following are default
+    # "headers": [
+    #     ('Access-Control-Allow-Origin', '*'),
+    #     ('Access-Control-Allow-Headers', "Authorization, Content-Type"),
+    #     ('Access-Control-Expose-Headers', "Authorization"),
+    #     ('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"),
+    #     ('Access-Control-Allow-Credentials', "true"),
+    #     ('Access-Control-Max-Age', 60 * 60 * 24 * 20),
+    # ],
+    # another optional settings
+    # "url_prefix": "swaggerdocs",
+    # "subdomain": "docs.mysite,com",
+    # specs are also optional if not set /spec is registered exposing all views
     "specs": [
         {
+            "version": "0.0.1",
+            "title": "Example api v1",
             "endpoint": 'v1_spec',
             "route": '/v1/spec',
+            # rule_filter is optional
+            # it is a callable to filter the views to extract
             "rule_filter": lambda rule: rule.endpoint.startswith(
                 'should_be_v1_only'
             )
         },
         {
+            "version": "0.0.2",
+            "title": "Example api v2",
             "endpoint": 'v2_spec',
             "route": '/v2/spec',
             "rule_filter": lambda rule: rule.endpoint.startswith(
@@ -25,7 +50,7 @@ app.config['SWAGGER'] = {
     ]
 }
 
-swagger = Swagger()
+swagger = Swagger()  # you can pass config here Swagger(config={})
 
 
 class UserAPI(MethodView):
@@ -38,53 +63,67 @@ class UserAPI(MethodView):
         ---
         tags:
           - users
+        parameters:
+          - name: team_id
+            in: path
+            description: ID of team (type any number)
+            required: true
+            type: integer
         responses:
           200:
             description: Returns a list of users
+            schema:
+                type: array
+                items:
+                    $ref: '#/definitions/User'
         """
-        return []
+        data = {
+            "users": [
+                {"name": "Steven Wilson", "team": team_id}, 
+                {"name": "Mikael Akerfeldt", "team": team_id}, 
+                {"name": "Daniel Gildenlow", "team": team_id}
+            ]
+        }
+        return jsonify(data)
 
     def post(self, team_id):
         """
         Create a new user
+        First line is the summary
+        All following lines until the hyphens is added to description
         ---
         tags:
           - users
         parameters:
+          - name: team_id
+            in: path
+            description: ID of team (type any number)
+            required: true
+            type: integer
           - in: body
             name: body
             schema:
               id: User
               required:
-                - email
+                - team
                 - name
               properties:
-                email:
-                  type: string
-                  description: email for user
+                team:
+                  type: integer
+                  description: team for user
                 name:
                   type: string
                   description: name for user
         responses:
           201:
             description: User created
+            schema:
+                type: array
+                items:
+                    $ref: '#/definitions/User'
         """
-        return {}
+        return jsonify({"newuser": request.json})
 
-
-@app.after_request
-def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add(
-        'Access-Control-Allow-Headers', "Authorization, Content-Type"
-    )
-    response.headers.add('Access-Control-Expose-Headers', "Authorization")
-    response.headers.add(
-        'Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"
-    )
-    response.headers.add('Access-Control-Allow-Credentials', "true")
-    response.headers.add('Access-Control-Max-Age', 60 * 60 * 24 * 20)
-    return response
 
 view = UserAPI.as_view('users')
 app.add_url_rule(
@@ -130,7 +169,17 @@ def bla():
                       description: Blu
 
     """
-    return jsonify(['only_in_v2'])
+
+    data = {
+      "hack": "string",
+      "subitems": [
+        {
+          "bla": "string",
+          "blu": 0
+        }
+      ]
+    }
+    return jsonify(data)
 
 
 @app.route("/")

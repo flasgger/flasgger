@@ -7,7 +7,7 @@ with open('README.md') as file:
     long_description = file.read()
 
 setup(name='flasgger',
-      version='0.2.8',
+      version='0.2.9',
       url='https://github.com/rochacbruno/flasgger',
       description='Extract swagger specs from your flask project',
       author='Bruno Rocha',
