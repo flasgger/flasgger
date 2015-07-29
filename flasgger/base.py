@@ -112,7 +112,10 @@ class SpecsView(MethodView):
             }
             for spec in self.config.get('specs', [])
         ]
-        return jsonify({"specs": specs})
+        return jsonify(
+            {"specs": specs,
+             "title": self.config.get('title', 'Flasgger')}
+        )
 
 
 class OutputView(MethodView):

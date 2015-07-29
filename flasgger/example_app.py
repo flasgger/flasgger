@@ -13,6 +13,7 @@ app = Flask(__name__)
 
 app.config['SWAGGER'] = {
     "swagger_version": "2.0",
+    "title": "Flasgger",
     # headers are optional, the following are default
     # "headers": [
     #     ('Access-Control-Allow-Origin', '*'),
