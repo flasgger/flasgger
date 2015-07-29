@@ -128,7 +128,7 @@ app.config['SWAGGER'] = {
     ]
 }
 
-swagger = Swagger()  # you can pass config here Swagger(config={})
+swagger = Swagger(app)  # you can pass config here Swagger(app, config={})
 
 
 class UserAPI(MethodView):
@@ -212,9 +212,6 @@ app.add_url_rule(
 )
 
 # you can still use @app.route if you want
-
-# initialize swagger
-swagger.init_app(app)
 
 
 if __name__ == "__main__":

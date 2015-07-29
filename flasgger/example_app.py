@@ -50,7 +50,7 @@ app.config['SWAGGER'] = {
     ]
 }
 
-swagger = Swagger()  # you can pass config here Swagger(config={})
+swagger = Swagger(app)  # you can pass config here Swagger(config={})
 
 
 class UserAPI(MethodView):
@@ -200,9 +200,6 @@ def hello():
       https://github.com/rochacbruno/flasgger</a>
     </p>
     """
-
-
-swagger.init_app(app)
 
 
 if __name__ == "__main__":

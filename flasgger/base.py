@@ -11,7 +11,7 @@ import yaml
 import re
 
 from collections import defaultdict
-from flask import jsonify, Blueprint, url_for
+from flask import jsonify, Blueprint, url_for, current_app
 from flask.views import MethodView
 
 
@@ -118,12 +118,18 @@ class SpecsView(MethodView):
 class OutputView(MethodView):
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
-        self.app = view_args.get('app')
         self.config = view_args.get('config')
-        self.url_mappings = view_args.get('url_mappings')
         self.spec = view_args.get('spec')
         self.process_doc = _sanitize
         super(OutputView, self).__init__(*args, **kwargs)
+
+    def get_url_mappings(self, rule_filter=None):
+        rule_filter = rule_filter or (lambda rule: True)
+        app_rules = [
+            rule for rule in current_app.url_map.iter_rules()
+            if rule_filter(rule)
+        ]
+        return app_rules
 
     def get(self):
         data = {
@@ -146,8 +152,8 @@ class OutputView(MethodView):
             'deprecated', 'operationId', 'externalDocs'
         ]
 
-        for rule in self.url_mappings:
-            endpoint = self.app.view_functions[rule.endpoint]
+        for rule in self.get_url_mappings(self.spec.get('rule_filter')):
+            endpoint = current_app.view_functions[rule.endpoint]
             methods = dict()
             for verb in rule.methods.difference(ignore_verbs):
                 if hasattr(endpoint, 'methods') and verb in endpoint.methods:
@@ -219,9 +225,11 @@ class Swagger(object):
         "specs_route": "/specs"
     }
 
-    def __init__(self, config=None):
+    def __init__(self, app=None, config=None):
         self.endpoints = []
         self.config = config or self.DEFAULT_CONFIG.copy()
+        if app:
+            self.init_app(app)
 
     def init_app(self, app):
         self.load_config(app)
@@ -242,20 +250,13 @@ class Swagger(object):
             static_url_path=self.config.get('static_url_path', None)
         )
         for spec in self.config['specs']:
-            endpoint = spec['endpoint']
-            self.endpoints.append(endpoint)
-            url_mappings = self.get_url_mappings(
-                app, rule_filter=spec['rule_filter']
-            )
+            self.endpoints.append(spec['endpoint'])
             blueprint.add_url_rule(
                 spec['route'],
-                endpoint,
+                spec['endpoint'],
                 view_func=OutputView().as_view(
-                    endpoint,
-                    view_args=dict(app=app,
-                                   config=self.config,
-                                   url_mappings=url_mappings,
-                                   spec=spec)
+                    spec['endpoint'],
+                    view_args=dict(app=app, config=self.config, spec=spec)
                 )
             )
 
@@ -276,10 +277,3 @@ class Swagger(object):
             for header, value in self.config.get('headers'):
                 response.headers.add(header, value)
             return response
-
-    def get_url_mappings(self, app, rule_filter):
-        app_rules = [
-            rule for rule in app.url_map.iter_rules()
-            if rule.endpoint not in self.endpoints and rule_filter(rule)
-        ]
-        return app_rules
