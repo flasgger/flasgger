@@ -1,0 +1,7 @@
+Markers
+===========
+
+Adding marker files to this directory will have the following effects:
+
+force_clean_build - Will remove the python virtualenv and force rebuild it
+    including any previously downloaded libraries

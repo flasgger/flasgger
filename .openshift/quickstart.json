@@ -1,0 +1,15 @@
+{
+    "name": "Quokka",
+    "website": "http://quokkaproject.org/",
+    "version": "0.1",
+    "initial_git_url": "https://github.com/quokkaproject/quokka.git",
+    "cartridges": ["python-2.7", "mongo-2.4"],
+    "tags": [
+        "cms",
+        "blog",
+        "mongo",
+        "python",
+        "publishing"
+    ],
+    "summary": "Quokka is a CMS made with Python, Flask and MongoDB"
+}

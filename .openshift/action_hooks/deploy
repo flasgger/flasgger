@@ -1,0 +1,11 @@
+#!/bin/bash
+cd $OPENSHIFT_REPO_DIR
+
+source ${OPENSHIFT_PYTHON_DIR}virtenv/bin/activate
+export PYTHON_EGG_CACHE=${OPENSHIFT_PYTHON_DIR}virtenv/lib/python-2.7/site-packages
+
+cd $OPENSHIFT_REPO_DIR
+export PYTHONPATH=$PWD
+
+echo "installing requirements"
+pip install -r requirements.txt --upgrade
