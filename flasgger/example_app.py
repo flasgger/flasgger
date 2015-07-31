@@ -70,6 +70,7 @@ class UserAPI(MethodView):
             description: ID of team (type any number)
             required: true
             type: integer
+            default: 42
         responses:
           200:
             description: Returns a list of users
@@ -87,7 +88,7 @@ class UserAPI(MethodView):
         }
         return jsonify(data)
 
-    def post(self, team_id):
+    def post(self):
         """
         Create a new user
         First line is the summary
@@ -96,11 +97,6 @@ class UserAPI(MethodView):
         tags:
           - users
         parameters:
-          - name: team_id
-            in: path
-            description: ID of team (type any number)
-            required: true
-            type: integer
           - in: body
             name: body
             schema:
@@ -112,31 +108,36 @@ class UserAPI(MethodView):
                 team:
                   type: integer
                   description: team for user
+                  default: 42
                 name:
                   type: string
                   description: name for user
+                  default: Russel Allen
         responses:
           201:
-            description: User created
+            description: New user created
             schema:
                 type: array
                 items:
                     $ref: '#/definitions/User'
         """
-        return jsonify({"newuser": request.json, "team_id": team_id})
+        return jsonify(
+            {"data": request.json, "status": "New user created"}
+        ), 201
 
 
 view = UserAPI.as_view('users')
 app.add_url_rule(
     '/v1/users/<int:team_id>',
     view_func=view,
-    methods=["GET"],
-    endpoint='should_be_v1_only_users'
+    methods=['GET'],
+    endpoint='should_be_v1_only'
 )
 app.add_url_rule(
-    '/v1/testing/<int:team_id>',
+    '/v1/users',
     view_func=view,
-    endpoint='should_be_v1_only_testing'
+    methods=['POST'],
+    endpoint='should_be_v1_only_post'
 )
 
 
@@ -146,7 +147,7 @@ def bla():
     An endpoint that isn't using method view
     ---
     tags:
-    - hacks
+    - hacking
     responses:
       200:
         description: Hacked some hacks
@@ -179,6 +180,110 @@ def bla():
                 "blu": 0
             }
         ]
+    }
+    return jsonify(data)
+
+
+@app.route("/v2/recommendation/<target_type>/<item_type>", methods=['POST'],
+           endpoint="should_be_v2_only_recommendation")
+def recommend(target_type, item_type):
+    """
+    Recommendation
+    Get a single item_type as recommendation for the target_type
+    ---
+    tags:
+      - recommendation
+    parameters:
+      - name: target_type
+        in: path
+        description: currently only "candidate" is supported
+        required: true
+        type: string
+        default: candidate
+      - name: item_type
+        in: path
+        description: currently only "openings" is supported
+        required: true
+        type: string
+        default: openings
+      - in: body
+        name: body
+        schema:
+          id: rec_query
+          required:
+            - candidate_id
+            - context
+          properties:
+            candidate_id:
+              type: long
+              description: Id of the target (candidate / user)
+              default: 123456
+              required: true
+            exclude:
+              type: array
+              description: item_ids to exclude from recs
+              default: [12345, 123456]
+              items:
+                  type: long
+            context:
+              type: object
+              schema:
+                id: rec_query_context
+                required:
+                  - origin
+                properties:
+                  origin:
+                    type: string
+                    default: sugestao
+                    required: true
+                  last_event:
+                    type: object
+                    schema:
+                      id: rec_query_context_last_event
+                      properties:
+                        event:
+                          type: string
+                          default: apply
+                        data:
+                          type: object
+                          schema:
+                            id: rec_query_context_last_event_data
+                            properties:
+                              candidate_id:
+                                type: long
+                                default: 123456
+                              opening_id:
+                                type: long
+                                default: 324345435
+                              company_id:
+                                type: long
+                                default: 324345435
+                              datetime:
+                                type: dateTime
+                                default: 2014-09-10T11:41:00.12343-03:00
+                              recruiter_id:
+                                type: long
+                                default: 435345
+                              context:
+                                type: object
+                                schema:
+                                   $ref: '#/definitions/rec_query_context'
+    responses:
+      200:
+        description: A single recommendation item
+        schema:
+          id: rec_response
+          properties:
+            opening_id:
+              type: long
+              description: The id of the opening
+              default: 123456
+      204:
+         description: No recommendation found
+    """
+
+    data = {
+        "opening_id": 12312313434
     }
     return jsonify(data)
 

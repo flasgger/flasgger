@@ -21,9 +21,26 @@ http://flasgger-rochacbruno.rhcloud.com/
 pip install flasgger
 ```
 
+# Run demo app
+
+```
+python -m flasgger.example_app
+```
+
+Access: http://localhost:5000 to see the demo app running
+
+## you can run in gunicorn
+
+```
+pip install gunicorn
+
+gunicorn flasgger.example_app:app -b 0.0.0.0:5000
+
+```
+
 # Configure 
 
-> Take a look at flasgger/example_app.py
+> Take a look at **flasgger/example_app.py**
 
 flasgger provides a method (swagger) that inspects the Flask app for endpoints that contain YAML docstrings with Swagger 2.0 [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) objects.
 
