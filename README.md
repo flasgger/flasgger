@@ -7,6 +7,7 @@ A Swagger 2.0 spec extractor for Flask
 
 <a target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=rochacbruno%40gmail%2ecom&amp;lc=BR&amp;item_name=Flasgger&amp;no_note=0&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHostedGuest"><img alt='Donate with Paypal' src='http://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif' /></a>
 
+flasgger provides an extension (Swagger) that inspects the Flask app for endpoints that contain YAML docstrings with Swagger 2.0 [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) objects.
 
 # DEMO app
 
@@ -38,55 +39,51 @@ gunicorn flasgger.example_app:app -b 0.0.0.0:5000
 
 ```
 
-# Configure 
+# A simple example
 
-> Take a look at **flasgger/example_app.py**
+```python
+from flask import Flask, jsonify
+from flasgger import Swagger
 
-flasgger provides a method (swagger) that inspects the Flask app for endpoints that contain YAML docstrings with Swagger 2.0 [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) objects.
+app = Flask(__name__)
+Swagger(app)
+
+@app.route('/api/<username>')
+def user_api(username):
+    """
+    User API
+    This resource returns user information
+    ---
+    tags:
+      - users
+    parameters:
+      - name: username
+        in: path
+        type: string
+        required: true
+    responses:
+      200:
+        description: A single user item
+        schema:
+          id: user_response
+          properties:
+            username:
+              type: string
+              description: The username
+              default: some_username
+            
+    """
+    return jsonify({'username': username})
+    
+
+app.run()
 
 ```
-class UserAPI(MethodView):
 
-    def post(self):
-        """
-        Create a new user
-        ---
-        tags:
-          - users
-        parameters:
-          - in: body
-            name: body
-            schema:
-              id: User
-              required:
-                - email
-                - name
-              properties:
-                email:
-                  type: string
-                  description: email for user
-                name:
-                  type: string
-                  description: name for user
-                address:
-                  description: address for user
-                  schema:
-                    id: Address
-                    properties:
-                      street:
-                        type: string
-                      state:
-                        type: string
-                      country:
-                        type: string
-                      postalcode:
-                        type: string
-        responses:
-          201:
-            description: User created
-        """
-        return {}
-```
+The api docs and playground for the above app will be available in [http://localhost:5000/apidocs/index.html](http://localhost:5000/apidocs/index.html)
+
+# More
+
 flasgger supports docstrings in methods of MethodView classes (ala [Flask-RESTful](https://github.com/flask-restful/flask-restful)) and regular Flask view functions.
 
 Following YAML conventions, flasgger searches for `---`, everything preceding is provided as `summary` (first line) and `description` (following lines) for the endpoint while everything after is parsed as a swagger [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) object.
@@ -95,9 +92,12 @@ In order to support inline definition of [Schema ](https://github.com/swagger-ap
 
 [Schema ](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) objects can also be defined within the properties of other [Schema ](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#schemaObject) objects . An example is shown above with the address property of User.
 
+
+# example app
+
 To expose your Swagger specification to the world you provide a Flask route that does something along these lines
 
-This is the DEMO app included in flasgger/example_app.py
+This is the DEMO app included in **flasgger/example_app.py**
 
 ```python
 from flask import Flask, jsonify, request
