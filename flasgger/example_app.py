@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request
 from flask.views import MethodView
 from flasgger import Swagger
+from flasgger.utils import swag_from
 
 app = Flask(__name__)
 
@@ -139,6 +140,25 @@ app.add_url_rule(
     methods=['POST'],
     endpoint='should_be_v1_only_post'
 )
+
+# LOADING SPECS FROM EXTERNAL FILE
+
+
+@app.route('/v1/decorated/<username>', endpoint='should_be_v1_only_username')
+@swag_from('username_definitions.yml')
+def fromfile_decorated(username):
+    return jsonify({'username': username})
+
+
+# OR
+
+
+@app.route('/v1/fileindoc/<username>', endpoint='should_be_v1_only_username_1')
+def fromfile_indocstring(username):
+    """
+    file: username_definitions.yml
+    """
+    return jsonify({'username': username})
 
 
 @app.route("/v2/resource", endpoint="should_be_v2_only")

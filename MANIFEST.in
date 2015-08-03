@@ -1,4 +1,5 @@
 include *.md LICENSE
+include flasgger/username_definitions.yml
 recursive-include flasgger/swaggerui *
 recursive-include flasgger/swaggerui/js *
 recursive-include flasgger/swaggerui/lang *

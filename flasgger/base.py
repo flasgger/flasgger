@@ -9,6 +9,7 @@ we add the endpoint to swagger specification output
 import inspect
 import yaml
 import re
+import os
 
 from collections import defaultdict
 from flask import jsonify, Blueprint, url_for, current_app
@@ -19,9 +20,47 @@ def _sanitize(comment):
     return comment.replace('\n', '<br/>') if comment else comment
 
 
+def get_path_from_doc(full_doc):
+    swag_path = full_doc.replace('file:', '').strip()
+    swag_type = swag_path.split('.')[-1]
+    return swag_path, swag_type
+
+
+def json_to_yaml(content):
+    """
+    TODO: convert json to yaml
+    """
+    return content
+
+
+def load_from_file(swag_path, swag_type):
+    try:
+        return open(swag_path).read()
+    except IOError:
+        swag_path = os.path.join(os.path.dirname(__file__), swag_path)
+        return open(swag_path).read()
+
+    # TODO:
+    # with open(swag_path) as swag_file:
+    #     content = swag_file.read()
+    #     if swag_type in ('yaml', 'yml'):
+    #         return content
+    #     elif swag_type  == 'json':
+    #         return json_to_yaml(content)
+
+
 def _parse_docstring(obj, process_doc):
+    print "\nparsing:", obj
     first_line, other_lines, swag = None, None, None
     full_doc = inspect.getdoc(obj)
+
+    if hasattr(obj, 'swag_path'):
+        full_doc = load_from_file(obj.swag_path, obj.swag_type)
+
+    if full_doc.startswith('file:'):
+        swag_path, swag_type = get_path_from_doc(full_doc)
+        full_doc = load_from_file(swag_path, swag_type)
+
     if full_doc:
         line_feed = full_doc.find('\n')
         if line_feed != -1:
