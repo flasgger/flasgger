@@ -50,7 +50,6 @@ def load_from_file(swag_path, swag_type):
 
 
 def _parse_docstring(obj, process_doc):
-    print "\nparsing:", obj
     first_line, other_lines, swag = None, None, None
     full_doc = inspect.getdoc(obj)
 
