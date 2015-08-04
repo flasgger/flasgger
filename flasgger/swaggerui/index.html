@@ -38,7 +38,7 @@
           $.each( data['specs'], function( key, val ) {
             items.push( "<option value='" + val.url + "'>" + val.title + "</option>" );
           });
-         
+
           $( "<select/>", {
             "class": "spec_selector",
             "id": "spec_selector",
@@ -59,7 +59,7 @@
     }
 
     $(function () {
-      
+
       load_specs()
 
       var url = window.location.search.match(/url=([^&]+)/);
@@ -83,7 +83,7 @@
               clientId: "your-client-id",
               clientSecret: "your-client-secret",
               realm: "your-realms",
-              appName: "your-app-name", 
+              appName: "your-app-name",
               scopeSeparator: ","
             });
           }
@@ -130,7 +130,7 @@
         var apiKey = "myApiKeyXXXX123456789";
         $('#input_apiKey').val(apiKey);
       */
-      
+
       window.swaggerUi.load();
 
       function log() {
@@ -165,5 +165,10 @@
 
 <div id="message-bar" class="swagger-ui-wrap" data-sw-translate>&nbsp;</div>
 <div id="swagger-ui-container" class="swagger-ui-wrap"></div>
+<div class="swagger-ui-wrap footer">
+<small style="font-size: 60%; color: #ccc;">
+[Powered by <a href="https://github.com/rochacbruno/flasgger">Flasgger</a>]
+</small>
+</div>
 </body>
 </html>
