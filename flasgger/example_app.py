@@ -279,15 +279,14 @@ def recommend(target_type, item_type):
                                 type: integer
                                 default: 324345435
                               datetime:
-                                type: dateTime
+                                type: string
+                                format: date-time
                                 default: 2014-09-10T11:41:00.12343-03:00
                               recruiter_id:
                                 type: integer
                                 default: 435345
                               context:
-                                type: object
-                                schema:
-                                   $ref: '#/definitions/rec_query_context'
+                                  $ref: '#/definitions/rec_query_context'
     responses:
       200:
         description: A single recommendation item
