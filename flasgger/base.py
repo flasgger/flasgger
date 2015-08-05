@@ -178,8 +178,10 @@ class OutputView(MethodView):
             "info": {
                 "version": self.spec.get('version', "0.0.0"),
                 "title": self.spec.get('title', "A swagger API"),
-                "description": self.spec.get('description', "API description"),
-                "termsOfService": self.spec.get('termsOfService', "Terms of service"),
+                "description": self.spec.get('description',
+                                             "API description"),
+                "termsOfService": self.spec.get('termsOfService',
+                                                "Terms of service"),
             },
             "host": self.config.get('host', "hostname"),
             "basePath": self.config.get('basePath', "/"),
