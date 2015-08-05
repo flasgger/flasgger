@@ -181,6 +181,8 @@ class OutputView(MethodView):
                 "description": self.spec.get('description', "API description"),
                 "termsOfService": self.spec.get('termsOfService', "Terms of service"),
             },
+            "host": self.config.get('host', "hostname"),
+            "basePath": self.config.get('basePath', "/"),
             "paths": defaultdict(dict),
             "definitions": defaultdict(dict)
         }
