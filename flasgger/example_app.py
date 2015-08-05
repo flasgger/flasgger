@@ -33,6 +33,7 @@ app.config['SWAGGER'] = {
             "version": "0.0.1",
             "title": "Api v1",
             "endpoint": 'v1_spec',
+            "description": 'This is the version 1 of our API',
             "route": '/v1/spec',
             # rule_filter is optional
             # it is a callable to filter the views to extract
@@ -43,6 +44,7 @@ app.config['SWAGGER'] = {
         {
             "version": "0.0.2",
             "title": "Api v2",
+            "description": 'This is the version 2 of our API',
             "endpoint": 'v2_spec',
             "route": '/v2/spec',
             "rule_filter": lambda rule: rule.endpoint.startswith(
@@ -235,16 +237,15 @@ def recommend(target_type, item_type):
             - context
           properties:
             candidate_id:
-              type: long
+              type: integer
               description: Id of the target (candidate / user)
               default: 123456
-              required: true
             exclude:
               type: array
               description: item_ids to exclude from recs
               default: [12345, 123456]
               items:
-                  type: long
+                  type: integer
             context:
               type: object
               schema:
@@ -255,7 +256,6 @@ def recommend(target_type, item_type):
                   origin:
                     type: string
                     default: sugestao
-                    required: true
                   last_event:
                     type: object
                     schema:
@@ -270,19 +270,19 @@ def recommend(target_type, item_type):
                             id: rec_query_context_last_event_data
                             properties:
                               candidate_id:
-                                type: long
+                                type: integer
                                 default: 123456
                               opening_id:
-                                type: long
+                                type: integer
                                 default: 324345435
                               company_id:
-                                type: long
+                                type: integer
                                 default: 324345435
                               datetime:
                                 type: dateTime
                                 default: 2014-09-10T11:41:00.12343-03:00
                               recruiter_id:
-                                type: long
+                                type: integer
                                 default: 435345
                               context:
                                 type: object
@@ -295,7 +295,7 @@ def recommend(target_type, item_type):
           id: rec_response
           properties:
             opening_id:
-              type: long
+              type: integer
               description: The id of the opening
               default: 123456
       204:
