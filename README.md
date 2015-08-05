@@ -1,5 +1,7 @@
 # flasgger
-A Swagger 2.0 spec extractor for Flask
+Creates Swagger 2.0 API documentation for all your Flask views extracting specs from docstrings or referenced YAML files. 
+
+The Swagger UI is embedded and docs by default available in **/apidocs/index.html**
 
 [![Code Health](https://landscape.io/github/rochacbruno/flasgger/master/landscape.svg?style=flat)](https://landscape.io/github/rochacbruno/flasgger/master)
 
