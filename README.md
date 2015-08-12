@@ -1,5 +1,5 @@
 # flasgger
-Creates Swagger 2.0 API documentation for all your Flask views extracting specs from docstrings or referenced YAML files. 
+Creates Swagger 2.0 API documentation for all your Flask views extracting specs from docstrings or referenced YAML files.
 
 The Swagger UI is embedded and docs by default available in **/apidocs/index.html**
 
@@ -17,6 +17,70 @@ http://flasgger-rochacbruno.rhcloud.com/
 
 **Powered by OpenShift**
 
+
+# Getting started
+
+## create a virtualenv
+
+```
+mkvirtualenv test_api
+```
+
+## install dependencies
+```
+pip install flask
+pip install flasgger
+```
+## create a file called simple_test.py
+
+```python
+from flask import Flask, jsonify, request
+from flasgger import Swagger
+
+app = Flask(__name__)
+
+Swagger(app)
+
+
+@app.route("/recs", methods=['GET'])
+def recs():
+    """
+    A simple test API
+    This ednpoint does nothing
+    Only returs "test"
+    ---
+    tags:
+      - testapi
+    parameters:
+      - name: size
+        in: query
+        type: string
+        description: size of elements
+    responses:
+      200:
+        description: A single user item
+        schema:
+          id: return_test
+          properties:
+            result:
+              type: string
+              description: The test
+              default: 'test'
+    """
+    size = int(request.args.get('size', 1))
+    return jsonify({"result": "test" * size})
+
+app.run(debug=True)
+```
+##  run
+
+```python
+python simple_test.py
+```
+
+## try
+
+- http://localhost:5000/apidocs/index.html
 
 # Install
 
