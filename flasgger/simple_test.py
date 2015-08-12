@@ -1,3 +1,14 @@
+"""
+# create a virtualenv
+mkvirtualenv test_api
+
+# install dependencies
+pip install flask
+pip install flasgger
+
+# run the following script
+python simple_test.py
+"""
 from flask import Flask, jsonify, request
 from flasgger import Swagger
 
@@ -34,4 +45,4 @@ def recs():
     size = int(request.args.get('size', 1))
     return jsonify({"result": "test" * size})
 
-app.run()
+app.run(debug=True)
