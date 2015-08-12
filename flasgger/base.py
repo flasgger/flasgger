@@ -56,7 +56,7 @@ def _parse_docstring(obj, process_doc):
     if hasattr(obj, 'swag_path'):
         full_doc = load_from_file(obj.swag_path, obj.swag_type)
 
-    if full_doc.startswith('file:'):
+    if full_doc and full_doc.startswith('file:'):
         swag_path, swag_type = get_path_from_doc(full_doc)
         full_doc = load_from_file(swag_path, swag_type)
 
@@ -183,11 +183,14 @@ class OutputView(MethodView):
                 "termsOfService": self.spec.get('termsOfService',
                                                 "Terms of service"),
             },
-            "host": self.config.get('host', "hostname"),
-            "basePath": self.config.get('basePath', "/"),
             "paths": defaultdict(dict),
             "definitions": defaultdict(dict)
         }
+
+        if self.config.get('host'):
+            data['host'] = self.config.get('host')
+        if self.config.get("basePath"):
+            data["basePath"] = self.config.get('basePath')
 
         paths = data['paths']
         definitions = data['definitions']
