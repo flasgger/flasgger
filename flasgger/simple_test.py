@@ -5,6 +5,7 @@ app = Flask(__name__)
 
 Swagger(app)
 
+
 @app.route("/recs", methods=['GET'])
 def recs():
     """
