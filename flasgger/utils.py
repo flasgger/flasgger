@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import os
 from functools import wraps
 
 
@@ -10,7 +11,14 @@ def swag_from(filepath, filetype=None):
        if None will be inferred
     """
     def decorator(function):
-        function.swag_path = filepath
+        # function.__code__.co_filename # option to access filename
+        if not filepath.startswith('/'):
+            final_filepath = os.path.join(
+                os.path.dirname(function.func_globals['__file__']), filepath
+            )
+        else:
+            final_filepath = filepath
+        function.swag_path = final_filepath
         function.swag_type = filetype or filepath.split('.')[-1]
         if function.swag_type not in ('yaml', 'yml'):
             raise AttributeError("only yaml or yml supported")

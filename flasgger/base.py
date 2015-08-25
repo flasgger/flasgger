@@ -37,6 +37,7 @@ def load_from_file(swag_path, swag_type):
     try:
         return open(swag_path).read()
     except IOError:
+        # TODO: get relative project path
         swag_path = os.path.join(os.path.dirname(__file__), swag_path)
         return open(swag_path).read()
 
