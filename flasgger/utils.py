@@ -61,4 +61,6 @@ def validate(data, schema_id, filepath, root=None):
         else:
             definitions[defi['id']] = defi
     main_def['definitions'] = definitions
+    for key, value in definitions.items():
+        del value['id']
     jsonschema.validate(data, main_def)
