@@ -203,6 +203,19 @@ def fromfile_decorated(username):
 
 ```
 
+# Use the same yaml file to validate your API data
+
+```
+from flasgger.utils import validate, ValidationError
+
+@swag_from('defs.yml')
+def post():
+    data = request.json
+    try:
+        validate(data, 'schema_id', 'defs.yml', __file__)
+    except ValidationError:
+        return abort(500)
+```
 
 # More
 

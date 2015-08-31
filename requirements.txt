@@ -1,5 +1,6 @@
 Flask>=0.10
 PyYAML>=3.0
+jsonschema==4.5.1
 pep8==1.5.7
 flake8==2.4.1
 shiftpy==0.1.3

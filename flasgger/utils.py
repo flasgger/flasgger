@@ -1,8 +1,10 @@
 # coding: utf-8
 
 import os
+import jsonschema
+from jsonschema import ValidationError  # noqa
 from functools import wraps
-
+from .base import _extract_definitions, yaml, load_from_file
 
 def swag_from(filepath, filetype=None):
     """
@@ -28,3 +30,34 @@ def swag_from(filepath, filetype=None):
             return function(*args, **kwargs)
         return wrapper
     return decorator
+
+
+def validate(data, schema_id, filepath, root=None):
+    """
+    This method is available to use YAML swagger definitions file
+    to validate data against its jsonschema.
+    example:
+    validate({"item": 1}, 'item_schema', 'defs.yml', root=__file__)
+    If root is not defined it will try to use absolute import so path
+    should start with /
+    """
+    if not filepath.startswith('/'):
+        final_filepath = os.path.join(os.path.dirname(root), filepath)
+    else:
+        final_filepath = filepath
+    full_doc = load_from_file(final_filepath)
+    yaml_start = full_doc.find('---')
+    swag = yaml.load(full_doc[yaml_start if yaml_start >= 0 else 0:])
+    params = [
+        item for item in swag.get('parameters', [])
+        if item.get('schema')
+    ]
+    definitions = {}
+    raw_definitions =  _extract_definitions(params)
+    for defi in raw_definitions:
+        if defi['id'] == schema_id:
+            main_def = defi.copy()
+        else:
+            definitions[defi['id']] = defi
+    main_def['definitions'] = definitions
+    jsonschema.validate(data, main_def)
