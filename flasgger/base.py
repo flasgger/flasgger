@@ -15,9 +15,8 @@ from collections import defaultdict
 from flask import jsonify, Blueprint, url_for, current_app
 from flask.views import MethodView
 
-
-def _sanitize(comment):
-    return comment.replace('\n', '<br/>') if comment else comment
+NO_SANITIZER = lambda text: text
+BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text
 
 
 def get_path_from_doc(full_doc):
@@ -161,7 +160,7 @@ class OutputView(MethodView):
         view_args = kwargs.pop('view_args', {})
         self.config = view_args.get('config')
         self.spec = view_args.get('spec')
-        self.process_doc = _sanitize
+        self.process_doc = view_args.get('sanitizer', BR_SANITIZER)
         super(OutputView, self).__init__(*args, **kwargs)
 
     def get_url_mappings(self, rule_filter=None):
@@ -275,8 +274,9 @@ class Swagger(object):
         "specs_route": "/specs"
     }
 
-    def __init__(self, app=None, config=None):
+    def __init__(self, app=None, config=None, sanitizer=None):
         self.endpoints = []
+        self.sanitizer = sanitizer or BR_SANITIZER
         self.config = config or self.DEFAULT_CONFIG.copy()
         if app:
             self.init_app(app)
@@ -306,7 +306,10 @@ class Swagger(object):
                 spec['endpoint'],
                 view_func=OutputView().as_view(
                     spec['endpoint'],
-                    view_args=dict(app=app, config=self.config, spec=spec)
+                    view_args=dict(
+                        app=app, config=self.config,
+                        spec=spec, sanitizer=self.sanitizer
+                    )
                 )
             )
 

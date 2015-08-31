@@ -217,6 +217,26 @@ def post():
         return abort(500)
 ```
 
+# HTML sanitizer
+
+By default Flasgger will try to sanitize the content in YAML definitions
+replacing every ```\n``` with ```<br>``` but you can change this behaviour
+setting another kind of sanitizer.
+
+```
+from flasgger import Swagger, NO_SANITIZER
+
+app =Flask()
+Swagger(app, sanitizer=NO_SANITIZER)
+```
+
+You can write your own sanitizer
+
+```
+Swagger(app, sanitizer=lambda text: do_anything_with(text))
+```
+
+
 # More
 
 flasgger supports docstrings in methods of MethodView classes (ala [Flask-RESTful](https://github.com/flask-restful/flask-restful)) and regular Flask view functions.

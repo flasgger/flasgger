@@ -6,6 +6,7 @@ from jsonschema import ValidationError  # noqa
 from functools import wraps
 from .base import _extract_definitions, yaml, load_from_file
 
+
 def swag_from(filepath, filetype=None):
     """
     filepath is complete path to open the file
@@ -53,7 +54,7 @@ def validate(data, schema_id, filepath, root=None):
         if item.get('schema')
     ]
     definitions = {}
-    raw_definitions =  _extract_definitions(params)
+    raw_definitions = _extract_definitions(params)
     for defi in raw_definitions:
         if defi['id'] == schema_id:
             main_def = defi.copy()
