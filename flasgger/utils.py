@@ -17,7 +17,7 @@ def swag_from(filepath, filetype=None):
         # function.__code__.co_filename # option to access filename
         if not filepath.startswith('/'):
             final_filepath = os.path.join(
-                os.path.dirname(function.func_globals['__file__']), filepath
+                os.path.dirname(function.__globals__['__file__']), filepath
             )
         else:
             final_filepath = filepath
