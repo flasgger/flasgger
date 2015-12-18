@@ -193,7 +193,7 @@ class OutputView(MethodView):
 
         paths = data['paths']
         definitions = data['definitions']
-        ignore_verbs = {"HEAD", "OPTIONS"}
+        ignore_verbs = set(("HEAD", "OPTIONS"))
 
         # technically only responses is non-optional
         optional_fields = [
