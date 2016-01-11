@@ -76,13 +76,15 @@ def _parse_docstring(obj, process_doc):
     return first_line, other_lines, swag
 
 
-def _extract_definitions(alist, level=None):
+def _extract_definitions(alist, level=None, endpoint=None):
     """
     Since we couldn't be bothered to register models elsewhere
     our definitions need to be extracted from the parameters.
     We require an 'id' field for the schema to be correctly
     added to the definitions list.
     """
+    if endpoint:
+        endpoint = endpoint.replace('.', '_')
 
     def _extract_array_defs(source):
         # extract any definitions that are within arrays
@@ -90,7 +92,7 @@ def _extract_definitions(alist, level=None):
         ret = []
         items = source.get('items')
         if items is not None and 'schema' in items:
-            ret += _extract_definitions([items], level + 1)
+            ret += _extract_definitions([items], level + 1, endpoint)
         return ret
 
     # for tracking level of recursion
@@ -104,6 +106,9 @@ def _extract_definitions(alist, level=None):
             if schema is not None:
                 schema_id = schema.get("id")
                 if schema_id is not None:
+                    # add endpoint to schema id to avoid conflicts
+                    schema['id'] = schema_id = "{}_{}".format(endpoint,
+                                                              schema_id)
                     defs.append(schema)
                     ref = {"$ref": "#/definitions/{}".format(schema_id)}
                     # only add the reference as a schema if we are in a
@@ -122,7 +127,7 @@ def _extract_definitions(alist, level=None):
                 properties = schema.get('properties')
                 if properties is not None:
                     defs += _extract_definitions(
-                        properties.values(), level + 1
+                        properties.values(), level + 1, endpoint
                     )
 
                 defs += _extract_array_defs(schema)
@@ -218,10 +223,11 @@ class OutputView(MethodView):
                 # we only add endpoints with swagger data in the docstrings
                 if swag is not None:
                     params = swag.get('parameters', [])
-                    defs = _extract_definitions(params)
+                    defs = _extract_definitions(params, endpoint=rule.endpoint)
                     responses = swag.get('responses', {})
                     if responses is not None:
-                        defs = defs + _extract_definitions(responses.values())
+                        defs = defs + _extract_definitions(
+                            responses.values(), endpoint=rule.endpoint)
                     for definition in defs:
                         def_id = definition.pop('id')
                         if def_id is not None:
