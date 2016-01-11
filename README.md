@@ -114,7 +114,7 @@ from flasgger import Swagger
 app = Flask(__name__)
 Swagger(app)
 
-@app.route('/api/<username>')
+@app.route('/api/<string:username>')
 def user_api(username):
     """
     User API
@@ -145,6 +145,8 @@ def user_api(username):
 app.run()
 
 ```
+
+> NOTE: when catching arguments in path always use explicit types, bad: ``/api/<username>`` good: ``/api/<string:username>``
 
 The api docs and playground for the above app will be available in [http://localhost:5000/apidocs/index.html](http://localhost:5000/apidocs/index.html)
 
@@ -185,16 +187,34 @@ And then use this file as spec to a view
 ```python
 from flasgger.utils import swag_from
 
-@app.route('/api/<username>')
+@app.route('/api/<string:username>')
 @swag_from('path/to/external_file.yml')
 def fromfile_decorated(username):
+    return jsonify({'username': username})
+```
+
+# Handling multiple http methods and routes for a single function
+
+You can separate specifications by endpoint or methods
+
+```python
+from flasgger.utils import swag_from
+
+@app.route('/api/<string:username>', endpoint='with_user_name', methods=['PUT', 'GET'])
+@app.route('/api/', endpoint='without_user_name')
+@swag_from('path/to/external_file.yml', endpoint='with_user_name')
+@swag_from('path/to/external_file_no_user_get.yml', endpoint='without_user_name', methods=['GET'])
+@swag_from('path/to/external_file_no_user_put.yml', endpoint='without_user_name', methods=['PUT'])
+def fromfile_decorated(username=None):
+    if not username:
+        return "No user!"
     return jsonify({'username': username})
 ```
 
 Or if you dont to use the decorator you can simply:
 
 ```python
-@app.route('/api/<username>')
+@app.route('/api/<string:username>')
 def fromfile_decorated(username):
     """
     file: path/to/external_file.yml

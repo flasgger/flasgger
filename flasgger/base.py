@@ -33,6 +33,9 @@ def json_to_yaml(content):
 
 
 def load_from_file(swag_path, swag_type='yml'):
+    if swag_type not in ('yaml', 'yml'):
+        raise AttributeError("Currently only yaml or yml supported")
+
     try:
         return open(swag_path).read()
     except IOError:
@@ -48,18 +51,29 @@ def load_from_file(swag_path, swag_type='yml'):
     #         return json_to_yaml(content)
 
 
-def _parse_docstring(obj, process_doc):
+def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
     first_line, other_lines, swag = None, None, None
-    full_doc = inspect.getdoc(obj)
 
-    if hasattr(obj, 'swag_path'):
-        full_doc = load_from_file(obj.swag_path, obj.swag_type)
+    full_doc = None
+    swag_path = getattr(obj, 'swag_path', None)
+    swag_type = getattr(obj, 'swag_type', 'yml')
+    swag_paths = getattr(obj, 'swag_paths', None)
 
-    if full_doc and full_doc.startswith('file:'):
-        swag_path, swag_type = get_path_from_doc(full_doc)
+    if swag_path is not None:
         full_doc = load_from_file(swag_path, swag_type)
+    elif swag_paths is not None:
+        for key in ("{}_{}".format(endpoint, verb), endpoint, verb.lower()):
+            if key in swag_paths:
+                full_doc = load_from_file(swag_paths[key], swag_type)
+                break
+    else:
+        full_doc = inspect.getdoc(obj)
 
     if full_doc:
+
+        if full_doc.startswith('file:'):
+            full_doc = load_from_file(*get_path_from_doc(full_doc))
+
         line_feed = full_doc.find('\n')
         if line_feed != -1:
             first_line = process_doc(full_doc[:line_feed])
@@ -73,6 +87,7 @@ def _parse_docstring(obj, process_doc):
                 other_lines = process_doc(full_doc[line_feed + 1:])
         else:
             first_line = full_doc
+
     return first_line, other_lines, swag
 
 
@@ -218,7 +233,7 @@ class OutputView(MethodView):
             operations = dict()
             for verb, method in methods.items():
                 summary, description, swag = _parse_docstring(
-                    method, self.process_doc
+                    method, self.process_doc, endpoint=rule.endpoint, verb=verb
                 )
                 # we only add endpoints with swagger data in the docstrings
                 if swag is not None:
