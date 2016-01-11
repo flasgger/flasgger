@@ -44,5 +44,10 @@ setup(
     include_package_data=True,
     zip_safe=False,
     platforms='any',
-    install_requires=['Flask>=0.10', 'PyYAML>=3.0', 'jsonschema>=2.5.1']
+    install_requires=[
+        'Flask>=0.10',
+        'PyYAML>=3.0',
+        'jsonschema>=2.5.1',
+        'mistune'
+    ]
 )
