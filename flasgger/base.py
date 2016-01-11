@@ -12,11 +12,13 @@ import re
 import os
 
 from collections import defaultdict
-from flask import jsonify, Blueprint, url_for, current_app
+from flask import jsonify, Blueprint, url_for, current_app, Markup
 from flask.views import MethodView
+from mistune import markdown
 
 NO_SANITIZER = lambda text: text
 BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text
+MK_SANITIZER = lambda text: Markup(markdown(text)) if text else text
 
 
 def get_path_from_doc(full_doc):

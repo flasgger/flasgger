@@ -258,6 +258,9 @@ You can write your own sanitizer
 Swagger(app, sanitizer=lambda text: do_anything_with(text))
 ```
 
+There is also a Markdown parser available, if you want to be able to render
+Markdown in your specs description use **MK_SANITIZER**
+
 
 # More
 

@@ -1,7 +1,7 @@
 
-__version__ = '0.5.6'
+__version__ = '0.5.7'
 __author__ = 'Bruno Rocha'
 __email__ = 'rochacbruno@gmail.com'
 
 
-from .base import Swagger, NO_SANITIZER, BR_SANITIZER  # noqa
+from .base import Swagger, NO_SANITIZER, BR_SANITIZER, MK_SANITIZER  # noqa
