@@ -214,15 +214,7 @@ class OutputView(MethodView):
 
         # set defaults from template
         if self.template is not None:
-            for tkey, tval in self.template.items():
-                if tkey == 'definitions':
-                    for k, v in tval.items():
-                        data['definitions'][k] = v
-                if tkey == 'paths':
-                    for k, v in tval.items():
-                        data['paths'][k] = v
-                else:
-                    data[tkey] = tval
+            data.update(self.template)
 
         paths = data['paths']
         definitions = data['definitions']
