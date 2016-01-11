@@ -237,9 +237,18 @@ class OutputView(MethodView):
                 )
                 # we only add endpoints with swagger data in the docstrings
                 if swag is not None:
+                    defs = swag.get('definitions', [])
+                    defs = _extract_definitions(defs, endpoint=rule.endpoint)
+
                     params = swag.get('parameters', [])
-                    defs = _extract_definitions(params, endpoint=rule.endpoint)
+                    defs += _extract_definitions(params,
+                                                 endpoint=rule.endpoint)
+
                     responses = swag.get('responses', {})
+                    responses = {
+                        str(key): value
+                        for key, value in responses.items()
+                    }
                     if responses is not None:
                         defs = defs + _extract_definitions(
                             responses.values(), endpoint=rule.endpoint)
