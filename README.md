@@ -193,6 +193,20 @@ def fromfile_decorated(username):
     return jsonify({'username': username})
 ```
 
+Or if you don't  want to use the decorator you can simply use the shortcut
+
+```python
+@app.route('/api/<string:username>')
+def fromfile_decorated(username):
+    """
+    file: path/to/external_file.yml
+    """
+    return jsonify({'username': username})
+
+```
+
+> NOTE: the above example only works for a single definition
+
 # Handling multiple http methods and routes for a single function
 
 You can separate specifications by endpoint or methods
@@ -209,18 +223,6 @@ def fromfile_decorated(username=None):
     if not username:
         return "No user!"
     return jsonify({'username': username})
-```
-
-Or if you dont to use the decorator you can simply:
-
-```python
-@app.route('/api/<string:username>')
-def fromfile_decorated(username):
-    """
-    file: path/to/external_file.yml
-    """
-    return jsonify({'username': username})
-
 ```
 
 # Use the same yaml file to validate your API data
