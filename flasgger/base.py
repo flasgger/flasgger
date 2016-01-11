@@ -181,6 +181,7 @@ class OutputView(MethodView):
         self.config = view_args.get('config')
         self.spec = view_args.get('spec')
         self.process_doc = view_args.get('sanitizer', BR_SANITIZER)
+        self.template = view_args.get('template')
         super(OutputView, self).__init__(*args, **kwargs)
 
     def get_url_mappings(self, rule_filter=None):
@@ -210,6 +211,18 @@ class OutputView(MethodView):
             data['host'] = self.config.get('host')
         if self.config.get("basePath"):
             data["basePath"] = self.config.get('basePath')
+
+        # set defaults from template
+        if self.template is not None:
+            for tkey, tval in self.template.items():
+                if tkey == 'definitions':
+                    for k, v in tval.items():
+                        data['definitions'][k] = v
+                if tkey == 'paths':
+                    for k, v in tval.items():
+                        data['paths'][k] = v
+                else:
+                    data[tkey] = tval
 
         paths = data['paths']
         definitions = data['definitions']
@@ -304,10 +317,11 @@ class Swagger(object):
         "specs_route": "/specs"
     }
 
-    def __init__(self, app=None, config=None, sanitizer=None):
+    def __init__(self, app=None, config=None, sanitizer=None, template=None):
         self.endpoints = []
         self.sanitizer = sanitizer or BR_SANITIZER
         self.config = config or self.DEFAULT_CONFIG.copy()
+        self.template = template
         if app:
             self.init_app(app)
 
@@ -338,7 +352,8 @@ class Swagger(object):
                     spec['endpoint'],
                     view_args=dict(
                         app=app, config=self.config,
-                        spec=spec, sanitizer=self.sanitizer
+                        spec=spec, sanitizer=self.sanitizer,
+                        template=self.template
                     )
                 )
             )
