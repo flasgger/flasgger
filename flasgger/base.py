@@ -285,7 +285,8 @@ class OutputView(MethodView):
 
             if len(operations):
                 rule = str(rule)
-                for arg in re.findall('(<(.*?\:)?(.*?)>)', rule):
+                # old regex '(<(.*?\:)?(.*?)>)'
+                for arg in re.findall('(<([^<>]*:)?([^<>]*)>)', rule):
                     rule = rule.replace(arg[0], '{%s}' % arg[2])
                 paths[rule].update(operations)
         return jsonify(data)
