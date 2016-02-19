@@ -12,7 +12,7 @@ import re
 import os
 
 from collections import defaultdict
-from flask import jsonify, Blueprint, url_for, current_app, Markup
+from flask import jsonify, Blueprint, url_for, current_app, Markup, request
 from flask.views import MethodView
 from mistune import markdown
 
@@ -60,6 +60,9 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
     swag_path = getattr(obj, 'swag_path', None)
     swag_type = getattr(obj, 'swag_type', 'yml')
     swag_paths = getattr(obj, 'swag_paths', None)
+    endpoint = endpoint or request.endpoint.lower()
+    verb = verb or request.method.lower()
+    endpoint = endpoint.replace('.', '_')
 
     if swag_path is not None:
         full_doc = load_from_file(swag_path, swag_type)
@@ -100,8 +103,9 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
     We require an 'id' field for the schema to be correctly
     added to the definitions list.
     """
-    if endpoint:
-        endpoint = endpoint.replace('.', '_')
+    endpoint = endpoint or request.endpoint.lower()
+    verb = verb or request.method.lower()
+    endpoint = endpoint.replace('.', '_')
 
     def _extract_array_defs(source):
         # extract any definitions that are within arrays

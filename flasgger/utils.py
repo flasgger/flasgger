@@ -3,6 +3,7 @@
 import os
 import jsonschema
 from jsonschema import ValidationError  # noqa
+from flask import request
 from functools import wraps
 from .base import _extract_definitions, yaml, load_from_file
 
@@ -62,6 +63,12 @@ def validate(data, schema_id, filepath, root=None):
     If root is not defined it will try to use absolute import so path
     should start with /
     """
+
+    endpoint = request.endpoint.lower().replace('.', '_')
+    verb = request.method.lower()
+
+    full_schema = "{}_{}_{}".format(endpoint, verb, schema_id)
+
     if not filepath.startswith('/'):
         final_filepath = os.path.join(os.path.dirname(root), filepath)
     else:
@@ -73,14 +80,21 @@ def validate(data, schema_id, filepath, root=None):
         item for item in swag.get('parameters', [])
         if item.get('schema')
     ]
+
     definitions = {}
-    raw_definitions = _extract_definitions(params)
+    main_def = {}
+    raw_definitions = _extract_definitions(
+        params, endpoint=endpoint, verb=verb)
+
     for defi in raw_definitions:
-        if defi['id'] == schema_id:
+        if defi['id'] in [schema_id, full_schema]:
             main_def = defi.copy()
         else:
             definitions[defi['id']] = defi
+
     main_def['definitions'] = definitions
+
     for key, value in definitions.items():
         del value['id']
+
     jsonschema.validate(data, main_def)
