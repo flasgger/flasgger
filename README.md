@@ -239,6 +239,8 @@ def post():
         return abort(500)
 ```
 
+All validation options can be found at http://json-schema.org/latest/json-schema-validation.html
+
 # HTML sanitizer
 
 By default Flasgger will try to sanitize the content in YAML definitions
