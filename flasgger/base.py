@@ -215,6 +215,8 @@ class OutputView(MethodView):
             data['host'] = self.config.get('host')
         if self.config.get("basePath"):
             data["basePath"] = self.config.get('basePath')
+        if self.config.get("securityDefinitions"):
+            data["securityDefinitions"] = self.config.get('securityDefinitions')
 
         # set defaults from template
         if self.template is not None:
