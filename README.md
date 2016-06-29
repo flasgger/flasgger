@@ -46,8 +46,8 @@ Swagger(app)
 def recs():
     """
     A simple test API
-    This ednpoint does nothing
-    Only returs "test"
+    This endpoint does nothing
+    Only returns "test"
     ---
     tags:
       - testapi
