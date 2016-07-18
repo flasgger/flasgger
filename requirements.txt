@@ -2,7 +2,7 @@ Flask>=0.10
 PyYAML>=3.0
 jsonschema==2.5.1
 pep8==1.5.7
-flake8==2.4.1
+flake8==2.6.2
 shiftpy==0.1.3
 mistune
 -e .
