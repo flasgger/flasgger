@@ -300,13 +300,6 @@ class Swagger(object):
 
     DEFAULT_CONFIG = {
         "headers": [
-            ('Access-Control-Allow-Origin', '*'),
-            ('Access-Control-Allow-Headers', "Authorization, Content-Type"),
-            ('Access-Control-Expose-Headers', "Authorization"),
-            ('Access-Control-Allow-Methods',
-             "GET, POST, PUT, DELETE, OPTIONS"),
-            ('Access-Control-Allow-Credentials', "true"),
-            ('Access-Control-Max-Age', 60 * 60 * 24 * 20),
         ],
         "specs": [
             {
@@ -378,5 +371,5 @@ class Swagger(object):
         @app.after_request
         def after_request(response):  # noqa
             for header, value in self.config.get('headers'):
-                response.headers.add(header, value)
+                response.headers[header] = value
             return response
