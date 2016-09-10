@@ -179,6 +179,12 @@ class SpecsView(MethodView):
         )
 
 
+def is_valid_dispatch_view(endpoint):
+    klass = endpoint.__dict__.get('view_class', None)
+    return klass and hasattr(klass, 'dispatch_request') \
+        and hasattr(endpoint, 'methods')
+
+
 class OutputView(MethodView):
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
@@ -237,9 +243,8 @@ class OutputView(MethodView):
             endpoint = current_app.view_functions[rule.endpoint]
             methods = dict()
             for verb in rule.methods.difference(ignore_verbs):
-                klass = endpoint.__dict__.get('view_class', None)
-                if klass and hasattr(klass, 'dispatch_request') and hasattr(endpoint, 'methods'):
-                    endpoint.methods = ['GET'] if not endpoint.methods else endpoint.methods
+                if is_valid_dispatch_view(endpoint):
+                    endpoint.methods = endpoint.methods or ['GET']
                     if verb in endpoint.methods:
                         methods[verb.lower()] = endpoint
                 elif hasattr(endpoint, 'methods') and verb in endpoint.methods:

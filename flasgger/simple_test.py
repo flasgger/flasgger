@@ -49,6 +49,7 @@ def recs():
 
 class Foo(View):
     methods = ['GET', 'POST']
+
     def dispatch_request(self):
         """
         A simple test API
@@ -77,5 +78,5 @@ class Foo(View):
         return jsonify({"result": "test" * size})
 
 
-app.add_url_rule('/dispatch_request', view_func=Foo.as_view('dispatch_request'))
+app.add_url_rule('/dispatch_request', view_func=Foo.as_view('foo'))
 app.run(debug=True)
