@@ -36,7 +36,7 @@ pip install flasgger
 ```python
 from flask import Flask, jsonify, request
 from flasgger import Swagger
-
+from flask.views import View
 app = Flask(__name__)
 
 Swagger(app)
