@@ -48,6 +48,7 @@ app.config['SWAGGER'] = {
 
 swagger = Swagger(app)  # you can pass config here Swagger(config={})
 
+
 @app.after_request
 def allow_origin(response):
     response.headers['Access-Control-Allow-Origin'] = 'http://example.com'
