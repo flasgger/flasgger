@@ -15,19 +15,11 @@ app = Flask(__name__)
 app.config['SWAGGER'] = {
     "swagger_version": "2.0",
     "title": "Flasgger",
-    # headers are optional, the following are default
-    # "headers": [
-    #     ('Access-Control-Allow-Origin', '*'),
-    #     ('Access-Control-Allow-Headers', "Authorization, Content-Type"),
-    #     ('Access-Control-Expose-Headers', "Authorization"),
-    #     ('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"),
-    #     ('Access-Control-Allow-Credentials', "true"),
-    #     ('Access-Control-Max-Age', 60 * 60 * 24 * 20),
-    # ],
-    # another optional settings
-    # "url_prefix": "swaggerdocs",
-    # "subdomain": "docs.mysite,com",
-    # specs are also optional if not set /spec is registered exposing all views
+    "headers": [
+        ('Access-Control-Allow-Origin', '*'),
+        ('Access-Control-Allow-Methods', "GET, POST, PUT, DELETE, OPTIONS"),
+        ('Access-Control-Allow-Credentials', "true"),
+    ],
     "specs": [
         {
             "version": "0.0.1",
@@ -55,6 +47,13 @@ app.config['SWAGGER'] = {
 }
 
 swagger = Swagger(app)  # you can pass config here Swagger(config={})
+
+@app.after_request
+def allow_origin(response):
+    response.headers['Access-Control-Allow-Origin'] = 'http://example.com'
+    response.headers['Access-Control-Allow-Credentials'] = 'true'
+
+    return response
 
 
 class UserAPI(MethodView):

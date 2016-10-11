@@ -329,7 +329,7 @@ app = Flask(__name__)
 
 app.config['SWAGGER'] = {
     "swagger_version": "2.0",
-    # headers are optional, the following are default
+    # headers are optional, and default to an empty array. If specified, they overwrites the headers with the same key in your flask app.
     # "headers": [
     #     ('Access-Control-Allow-Origin', '*'),
     #     ('Access-Control-Allow-Headers', "Authorization, Content-Type"),
@@ -338,7 +338,7 @@ app.config['SWAGGER'] = {
     #     ('Access-Control-Allow-Credentials', "true"),
     #     ('Access-Control-Max-Age', 60 * 60 * 24 * 20),
     # ],
-    # another optional settings
+    # other optional settings
     # "url_prefix": "swaggerdocs",
     # "subdomain": "docs.mysite,com",
     # specs are also optional if not set /spec is registered exposing all views
