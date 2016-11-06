@@ -286,7 +286,7 @@ def recommend(target_type, item_type):
                                 type: integer
                                 default: 435345
                               context:
-                                  $ref: '#/definitions/rec_query_context'
+                                  $ref: '#/definitions/should_be_v2_only_recommendation_post_rec_query_context'
     responses:
       200:
         description: A single recommendation item
