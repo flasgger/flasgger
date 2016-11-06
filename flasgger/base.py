@@ -234,7 +234,10 @@ class OutputView(MethodView):
 
     def get_def_models(self, model_filter=None):
         model_filter = model_filter or (lambda tag: True)
-        return [model for model, tag in self.definition_models if model_filter(tag)]
+        return [
+            model for model, tag in self.definition_models
+            if model_filter(tag)
+        ]
 
     def get(self):
         data = {
@@ -274,7 +277,8 @@ class OutputView(MethodView):
         ]
 
         for def_model in self.get_def_models(self.spec.get('model_filter')):
-            description, swag = _parse_definition_docstring(def_model, self.process_doc)
+            description, swag = _parse_definition_docstring(
+                def_model, self.process_doc)
             def_id = swag.keys()[0]
             def_swag = swag.get(def_id)
             if def_id and def_swag:
@@ -374,7 +378,7 @@ class Swagger(object):
 
     def __init__(self, app=None, config=None, sanitizer=None, template=None):
         self.endpoints = []
-        self.definition_models = []  # app tracks endpoints, but we have to track these
+        self.definition_models = []  # not in app, so track here
         self.sanitizer = sanitizer or BR_SANITIZER
         self.config = config or self.DEFAULT_CONFIG.copy()
         self.template = template
@@ -412,7 +416,8 @@ class Swagger(object):
                     view_args=dict(
                         app=app, config=self.config,
                         spec=spec, sanitizer=self.sanitizer,
-                        template=self.template, definition_models=self.definition_models
+                        template=self.template,
+                        definition_models=self.definition_models
                     )
                 )
             )
