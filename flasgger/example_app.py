@@ -31,7 +31,10 @@ app.config['SWAGGER'] = {
             # it is a callable to filter the views to extract
             "rule_filter": lambda rule: rule.endpoint.startswith(
                 'should_be_v1_only'
-            )
+            ),
+            # model_filter is optional
+            # it is a callable to filter the definition models to include
+            "model_filter": lambda tag: (tag == 'v1_model')
         },
         {
             "version": "0.0.2",
@@ -41,7 +44,8 @@ app.config['SWAGGER'] = {
             "route": '/v2/spec',
             "rule_filter": lambda rule: rule.endpoint.startswith(
                 'should_be_v2_only'
-            )
+            ),
+            "model_filter": lambda tag: tag.startswith('v2')
         }
     ]
 }
@@ -163,6 +167,56 @@ def fromfile_indocstring(username):
     return jsonify({'username': username})
 
 
+class Hack(object):
+    """
+    Hack Object
+    ---
+    Hack:
+      properties:
+        hack:
+          type: string
+          description: it's a hack
+        subitems:
+          type: array
+          items:
+            $ref: '#/definitions/SubItem'
+    """
+    def __init__(self, hack, subitems=None):
+        self.hack = str(hack)
+        self.subitems = list(subitems)
+
+    def view(self):
+        return {
+            'hack': self.hack,
+            'subitems': [subitem.view() for subitem in self.subitems]
+        }
+
+
+class SubItem(object):
+    """
+    SubItem Object
+    ---
+    SubItem:
+      properties:
+        bla:
+          type: string
+          description: Bla
+        blu:
+          type: integer
+          description: Blu
+    """
+    def __init__(self, bla, blu):
+        self.bla = str(bla)
+        self.blu = int(blu)
+
+    def view(self):
+        return dict(vars(self).iteritems())
+
+
+for model in [Hack, SubItem]:
+    swagger.register_definition(model, 'v2_model')
+
+
 @app.route("/v2/resource", endpoint="should_be_v2_only")
 def bla():
     """
@@ -174,35 +228,11 @@ def bla():
       200:
         description: Hacked some hacks
         schema:
-          id: Hack
-          properties:
-            hack:
-              type: string
-              description: it's a hack
-            subitems:
-              type: array
-              items:
-                schema:
-                  id: SubItem
-                  properties:
-                    bla:
-                      type: string
-                      description: Bla
-                    blu:
-                      type: integer
-                      description: Blu
-
+          $ref: '#/definitions/Hack'
     """
 
-    data = {
-        "hack": "string",
-        "subitems": [
-            {
-                "bla": "string",
-                "blu": 0
-            }
-        ]
-    }
+    data = Hack("string", [SubItem("string", 0)]).view()
+
     return jsonify(data)
 
 
