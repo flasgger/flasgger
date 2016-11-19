@@ -50,7 +50,7 @@ app.config['SWAGGER'] = {
     ]
 }
 
-swagger = Swagger(app)  # you can pass config here Swagger(config={})
+swag = Swagger(app)  # you can pass config here Swagger(config={})
 
 
 @app.after_request
@@ -167,54 +167,47 @@ def fromfile_indocstring(username):
     return jsonify({'username': username})
 
 
-class Hack(object):
+# DEFINITIONS FROM OBJECTS
+
+@swag.definition('Hack', tag='v2_model')
+def hack(subitems):
     """
     Hack Object
     ---
-    Hack:
-      properties:
-        hack:
-          type: string
-          description: it's a hack
-        subitems:
-          type: array
-          items:
-            $ref: '#/definitions/SubItem'
+    properties:
+      hack:
+        type: string
+        description: it's a hack
+      subitems:
+        type: array
+        items:
+          $ref: '#/definitions/SubItem'
     """
-    def __init__(self, hack, subitems=None):
-        self.hack = str(hack)
-        self.subitems = list(subitems)
-
-    def view(self):
-        return {
-            'hack': self.hack,
-            'subitems': [subitem.view() for subitem in self.subitems]
-        }
+    return {
+        'hack': "string",
+        'subitems': [subitem.dump() for subitem in subitems]
+    }
 
 
+@swag.definition('SubItem', tag='v2_model')
 class SubItem(object):
     """
     SubItem Object
     ---
-    SubItem:
-      properties:
-        bla:
-          type: string
-          description: Bla
-        blu:
-          type: integer
-          description: Blu
+    properties:
+      bla:
+        type: string
+        description: Bla
+      blu:
+        type: integer
+        description: Blu
     """
     def __init__(self, bla, blu):
         self.bla = str(bla)
         self.blu = int(blu)
 
-    def view(self):
+    def dump(self):
         return dict(vars(self).iteritems())
-
-
-for model in [Hack, SubItem]:
-    swagger.register_definition(model, 'v2_model')
 
 
 @app.route("/v2/resource", endpoint="should_be_v2_only")
@@ -230,10 +223,104 @@ def bla():
         schema:
           $ref: '#/definitions/Hack'
     """
+    subitems = [SubItem("string", 0)]
+    return jsonify(hack(subitems))
 
-    data = Hack("string", [SubItem("string", 0)]).view()
 
-    return jsonify(data)
+@swag.definition('rec_query_context', tag='v2_model')
+class RecQueryContext(object):
+    """
+    Recommendation Query Context
+    ---
+    required:
+      - origin
+    properties:
+      origin:
+        type: string
+        default: sugestao
+      last_event:
+        type: object
+        schema:
+          $ref: '#/definitions/rec_query_context_last_event'
+    """
+    def __init__(self, origin, last_event=None):
+        self.origin = origin
+        self.last_event = last_event
+
+    def dump(self):
+        data = {'origin': self.origin}
+        if self.last_event:
+            data.update({'last_event': self.last_event.dump()})
+        return data
+
+
+@swag.definition('rec_query_context_last_event', tag='v2_model')
+class RecQueryContextLastEvent(object):
+    """
+    RecQueryContext Last Event Definition
+    ---
+    properties:
+      event:
+        type: string
+        default: apply
+      data:
+        type: object
+        schema:
+          $ref: '#/definitions/rec_query_context_last_event_data'
+    """
+    def __init__(self, event=None, data=None):
+        self.event = event
+        self.data = data
+
+    def dump(self):
+        data = {}
+        if self.event:
+            data.update({'event': self.event})
+        if self.data:
+            data.update({'data': self.data.dump()})
+        return data
+
+
+@swag.definition('rec_query_context_last_event_data', tag='v2_model')
+class RecQueryContextLastEventData(object):
+    """
+    RecQueryContextLastEvent Data Object
+    ---
+    properties:
+      candidate_id:
+        type: integer
+        default: 123456
+      opening_id:
+        type: integer
+        default: 324345435
+      company_id:
+        type: integer
+        default: 324345435
+      datetime:
+        type: string
+        format: date-time
+        default: 2014-09-10T11:41:00.12343-03:00
+      recruiter_id:
+        type: integer
+        default: 435345
+      context:
+        $ref: '#/definitions/rec_query_context'
+    """
+    def __init__(self, candidate_id=None, opening_id=None, company_id=None,
+                 datetime=None, recruiter_id=None):
+        self.candidate_id = candidate_id
+        self.opening_id = opening_id
+        self.company_id = company_id
+        self.datetime = datetime
+        self.recruiter_id = recruiter_id
+
+    def dump(self):
+        data = {}
+        for var in ['candidate_id', 'opening_id', 'company_id', 'datetime',
+                    'recruiter_id']:
+            if var in vars(self):
+                data.update({var: vars(self)[var]})
+        return data
 
 
 @app.route("/v2/recommendation/<target_type>/<item_type>", methods=['POST'],
@@ -279,44 +366,7 @@ def recommend(target_type, item_type):
             context:
               type: object
               schema:
-                id: rec_query_context
-                required:
-                  - origin
-                properties:
-                  origin:
-                    type: string
-                    default: sugestao
-                  last_event:
-                    type: object
-                    schema:
-                      id: rec_query_context_last_event
-                      properties:
-                        event:
-                          type: string
-                          default: apply
-                        data:
-                          type: object
-                          schema:
-                            id: rec_query_context_last_event_data
-                            properties:
-                              candidate_id:
-                                type: integer
-                                default: 123456
-                              opening_id:
-                                type: integer
-                                default: 324345435
-                              company_id:
-                                type: integer
-                                default: 324345435
-                              datetime:
-                                type: string
-                                format: date-time
-                                default: 2014-09-10T11:41:00.12343-03:00
-                              recruiter_id:
-                                type: integer
-                                default: 435345
-                              context:
-                                  $ref: '#/definitions/should_be_v2_only_recommendation_post_rec_query_context'
+                $ref: '#/definitions/rec_query_context'
     responses:
       200:
         description: A single recommendation item
