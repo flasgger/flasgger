@@ -234,10 +234,10 @@ class OutputView(MethodView):
 
     def get_def_models(self, model_filter=None):
         model_filter = model_filter or (lambda tag: True)
-        return [
-            model for model, tag in self.definition_models
+        return {
+            name: model for model, name, tag in self.definition_models
             if model_filter(tag)
-        ]
+        }
 
     def get(self):
         data = {
@@ -276,15 +276,14 @@ class OutputView(MethodView):
             'deprecated', 'operationId', 'externalDocs'
         ]
 
-        for def_model in self.get_def_models(self.spec.get('model_filter')):
+        for name, def_model in self.get_def_models(
+                self.spec.get('model_filter')).items():
             description, swag = _parse_definition_docstring(
                 def_model, self.process_doc)
-            def_id = swag.keys()[0]
-            def_swag = swag.get(def_id)
-            if def_id and def_swag:
+            if name and swag:
                 if description:
-                    def_swag.update({'description': description})
-                definitions[def_id].update(def_swag)
+                    swag.update({'description': description})
+                definitions[name].update(swag)
 
         for rule in self.get_url_mappings(self.spec.get('rule_filter')):
             endpoint = current_app.view_functions[rule.endpoint]
@@ -390,8 +389,11 @@ class Swagger(object):
         self.register_views(app)
         self.add_headers(app)
 
-    def register_definition(self, definition_model, tag=None):
-        self.definition_models.append((definition_model, tag))
+    def definition(self, name, tag=None):
+        def wrapper(obj):
+            self.definition_models.append((obj, name, tag))
+            return obj
+        return wrapper
 
     def load_config(self, app):
         self.config.update(app.config.get('SWAGGER', {}))
