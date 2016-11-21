@@ -232,11 +232,12 @@ class OutputView(MethodView):
         ]
         return app_rules
 
-    def get_def_models(self, model_filter=None):
-        model_filter = model_filter or (lambda tag: True)
+    def get_def_models(self, definition_filter=None):
+        model_filter = definition_filter or (lambda tag: True)
         return {
-            name: model for model, name, tag in self.definition_models
-            if model_filter(tag)
+            definition.name: definition.obj
+            for definition in self.definition_models
+            if model_filter(definition)
         }
 
     def get(self):
@@ -277,7 +278,7 @@ class OutputView(MethodView):
         ]
 
         for name, def_model in self.get_def_models(
-                self.spec.get('model_filter')).items():
+                self.spec.get('definition_filter')).items():
             description, swag = _parse_definition_docstring(
                 def_model, self.process_doc)
             if name and swag:
@@ -355,6 +356,13 @@ class OutputView(MethodView):
         return jsonify(data)
 
 
+class SwaggerDefinition(object):
+    def __init__(self, name, obj, tags=None):
+        self.name = name
+        self.obj = obj
+        self.tags = tags or []
+
+
 class Swagger(object):
 
     DEFAULT_CONFIG = {
@@ -389,9 +397,10 @@ class Swagger(object):
         self.register_views(app)
         self.add_headers(app)
 
-    def definition(self, name, tag=None):
+    def definition(self, name, tags=None):
         def wrapper(obj):
-            self.definition_models.append((obj, name, tag))
+            self.definition_models.append(SwaggerDefinition(name, obj,
+                                                            tags=tags))
             return obj
         return wrapper
 
