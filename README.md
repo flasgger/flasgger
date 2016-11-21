@@ -435,10 +435,12 @@ app.config['SWAGGER'] = {
             #    'should_be_v1_only'
             # ),
             
-            # model_filter is optional
+            # definition_filter is optional
             # it is a callable to filter the definition models to include
             
-            # "model_filter": lambda tag: (tag == 'v1_model')
+            # "definition_filter": lambda definition: (
+            #     'v1_model' in definition.tags
+            # )
         }
     ]
 }
