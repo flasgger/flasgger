@@ -32,9 +32,10 @@ app.config['SWAGGER'] = {
             "rule_filter": lambda rule: rule.endpoint.startswith(
                 'should_be_v1_only'
             ),
-            # model_filter is optional
+            # definition_filter is optional
             # it is a callable to filter the definition models to include
-            "model_filter": lambda tag: (tag == 'v1_model')
+            "definition_filter": lambda definition: (
+                'v1_model' in definition.tags)
         },
         {
             "version": "0.0.2",
@@ -45,7 +46,8 @@ app.config['SWAGGER'] = {
             "rule_filter": lambda rule: rule.endpoint.startswith(
                 'should_be_v2_only'
             ),
-            "model_filter": lambda tag: tag.startswith('v2')
+            "definition_filter": lambda definition: (
+                'v2_model' in definition.tags)
         }
     ]
 }
@@ -169,7 +171,7 @@ def fromfile_indocstring(username):
 
 # DEFINITIONS FROM OBJECTS
 
-@swag.definition('Hack', tag='v2_model')
+@swag.definition('Hack', tags=['v2_model'])
 def hack(subitems):
     """
     Hack Object
@@ -189,7 +191,7 @@ def hack(subitems):
     }
 
 
-@swag.definition('SubItem', tag='v2_model')
+@swag.definition('SubItem', tags=['v2_model'])
 class SubItem(object):
     """
     SubItem Object
@@ -227,7 +229,7 @@ def bla():
     return jsonify(hack(subitems))
 
 
-@swag.definition('rec_query_context', tag='v2_model')
+@swag.definition('rec_query_context', tags=['v2_model'])
 class RecQueryContext(object):
     """
     Recommendation Query Context
@@ -254,7 +256,7 @@ class RecQueryContext(object):
         return data
 
 
-@swag.definition('rec_query_context_last_event', tag='v2_model')
+@swag.definition('rec_query_context_last_event', tags=['v2_model'])
 class RecQueryContextLastEvent(object):
     """
     RecQueryContext Last Event Definition
@@ -281,7 +283,7 @@ class RecQueryContextLastEvent(object):
         return data
 
 
-@swag.definition('rec_query_context_last_event_data', tag='v2_model')
+@swag.definition('rec_query_context_last_event_data', tags=['v2_model'])
 class RecQueryContextLastEventData(object):
     """
     RecQueryContextLastEvent Data Object
