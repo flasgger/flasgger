@@ -179,10 +179,11 @@ class SpecsView(MethodView):
         )
 
 
-def is_valid_dispatch_view(endpoint):
+def has_valid_dispatch_view_docs(endpoint):
     klass = endpoint.__dict__.get('view_class', None)
     return klass and hasattr(klass, 'dispatch_request') \
-        and hasattr(endpoint, 'methods')
+        and hasattr(endpoint, 'methods') \
+        and getattr(klass, 'dispatch_request').__doc__
 
 
 class OutputView(MethodView):
@@ -243,7 +244,7 @@ class OutputView(MethodView):
             endpoint = current_app.view_functions[rule.endpoint]
             methods = dict()
             for verb in rule.methods.difference(ignore_verbs):
-                if is_valid_dispatch_view(endpoint):
+                if has_valid_dispatch_view_docs(endpoint):
                     endpoint.methods = endpoint.methods or ['GET']
                     if verb in endpoint.methods:
                         methods[verb.lower()] = endpoint
@@ -340,6 +341,10 @@ class Swagger(object):
         self.load_config(app)
         self.register_views(app)
         self.add_headers(app)
+        @app.route("{}/specs_url.json".format(self.config.get('static_url_path')))
+        def specs_url_json():
+            return jsonify(self.config.get('specs_route', '/specs'))
+        app.add_url_rule("{}/specs_url.json".format(self.config.get('static_url_path')), specs_url_json)
 
     def load_config(self, app):
         self.config.update(app.config.get('SWAGGER', {}))
