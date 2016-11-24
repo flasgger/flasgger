@@ -28,9 +28,8 @@
   <!-- <script src='lang/en.js' type='text/javascript'></script> -->
 
   <script type="text/javascript">
-    var specs_url = "/specs";
     var first_url = "/spec";
-    function load_specs(){
+    function load_specs(specs_url){
         $.getJSON( specs_url, function( data ) {
           // GAMBI
           var items = ["<option value='" + data['specs'][0].url +"'> versions </option>"];
@@ -50,6 +49,12 @@
         });
     }
 
+    function find_specs(){
+       $.getJSON("specs_url.json", function (data) {
+           load_specs(data);
+       });
+    }
+
     function redirect_to(url){
       window.location.href = '/apidocs/index.html?url=' + url;
     }
@@ -60,7 +65,7 @@
 
     $(function () {
 
-      load_specs()
+      find_specs();
 
       var url = window.location.search.match(/url=([^&]+)/);
       if (url && url.length > 1) {

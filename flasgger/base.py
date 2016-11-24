@@ -341,6 +341,10 @@ class Swagger(object):
         self.load_config(app)
         self.register_views(app)
         self.add_headers(app)
+        @app.route("{}/specs_url.json".format(self.config.get('static_url_path')))
+        def specs_url_json():
+            return jsonify(self.config.get('specs_route', '/specs'))
+        app.add_url_rule("{}/specs_url.json".format(self.config.get('static_url_path')), specs_url_json)
 
     def load_config(self, app):
         self.config.update(app.config.get('SWAGGER', {}))
