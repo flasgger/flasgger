@@ -183,10 +183,14 @@ def is_valid_dispatch_view(endpoint):
     klass = endpoint.__dict__.get('view_class', None)
     return klass and hasattr(klass, 'dispatch_request') \
         and hasattr(endpoint, 'methods')
-    
+
+
 def is_valid_method_view(endpoint):
     klass = endpoint.__dict__.get('view_class', None)
-    return issubclass(klass, MethodView)
+    try:
+        return issubclass(klass, MethodView)
+    except TypeError:
+        return False
 
 
 class OutputView(MethodView):
@@ -246,9 +250,9 @@ class OutputView(MethodView):
         for rule in self.get_url_mappings(self.spec.get('rule_filter')):
             endpoint = current_app.view_functions[rule.endpoint]
             methods = dict()
-            is_method_view = is_valid_method_view(endpoint)
+            is_mv = is_valid_method_view(endpoint)
             for verb in rule.methods.difference(ignore_verbs):
-                if not is_method_view and is_valid_dispatch_view(endpoint):
+                if not is_mv and is_valid_dispatch_view(endpoint):
                     endpoint.methods = endpoint.methods or ['GET']
                     if verb in endpoint.methods:
                         methods[verb.lower()] = endpoint
@@ -260,7 +264,7 @@ class OutputView(MethodView):
             operations = dict()
             for verb, method in methods.items():
                 klass = method.__dict__.get('view_class', None)
-                if not is_method_view and klass and hasattr(klass, 'dispatch_request'):
+                if not is_mv and klass and hasattr(klass, 'dispatch_request'):
                     method = klass.__dict__.get('dispatch_request')
                 summary, description, swag = _parse_docstring(
                     method, self.process_doc, endpoint=rule.endpoint, verb=verb
