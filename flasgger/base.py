@@ -257,6 +257,8 @@ class OutputView(MethodView):
                 klass = method.__dict__.get('view_class', None)
                 if klass and hasattr(klass, 'dispatch_request'):
                     method = klass.__dict__.get('dispatch_request')
+                if method is None: # for MethodView Inherited Classes for request method specific swagger doc
+                    method = klass.__dict__.get(verb)
                 summary, description, swag = _parse_docstring(
                     method, self.process_doc, endpoint=rule.endpoint, verb=verb
                 )
