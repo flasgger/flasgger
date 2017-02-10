@@ -29,7 +29,7 @@
 
   <script type="text/javascript">
     var specs_url = window.location.split("/apidocs/index.html")[0]+"/spec"
-    var first_url = "/spec";
+    console.log('specs_url: '+specs_url);
     function load_specs(){
         $.getJSON( specs_url, function( data ) {
           // GAMBI
@@ -67,6 +67,7 @@
         url = decodeURIComponent(url[1]);
       } else {
           url = window.location.split("/apidocs/index.html")[0]+"/spec"
+          console.log('url: '+url);
       }
 
       // Pre load translate...
