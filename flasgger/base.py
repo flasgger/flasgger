@@ -93,6 +93,35 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
     return first_line, other_lines, swag
 
 
+def _parse_definition_docstring(obj, process_doc):
+    doc_lines, swag = None, None
+
+    full_doc = None
+    swag_path = getattr(obj, 'swag_path', None)
+    swag_type = getattr(obj, 'swag_type', 'yml')
+
+    if swag_path is not None:
+        full_doc = load_from_file(swag_path, swag_type)
+    else:
+        full_doc = inspect.getdoc(obj)
+
+    if full_doc:
+
+        if full_doc.startswith('file:'):
+            full_doc = load_from_file(*get_path_from_doc(full_doc))
+
+        yaml_sep = full_doc.find('---')
+        if yaml_sep != -1:
+            doc_lines = process_doc(
+                full_doc[:yaml_sep - 1]
+            )
+            swag = yaml.load(full_doc[yaml_sep:])
+        else:
+            doc_lines = process_doc(full_doc)
+
+    return doc_lines, swag
+
+
 def _extract_definitions(alist, level=None, endpoint=None, verb=None):
     """
     Since we couldn't be bothered to register models elsewhere
@@ -193,6 +222,7 @@ class OutputView(MethodView):
         self.spec = view_args.get('spec')
         self.process_doc = view_args.get('sanitizer', BR_SANITIZER)
         self.template = view_args.get('template')
+        self.definition_models = view_args.get('definition_models')
         super(OutputView, self).__init__(*args, **kwargs)
 
     def get_url_mappings(self, rule_filter=None):
@@ -202,6 +232,14 @@ class OutputView(MethodView):
             if rule_filter(rule)
         ]
         return app_rules
+
+    def get_def_models(self, definition_filter=None):
+        model_filter = definition_filter or (lambda tag: True)
+        return {
+            definition.name: definition.obj
+            for definition in self.definition_models
+            if model_filter(definition)
+        }
 
     def get(self):
         data = {
@@ -239,6 +277,15 @@ class OutputView(MethodView):
             'tags', 'consumes', 'produces', 'schemes', 'security',
             'deprecated', 'operationId', 'externalDocs'
         ]
+
+        for name, def_model in self.get_def_models(
+                self.spec.get('definition_filter')).items():
+            description, swag = _parse_definition_docstring(
+                def_model, self.process_doc)
+            if name and swag:
+                if description:
+                    swag.update({'description': description})
+                definitions[name].update(swag)
 
         for rule in self.get_url_mappings(self.spec.get('rule_filter')):
             endpoint = current_app.view_functions[rule.endpoint]
@@ -312,6 +359,13 @@ class OutputView(MethodView):
         return jsonify(data)
 
 
+class SwaggerDefinition(object):
+    def __init__(self, name, obj, tags=None):
+        self.name = name
+        self.obj = obj
+        self.tags = tags or []
+
+
 class Swagger(object):
 
     DEFAULT_CONFIG = {
@@ -323,7 +377,8 @@ class Swagger(object):
                 "title": "A swagger API",
                 "endpoint": 'spec',
                 "route": '/spec',
-                "rule_filter": lambda rule: True  # all in
+                "rule_filter": lambda rule: True,  # all in
+                "model_filter": lambda tag: True,  # all in
             }
         ],
         "static_url_path": "/apidocs",
@@ -333,6 +388,7 @@ class Swagger(object):
 
     def __init__(self, app=None, config=None, sanitizer=None, template=None):
         self.endpoints = []
+        self.definition_models = []  # not in app, so track here
         self.sanitizer = sanitizer or BR_SANITIZER
         self.config = config or self.DEFAULT_CONFIG.copy()
         self.template = template
@@ -343,6 +399,13 @@ class Swagger(object):
         self.load_config(app)
         self.register_views(app)
         self.add_headers(app)
+
+    def definition(self, name, tags=None):
+        def wrapper(obj):
+            self.definition_models.append(SwaggerDefinition(name, obj,
+                                                            tags=tags))
+            return obj
+        return wrapper
 
     def load_config(self, app):
         self.config.update(app.config.get('SWAGGER', {}))
@@ -367,7 +430,8 @@ class Swagger(object):
                     view_args=dict(
                         app=app, config=self.config,
                         spec=spec, sanitizer=self.sanitizer,
-                        template=self.template
+                        template=self.template,
+                        definition_models=self.definition_models
                     )
                 )
             )
