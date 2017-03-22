@@ -384,7 +384,7 @@ class UserAPI(MethodView):
             schema:
                 type: array
                 items:
-                    $ref: '#/definitions/User'
+                    $ref: '#/definitions/should_be_v1_only_users_post_User'
         """
         data = {
             "users": [
@@ -429,7 +429,7 @@ class UserAPI(MethodView):
             schema:
                 type: array
                 items:
-                    $ref: '#/definitions/User'
+                    $ref: '#/definitions/should_be_v1_only_users_post_User'
         """
         return jsonify({"newuser": request.json, "team_id": team_id})
 
