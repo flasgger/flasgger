@@ -179,10 +179,11 @@ class SpecsView(MethodView):
         )
 
 
-def is_valid_dispatch_view(endpoint):
+def has_valid_dispatch_view_docs(endpoint):
     klass = endpoint.__dict__.get('view_class', None)
     return klass and hasattr(klass, 'dispatch_request') \
-        and hasattr(endpoint, 'methods')
+        and hasattr(endpoint, 'methods') \
+        and getattr(klass, 'dispatch_request').__doc__
 
 
 class OutputView(MethodView):
@@ -243,7 +244,7 @@ class OutputView(MethodView):
             endpoint = current_app.view_functions[rule.endpoint]
             methods = dict()
             for verb in rule.methods.difference(ignore_verbs):
-                if is_valid_dispatch_view(endpoint):
+                if has_valid_dispatch_view_docs(endpoint):
                     endpoint.methods = endpoint.methods or ['GET']
                     if verb in endpoint.methods:
                         methods[verb.lower()] = endpoint
