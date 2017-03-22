@@ -16,9 +16,9 @@ from flask import jsonify, Blueprint, url_for, current_app, Markup, request
 from flask.views import MethodView
 from mistune import markdown
 
-NO_SANITIZER = lambda text: text
-BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text
-MK_SANITIZER = lambda text: Markup(markdown(text)) if text else text
+NO_SANITIZER = lambda text: text  # noqa
+BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
+MK_SANITIZER = lambda text: Markup(markdown(text)) if text else text  # noqa
 
 
 def get_path_from_doc(full_doc):

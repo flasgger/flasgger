@@ -17,4 +17,5 @@ def index():
 
     return jsonify(data)
 
+
 app.run(debug=True)
