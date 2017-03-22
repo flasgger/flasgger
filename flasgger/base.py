@@ -149,6 +149,8 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
     defs = list()
     if alist is not None:
         for item in alist:
+            if not getattr(item, 'get'):
+                raise RuntimeError('definitions must be a list of dicts')
             schema = item.get("schema")
             if schema is not None:
                 schema_id = schema.get("id")
@@ -278,7 +280,9 @@ class OutputView(MethodView):
 
         paths = data['paths']
         definitions = data['definitions']
-        ignore_verbs = set(("HEAD", "OPTIONS"))
+        ignore_verbs = set(
+            self.config.get('ignore_verbs', ("HEAD", "OPTIONS"))
+        )
 
         # technically only responses is non-optional
         optional_fields = [
