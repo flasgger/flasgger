@@ -1,11 +1,12 @@
 # coding: utf-8
 
+import yaml
 import os
 import jsonschema
 from jsonschema import ValidationError  # noqa
 from flask import request
 from functools import wraps
-from .base import _extract_definitions, yaml, load_from_file
+from .base import _extract_definitions, load_from_file
 
 
 def swag_from(filepath, filetype=None, endpoint=None, methods=None):
