@@ -215,6 +215,14 @@ def has_valid_dispatch_view_docs(endpoint):
         and getattr(klass, 'dispatch_request').__doc__
 
 
+def is_valid_method_view(endpoint):
+    klass = endpoint.__dict__.get('view_class', None)
+    try:
+        return issubclass(klass, MethodView)
+    except TypeError:
+        return False
+
+
 class OutputView(MethodView):
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
@@ -290,8 +298,9 @@ class OutputView(MethodView):
         for rule in self.get_url_mappings(self.spec.get('rule_filter')):
             endpoint = current_app.view_functions[rule.endpoint]
             methods = dict()
+            is_mv = is_valid_method_view(endpoint)
             for verb in rule.methods.difference(ignore_verbs):
-                if has_valid_dispatch_view_docs(endpoint):
+                if not is_mv and has_valid_dispatch_view_docs(endpoint):
                     endpoint.methods = endpoint.methods or ['GET']
                     if verb in endpoint.methods:
                         methods[verb.lower()] = endpoint
@@ -303,7 +312,7 @@ class OutputView(MethodView):
             operations = dict()
             for verb, method in methods.items():
                 klass = method.__dict__.get('view_class', None)
-                if klass and hasattr(klass, 'verb'):
+                if not is_mv and klass and hasattr(klass, 'verb'):
                     method = klass.__dict__.get('verb')
                 elif klass and hasattr(klass, 'dispatch_request'):
                     method = klass.__dict__.get('dispatch_request')
