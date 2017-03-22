@@ -256,7 +256,9 @@ class OutputView(MethodView):
             operations = dict()
             for verb, method in methods.items():
                 klass = method.__dict__.get('view_class', None)
-                if klass and hasattr(klass, 'dispatch_request'):
+                if klass and hasattr(klass, 'verb'):
+                    method = klass.__dict__.get('verb')
+                elif klass and hasattr(klass, 'dispatch_request'):
                     method = klass.__dict__.get('dispatch_request')
                 summary, description, swag = _parse_docstring(
                     method, self.process_doc, endpoint=rule.endpoint, verb=verb
