@@ -5,8 +5,6 @@ The Swagger UI is embedded and docs by default available in **/apidocs/index.htm
 
 [![Code Health](https://landscape.io/github/rochacbruno/flasgger/master/landscape.svg?style=flat)](https://landscape.io/github/rochacbruno/flasgger/master)
 
-[![wercker status](https://app.wercker.com/status/d86586341ba8b313162b36f84b192a9c/m "wercker status")](https://app.wercker.com/project/bykey/d86586341ba8b313162b36f84b192a9c)
-
 <a target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=rochacbruno%40gmail%2ecom&amp;lc=BR&amp;item_name=Flasgger&amp;no_note=0&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHostedGuest"><img alt='Donate with Paypal' src='http://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif' /></a>
 
 flasgger provides an extension (Swagger) that inspects the Flask app for endpoints that contain YAML docstrings with Swagger 2.0 [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) objects.
@@ -26,12 +24,75 @@ http://flasgger-rochacbruno.rhcloud.com/
 mkvirtualenv test_api
 ```
 
-## install dependencies
+## install
 ```
-pip install flask
 pip install flasgger
 ```
-## create a file called simple_test.py
+
+or (dev version)
+
+```
+pip install https://github.com/rochacbruno/flasgger/tarball/master 
+```
+
+Create a file called fro example `colors.py`
+
+```python
+from flask import Flask, jsonify
+from flasgger import Swagger
+
+app = Flask(__name__)
+Swagger(app)
+
+@app.route('/colors/<pallete>/')
+def colors(pallete):
+    """Example endpoint return a list of colors by group
+    ---
+    parameters:
+      - name: pallete
+        in: path
+        type: string
+        enum: ['all', 'rgb', 'cmyk']
+    responses:
+      200:
+        description: A list of colors (may be filtered by pallete)
+        schema:
+          id: colors
+          properties:
+            colors:
+              type: array
+              items:
+                type: string
+    """
+    all_colors = {
+        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'rgb': ['red', 'green', 'blue']
+    }
+    return jsonify(
+      colors=all_colors if pallete == 'all' else all_colors.get(pallete)
+    )
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
+```
+
+Now run:  
+
+```
+python colors.py
+```
+
+Access in your browser: [http://localhost:5000/apidocs/index.html](http://localhost:5000/apidocs/index.html)
+
+You should get:
+
+![colors](docs/colors.png)
+
+
+
+
+## Definitions
 
 ```python
 from flask import Flask, jsonify, request
