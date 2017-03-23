@@ -22,6 +22,14 @@ http://flasgger-rochacbruno.rhcloud.com/
 
 ```
 mkvirtualenv test_api
+
+# or
+
+virtualenv test_api
+
+#or
+
+pyenv test_api
 ```
 
 ## install
@@ -35,7 +43,7 @@ or (dev version)
 pip install https://github.com/rochacbruno/flasgger/tarball/master 
 ```
 
-Create a file called fro example `colors.py`
+Create a file called for example `colors.py`
 
 ```python
 from flask import Flask, jsonify
