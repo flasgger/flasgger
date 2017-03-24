@@ -87,7 +87,7 @@ class UserAPI(MethodView):
             schema:
                 type: array
                 items:
-                    $ref: '#/definitions/should_be_v1_only_post_post_User'
+                    $ref: '#/definitions/User'
         """
         data = {
             "users": [
@@ -129,7 +129,7 @@ class UserAPI(MethodView):
             schema:
                 type: array
                 items:
-                    $ref: '#/definitions/should_be_v1_only_post_post_User'
+                    $ref: '#/definitions/User'
         """
         return jsonify(
             {"data": request.json, "status": "New user created"}
@@ -154,7 +154,7 @@ app.add_url_rule(
 
 
 @app.route('/v1/decorated/<username>', endpoint='should_be_v1_only_username')
-@swag_from('username_definitions.yml')
+@swag_from('username_specs.yml')
 def fromfile_decorated(username):
     return jsonify({'username': username})
 
@@ -165,7 +165,7 @@ def fromfile_decorated(username):
 @app.route('/v1/fileindoc/<username>', endpoint='should_be_v1_only_username_1')
 def fromfile_indocstring(username):
     """
-    file: username_definitions.yml
+    file: username_specs.yml
     """
     return jsonify({'username': username})
 

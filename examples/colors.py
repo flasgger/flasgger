@@ -14,6 +14,8 @@ Swagger(app)
 def colors(palette):
     """Example endpoint return a list of colors by palette
     ---
+    tags:
+      - colors
     parameters:
       - name: palette
         in: path
@@ -22,21 +24,37 @@ def colors(palette):
         required: true
         default: all
         description: Which palette to filter?
+    operationId: get_colors
+    consumes:
+      - application/json
+    produces:
+      - application/json
+    security:
+      colors_auth:
+        - 'write:colors'
+        - 'read:colors'
+    schemes: ['http', 'https']
+    deprecated: false
+    externalDocs:
+      description: Project repository
+      url: http://github.com/rochacbruno/flasgger
     definitions:
-      - Palette:
-          type: object
-          properties:
-            palette_name:
-              type: array
-              items:
-                $ref: '#/definitions/Color'
-      - Color:
-          type: string
+      Palette:
+        type: object
+        properties:
+          palette_name:
+            type: array
+            items:
+              $ref: '#/definitions/Color'
+      Color:
+        type: string
     responses:
       200:
         description: A list of colors (may be filtered by palette)
         schema:
           $ref: '#/definitions/Palette'
+        examples:
+          rgb: ['red', 'green', 'blue']
     """
     all_colors = {
         'cmyk': ['cian', 'magenta', 'yellow', 'black'],

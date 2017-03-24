@@ -8,7 +8,7 @@ parameters:
     in: body
     required: true
     schema:
-      id: user
+      id: User
       required:
         - username
         - age
@@ -32,4 +32,4 @@ responses:
   200:
     description: A single user item
     schema:
-      $ref: '#/definitions/index_post_user'
+      $ref: '#/definitions/User'

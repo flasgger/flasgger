@@ -7,7 +7,7 @@ The Swagger UI is embedded and docs by default available in **/apidocs/index.htm
 
 <a target="_blank" href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&amp;business=rochacbruno%40gmail%2ecom&amp;lc=BR&amp;item_name=Flasgger&amp;no_note=0&amp;currency_code=USD&amp;bn=PP%2dDonationsBF%3abtn_donate_SM%2egif%3aNonHostedGuest"><img alt='Donate with Paypal' src='http://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif' /></a>
 
-flasgger provides an extension (Swagger) that inspects the Flask app for endpoints that contain YAML docstrings with Swagger 2.0 [Operation](https://github.com/swagger-api/swagger-spec/blob/master/versions/2.0.md#operation-object) objects.
+flasgger provides an extension (Swagger) that inspects the Flask app for endpoints that contain YAML docstrings with Swagger 2.0 [Operation](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operation-object) objects.
 
 # DEMO app
 
@@ -40,7 +40,7 @@ pip install flasgger
 or (dev version)
 
 ```
-pip install https://github.com/rochacbruno/flasgger/tarball/master 
+pip install https://github.com/rochacbruno/flasgger/tarball/master
 ```
 
 Create a file called for example `colors.py`
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     app.run(debug=True)
 ```
 
-Now run:  
+Now run:
 
 ```
 python colors.py
@@ -263,7 +263,7 @@ def get_user_response(username):
         default: some_username
     """
     return {'username': username}
-    
+
 
 @app.route('/api/<string:username>')
 def user_api(username):
@@ -297,8 +297,8 @@ The api docs and playground for the above app will be available in [http://local
 
 ## Inline Definitions
 
-Route-specific definitions can also be defined inline by adding the 'id' 
-attribute.  To avoid conflicts these definitions will be namespaced with the 
+Route-specific definitions can also be defined inline by adding the 'id'
+attribute.  To avoid conflicts these definitions will be namespaced with the
 endpoint and verb.
 
 ```python
@@ -503,10 +503,10 @@ app.config['SWAGGER'] = {
             # "rule_filter": lambda rule: rule.endpoint.startswith(
             #    'should_be_v1_only'
             # ),
-            
+
             # definition_filter is optional
             # it is a callable to filter the definition models to include
-            
+
             # "definition_filter": lambda definition: (
             #     'v1_model' in definition.tags
             # )

@@ -12,7 +12,8 @@ from jsonschema import ValidationError  # noqa
 from .base import _extract_definitions, load_from_file
 
 
-def swag_from(filepath, filetype=None, endpoint=None, methods=None):
+def swag_from(filepath, filetype=None, endpoint=None, methods=None,
+              validation=False, schema_id=None, data=None, definition=None):
     """
     filepath is complete path to open the file
     filetype is yml, json, py
@@ -56,12 +57,20 @@ def swag_from(filepath, filetype=None, endpoint=None, methods=None):
 
         @wraps(function)
         def wrapper(*args, **kwargs):
+            if validation is True:
+                validate(
+                    data,
+                    schema_id or definition,
+                    filepath=function.swag_path,
+                    root=function.root_path
+                )
             return function(*args, **kwargs)
         return wrapper
     return decorator
 
 
-def validate(data, schema_id, filepath, root=None):
+def validate(data=None, schema_id=None, filepath=None, root=None,
+             definition=None):
     """
     This method is available to use YAML swagger definitions file
     to validate data against its jsonschema.
@@ -69,13 +78,28 @@ def validate(data, schema_id, filepath, root=None):
     validate({"item": 1}, 'item_schema', 'defs.yml', root=__file__)
     If root is not defined it will try to use absolute import so path
     should start with /
+
+    definition == schema_id (kept for backwards compatibility)
     """
+    schema_id = schema_id or definition
+
+    # for backwards compatibility with function signature
+    if filepath is None:
+        abort(Response('Filepath is needed to validate', status=500))
+
+    if data is None:
+        data = request.json  # defaults
+    elif callable(data):
+        # data=lambda: request.json
+        data = data()
+
+    if not data:
+        abort(Response('No data to validate', status=500))
 
     if not root:
         try:
             frame_info = inspect.stack()[1]
             root = os.path.dirname(os.path.abspath(frame_info[1]))
-            print(root)
         except Exception:
             root = None
     else:
@@ -83,8 +107,6 @@ def validate(data, schema_id, filepath, root=None):
 
     endpoint = request.endpoint.lower().replace('.', '_')
     verb = request.method.lower()
-
-    full_schema = "{}_{}_{}".format(endpoint, verb, schema_id)
 
     if not filepath.startswith('/'):
         final_filepath = os.path.join(root, filepath)
@@ -103,8 +125,21 @@ def validate(data, schema_id, filepath, root=None):
     raw_definitions = _extract_definitions(
         params, endpoint=endpoint, verb=verb)
 
+    if schema_id is None:
+        for param in params:
+            if param.get('in') == 'body':
+                schema_id = param.get('schema', {}).get('$ref')
+                if schema_id:
+                    schema_id = schema_id.split('/')[-1]
+                    break  # consider only the first
+
+    if schema_id is None:
+        # if it is still none use first raw_definition extracted
+        if raw_definitions:
+            schema_id = raw_definitions[0].get('id')
+
     for defi in raw_definitions:
-        if defi['id'] in [schema_id, full_schema]:
+        if defi['id'].lower() == schema_id.lower():
             main_def = defi.copy()
         else:
             definitions[defi['id']] = defi

@@ -12,8 +12,8 @@ import re
 from collections import defaultdict
 
 import yaml
-from flask import (Blueprint, Markup, current_app, jsonify, render_template,
-                   request, url_for)
+from flask import (Blueprint, Markup, current_app, jsonify, redirect,
+                   render_template, request, url_for)
 from flask.views import MethodView
 from mistune import markdown
 
@@ -115,7 +115,14 @@ def _parse_definition_docstring(obj, process_doc):
     if full_doc:
 
         if full_doc.startswith('file:'):
-            full_doc = load_from_file(*get_path_from_doc(full_doc))
+            if not hasattr(obj, 'root_path'):
+                obj.root_path = os.path.dirname(os.path.abspath(
+                        obj.__globals__['__file__']
+                    )
+                )
+            swag_path, swag_type = get_path_from_doc(full_doc)
+            doc_filepath = os.path.join(obj.root_path, swag_path)
+            full_doc = load_from_file(doc_filepath, swag_type)
 
         yaml_sep = full_doc.find('---')
         if yaml_sep != -1:
@@ -163,9 +170,11 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
                 schema_id = schema.get("id")
                 if schema_id is not None:
                     # add endpoint_verb to schema id to avoid conflicts
-                    schema['id'] = schema_id = "{}_{}_{}".format(endpoint,
-                                                                 verb,
-                                                                 schema_id)
+                    # schema['id'] = schema_id = "{}_{}_{}".format(endpoint,
+                    #                                              verb,
+                    #                                              schema_id)
+                    # ^ removed for compliance with swagger specs
+
                     defs.append(schema)
                     ref = {"$ref": "#/definitions/{}".format(schema_id)}
                     # only add the reference as a schema if we are in a
@@ -271,15 +280,15 @@ class APISpecsView(MethodView):
                 'swagger_version', "2.0"
             ),
             "info": self.config.get('info') or {
-                "version": self.spec.get('version', "0.0.0"),
+                "version": self.spec.get('version', "0.0.1"),
                 "title": self.spec.get('title', "A swagger API"),
                 "description": self.spec.get('description',
                                              "API description"),
                 "termsOfService": self.spec.get('termsOfService',
                                                 "Terms of service"),
             },
-            "paths": defaultdict(dict),
-            "definitions": defaultdict(dict)
+            "paths": self.config.get('paths') or defaultdict(dict),
+            "definitions": self.config.get('definitions') or defaultdict(dict)
         }
 
         if self.config.get('host'):
@@ -341,7 +350,7 @@ class APISpecsView(MethodView):
                 summary, description, swag = _parse_docstring(
                     method, self.process_doc, endpoint=rule.endpoint, verb=verb
                 )
-                # we only add endpoints with swagger data in the docstrings
+                # we only add swagged endpoints
                 if swag is not None:
                     definitions.update(swag.get('definitions', {}))
                     defs = []  # swag.get('definitions', [])
@@ -483,6 +492,12 @@ class Swagger(object):
                 'spidocs',
                 view_args=dict(config=self.config)
             )
+        )
+
+        # backwards compatibility with old url style
+        blueprint.add_url_rule(
+            '/apidocs/index.html',
+            view_func=lambda: redirect(url_for('flasgger.apidocs'))
         )
 
         app.register_blueprint(blueprint)
