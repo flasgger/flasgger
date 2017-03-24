@@ -1,11 +1,13 @@
 # coding: utf-8
 
-import yaml
 import os
-import jsonschema
-from jsonschema import ValidationError  # noqa
-from flask import request
 from functools import wraps
+
+import jsonschema
+import yaml
+from flask import request
+from jsonschema import ValidationError  # noqa
+
 from .base import _extract_definitions, load_from_file
 
 
@@ -21,9 +23,12 @@ def swag_from(filepath, filetype=None, endpoint=None, methods=None):
     def resolve_path(function, filepath):
         if not filepath.startswith('/'):
             if not hasattr(function, 'root_path'):
-                function.root_path = os.path.dirname(
-                    function.__globals__['__file__'])
-            return os.path.join(function.root_path, filepath)
+                function.root_path = os.path.dirname(os.path.abspath(
+                        function.__globals__['__file__']
+                    )
+                )
+            res = os.path.join(function.root_path, filepath)
+            return res
         return filepath
 
     def decorator(function):

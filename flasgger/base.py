@@ -7,12 +7,13 @@ we add the endpoint to swagger specification output
 
 """
 import inspect
-import yaml
-import re
 import os
-
+import re
 from collections import defaultdict
-from flask import jsonify, Blueprint, url_for, current_app, Markup, request
+
+import yaml
+from flask import (Blueprint, Markup, current_app, jsonify, render_template,
+                   request, url_for)
 from flask.views import MethodView
 from mistune import markdown
 
@@ -37,7 +38,6 @@ def json_to_yaml(content):
 def load_from_file(swag_path, swag_type='yml'):
     if swag_type not in ('yaml', 'yml'):
         raise AttributeError("Currently only yaml or yml supported")
-
     try:
         return open(swag_path).read()
     except IOError:
@@ -74,7 +74,14 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
     if full_doc:
 
         if full_doc.startswith('file:'):
-            full_doc = load_from_file(*get_path_from_doc(full_doc))
+            if not hasattr(obj, 'root_path'):
+                obj.root_path = os.path.dirname(os.path.abspath(
+                        obj.__globals__['__file__']
+                    )
+                )
+            swag_path, swag_type = get_path_from_doc(full_doc)
+            doc_filepath = os.path.join(obj.root_path, swag_path)
+            full_doc = load_from_file(doc_filepath, swag_type)
 
         line_feed = full_doc.find('\n')
         if line_feed != -1:
@@ -187,14 +194,14 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
     return defs
 
 
-class SpecsView(MethodView):
+class APIDocsView(MethodView):
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
         self.config = view_args.get('config')
-        super(SpecsView, self).__init__(*args, **kwargs)
+        super(APIDocsView, self).__init__(*args, **kwargs)
 
     def get(self):
-        base_endpoint = self.config.get('endpoint', 'swagger')
+        base_endpoint = self.config.get('endpoint', 'flasgger')
         specs = [
             {
                 "url": url_for(".".join((base_endpoint, spec['endpoint']))),
@@ -204,10 +211,17 @@ class SpecsView(MethodView):
             }
             for spec in self.config.get('specs', [])
         ]
-        return jsonify(
-            {"specs": specs,
-             "title": self.config.get('title', 'Flasgger')}
-        )
+        data = {
+            "specs": specs,
+            "title": self.config.get('title', 'Flasgger')
+        }
+        if request.args.get('json'):
+            return jsonify(data)
+        else:
+            return render_template(
+                'flasgger/index.html',
+                **data
+            )
 
 
 def has_valid_dispatch_view_docs(endpoint):
@@ -225,7 +239,7 @@ def is_valid_method_view(endpoint):
         return False
 
 
-class OutputView(MethodView):
+class APISpecsView(MethodView):
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
         self.config = view_args.get('config')
@@ -233,7 +247,7 @@ class OutputView(MethodView):
         self.process_doc = view_args.get('sanitizer', BR_SANITIZER)
         self.template = view_args.get('template')
         self.definition_models = view_args.get('definition_models')
-        super(OutputView, self).__init__(*args, **kwargs)
+        super(APISpecsView, self).__init__(*args, **kwargs)
 
     def get_url_mappings(self, rule_filter=None):
         rule_filter = rule_filter or (lambda rule: True)
@@ -328,8 +342,8 @@ class OutputView(MethodView):
                 # we only add endpoints with swagger data in the docstrings
                 if swag is not None:
                     defs = swag.get('definitions', [])
-                    defs = _extract_definitions(defs, endpoint=rule.endpoint,
-                                                verb=verb)
+                    defs += _extract_definitions(
+                        defs, endpoint=rule.endpoint, verb=verb)
 
                     params = swag.get('parameters', [])
                     defs += _extract_definitions(params,
@@ -348,6 +362,9 @@ class OutputView(MethodView):
                             verb=verb
                         )
                     for definition in defs:
+                        if 'id' not in definition:
+                            definitions.update(definition)
+                            continue
                         def_id = definition.pop('id')
                         if def_id is not None:
                             definitions[def_id].update(definition)
@@ -390,15 +407,15 @@ class Swagger(object):
             {
                 "version": "1.0.1",
                 "title": "A swagger API",
-                "endpoint": 'spec',
-                "route": '/spec',
+                "endpoint": 'apispec_1',
+                "route": '/apispec_1.json',
                 "rule_filter": lambda rule: True,  # all in
                 "model_filter": lambda tag: True,  # all in
             }
         ],
-        "static_url_path": "/apidocs",
-        "static_folder": "swaggerui",
-        "specs_route": "/specs"
+        "static_url_path": "/flasgger_static",
+        # "static_folder": "static",  # must be set ny user
+        "specs_route": "/apidocs/"
     }
 
     def __init__(self, app=None, config=None, sanitizer=None, template=None):
@@ -426,13 +443,18 @@ class Swagger(object):
         self.config.update(app.config.get('SWAGGER', {}))
 
     def register_views(self, app):
+        uiversion = self.config.get('uiversion', 2)
         blueprint = Blueprint(
-            self.config.get('endpoint', 'swagger'),
+            self.config.get('endpoint', 'flasgger'),
             __name__,
             url_prefix=self.config.get('url_prefix', None),
             subdomain=self.config.get('subdomain', None),
-            template_folder=self.config.get('template_folder', 'templates'),
-            static_folder=self.config.get('static_folder', 'static'),
+            template_folder=self.config.get(
+                'template_folder', 'ui{0}/templates'.format(uiversion)
+            ),
+            static_folder=self.config.get(
+                'static_folder', 'ui{0}/static'.format(uiversion)
+            ),
             static_url_path=self.config.get('static_url_path', None)
         )
         for spec in self.config['specs']:
@@ -440,7 +462,7 @@ class Swagger(object):
             blueprint.add_url_rule(
                 spec['route'],
                 spec['endpoint'],
-                view_func=OutputView().as_view(
+                view_func=APISpecsView().as_view(
                     spec['endpoint'],
                     view_args=dict(
                         app=app, config=self.config,
@@ -452,10 +474,10 @@ class Swagger(object):
             )
 
         blueprint.add_url_rule(
-            self.config.get('specs_route', '/specs'),
-            'specs',
-            view_func=SpecsView().as_view(
-                'specs',
+            self.config.get('specs_route', '/apidocs/'),
+            'apidocs',
+            view_func=APIDocsView().as_view(
+                'spidocs',
                 view_args=dict(config=self.config)
             )
         )
