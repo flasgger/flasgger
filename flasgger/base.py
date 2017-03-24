@@ -38,19 +38,15 @@ def json_to_yaml(content):
 def load_from_file(swag_path, swag_type='yml'):
     if swag_type not in ('yaml', 'yml'):
         raise AttributeError("Currently only yaml or yml supported")
+        # TODO: support JSON
     try:
-        return open(swag_path).read()
+        with open(swag_path) as yaml_file:
+            return yaml_file.read()
     except IOError:
+        # not in the same dir, add dirname
         swag_path = os.path.join(os.path.dirname(__file__), swag_path)
-        return open(swag_path).read()
-
-    # TODO:
-    # with open(swag_path) as swag_file:
-    #     content = swag_file.read()
-    #     if swag_type in ('yaml', 'yml'):
-    #         return content
-    #     elif swag_type  == 'json':
-    #         return json_to_yaml(content)
+        with open(swag_path) as yaml_file:
+            return yaml_file.read()
 
 
 def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
