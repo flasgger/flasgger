@@ -343,7 +343,8 @@ class APISpecsView(MethodView):
                 )
                 # we only add endpoints with swagger data in the docstrings
                 if swag is not None:
-                    defs = swag.get('definitions', [])
+                    definitions.update(swag.get('definitions', {}))
+                    defs = []  # swag.get('definitions', [])
                     defs += _extract_definitions(
                         defs, endpoint=rule.endpoint, verb=verb)
 

@@ -210,7 +210,7 @@ class SubItem(object):
         self.blu = int(blu)
 
     def dump(self):
-        return dict(vars(self).iteritems())
+        return dict(vars(self).items())
 
 
 @app.route("/v2/resource", endpoint="should_be_v2_only")
