@@ -306,7 +306,7 @@ class APISpecsView(MethodView):
         )
 
         # technically only responses is non-optional
-        optional_fields = [
+        optional_fields = self.config.get('optional_fields') or [
             'tags', 'consumes', 'produces', 'schemes', 'security',
             'deprecated', 'operationId', 'externalDocs'
         ]
