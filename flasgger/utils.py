@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import os
+import inspect
 from functools import wraps
 
 import jsonschema
@@ -70,13 +71,23 @@ def validate(data, schema_id, filepath, root=None):
     should start with /
     """
 
+    if not root:
+        try:
+            frame_info = inspect.stack()[1]
+            root = os.path.dirname(os.path.abspath(frame_info[1]))
+            print(root)
+        except Exception:
+            root = None
+    else:
+        root = os.path.dirname(root)
+
     endpoint = request.endpoint.lower().replace('.', '_')
     verb = request.method.lower()
 
     full_schema = "{}_{}_{}".format(endpoint, verb, schema_id)
 
     if not filepath.startswith('/'):
-        final_filepath = os.path.join(os.path.dirname(root), filepath)
+        final_filepath = os.path.join(root, filepath)
     else:
         final_filepath = filepath
     full_doc = load_from_file(final_filepath)
