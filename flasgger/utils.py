@@ -5,7 +5,7 @@ from functools import wraps
 
 import jsonschema
 import yaml
-from flask import request
+from flask import request, abort, Response
 from jsonschema import ValidationError  # noqa
 
 from .base import _extract_definitions, load_from_file
@@ -103,4 +103,7 @@ def validate(data, schema_id, filepath, root=None):
     for key, value in definitions.items():
         del value['id']
 
-    jsonschema.validate(data, main_def)
+    try:
+        jsonschema.validate(data, main_def)
+    except ValidationError as e:
+        abort(Response(str(e), status=400))

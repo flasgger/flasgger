@@ -267,8 +267,10 @@ class APISpecsView(MethodView):
 
     def get(self):
         data = {
-            "swagger": self.config.get('swagger_version', "2.0"),
-            "info": {
+            "swagger": self.config.get('swagger') or self.config.get(
+                'swagger_version', "2.0"
+            ),
+            "info": self.config.get('info') or {
                 "version": self.spec.get('version', "0.0.0"),
                 "title": self.spec.get('title', "A swagger API"),
                 "description": self.spec.get('description',
