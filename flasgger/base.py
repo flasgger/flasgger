@@ -343,9 +343,20 @@ class APISpecsView(MethodView):
                     method = klass.__dict__.get('dispatch_request')
                 if method is None:  # for method view
                     method = klass.__dict__.get(verb)
-                summary, description, swag = _parse_docstring(
-                    method, self.process_doc, endpoint=rule.endpoint, verb=verb
-                )
+
+                if getattr(method, 'specs_dict', None):
+                    swag = method.specs_dict.copy()
+                    summary, description, doc_swag = _parse_docstring(
+                        method, self.process_doc,
+                        endpoint=rule.endpoint, verb=verb
+                    )
+                    swag.update(doc_swag or {})
+                else:
+                    summary, description, swag = _parse_docstring(
+                        method, self.process_doc,
+                        endpoint=rule.endpoint, verb=verb
+                    )
+
                 # we only add swagged endpoints
                 if swag is not None:
                     definitions.update(swag.get('definitions', {}))
