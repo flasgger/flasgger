@@ -10,12 +10,20 @@ import inspect
 import os
 import re
 from collections import defaultdict
+from copy import deepcopy
 
 import yaml
 from flask import (Blueprint, Markup, current_app, jsonify, redirect,
                    render_template, request, url_for)
 from flask.views import MethodView
 from mistune import markdown
+from flasgger.marshmallow_apispec import (
+    # create_apispec,
+    SwaggerView,
+    # Schema,
+    convert_schemas
+)
+
 
 NO_SANITIZER = lambda text: text  # noqa
 BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
@@ -270,6 +278,9 @@ class APISpecsView(MethodView):
             if model_filter(definition)
         }
 
+    # def update_swag_from_swagger_view(self, swag, apispec_swag):
+    #     swag.update(convert_schemas(apispec_swag))
+
     def get(self):
         data = {
             "swagger": self.config.get('swagger') or self.config.get(
@@ -344,21 +355,45 @@ class APISpecsView(MethodView):
                 if method is None:  # for method view
                     method = klass.__dict__.get(verb)
 
-                if getattr(method, 'specs_dict', None):
-                    swag = method.specs_dict.copy()
-                    summary, description, doc_swag = _parse_docstring(
-                        method, self.process_doc,
-                        endpoint=rule.endpoint, verb=verb
-                    )
-                    swag.update(doc_swag or {})
-                else:
-                    summary, description, swag = _parse_docstring(
-                        method, self.process_doc,
-                        endpoint=rule.endpoint, verb=verb
+                swag = {}
+                swagged = False
+
+                view_class = getattr(endpoint, 'view_class', None)
+                if view_class and issubclass(view_class, SwaggerView):
+                    apispec_swag = {}
+                    apispec_attrs = optional_fields + [
+                        'parameters', 'definitions', 'responses',
+                        'summary', 'description'
+                    ]
+                    for attr in apispec_attrs:
+                        apispec_swag[attr] = getattr(view_class, attr)
+
+                    apispec_definitions = apispec_swag.get('definitions', {})
+                    swag.update(
+                        convert_schemas(apispec_swag, apispec_definitions)
                     )
 
+                    swagged = True
+
+                if getattr(method, 'specs_dict', None):
+                    swag.update(deepcopy(method.specs_dict))
+                    swagged = True
+
+                doc_summary, doc_description, doc_swag = _parse_docstring(
+                    method, self.process_doc,
+                    endpoint=rule.endpoint, verb=verb
+                )
+                if doc_swag:
+                    swag.update(doc_swag or {})
+                    swagged = True
+
                 # we only add swagged endpoints
-                if swag is not None:
+                if swagged:
+                    if doc_summary:
+                        swag['summary'] = doc_summary
+                    if doc_description:
+                        swag['description'] = doc_description
+
                     definitions.update(swag.get('definitions', {}))
                     defs = []  # swag.get('definitions', [])
                     defs += _extract_definitions(
@@ -387,11 +422,13 @@ class APISpecsView(MethodView):
                         def_id = definition.pop('id')
                         if def_id is not None:
                             definitions[def_id].update(definition)
+
                     operation = dict(
-                        summary=summary,
-                        description=description,
+                        summary=swag.get('summary'),
+                        description=swag.get('description'),
                         responses=responses
                     )
+
                     # parameters - swagger ui dislikes empty parameter lists
                     if len(params) > 0:
                         operation['parameters'] = params
@@ -437,7 +474,8 @@ class Swagger(object):
         "specs_route": "/apidocs/"
     }
 
-    def __init__(self, app=None, config=None, sanitizer=None, template=None):
+    def __init__(self, app=None, config=None,
+                 sanitizer=None, template=None):
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
         self.sanitizer = sanitizer or BR_SANITIZER
@@ -448,6 +486,7 @@ class Swagger(object):
 
     def init_app(self, app):
         self.load_config(app)
+        # self.load_apispec(app)
         self.register_views(app)
         self.add_headers(app)
 
@@ -457,6 +496,21 @@ class Swagger(object):
                                                             tags=tags))
             return obj
         return wrapper
+
+    # def load_apispec(self, app):
+    #     if 'apispec' in self.config:
+    #         if isinstance(self.config['apispec'], dict):
+    #             kwargs = self.config['apispec']
+    #         else:
+    #             kwargs = {}
+
+    #         if 'title' not in kwargs:
+    #             kwargs['title'] = self.config.get('title')
+
+    #         if 'version' not in kwargs:
+    #             kwargs['version'] = self.config.get('version')
+
+    #         self.apispec = create_apispec(**kwargs)
 
     def load_config(self, app):
         self.config.update(app.config.get('SWAGGER', {}))
