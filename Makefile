@@ -8,7 +8,7 @@ install:
 
 .PHONY: test
 test:
-	@flake8 . --ignore=F403
+	@flake8 flasgger --ignore=F403
 
 .PHONY: sdist
 sdist: test

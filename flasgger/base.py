@@ -75,7 +75,8 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
 
         if full_doc.startswith('file:'):
             if not hasattr(obj, 'root_path'):
-                obj.root_path = os.path.dirname(os.path.abspath(
+                obj.root_path = os.path.dirname(
+                    os.path.abspath(
                         obj.__globals__['__file__']
                     )
                 )
@@ -116,7 +117,8 @@ def _parse_definition_docstring(obj, process_doc):
 
         if full_doc.startswith('file:'):
             if not hasattr(obj, 'root_path'):
-                obj.root_path = os.path.dirname(os.path.abspath(
+                obj.root_path = os.path.dirname(
+                    os.path.abspath(
                         obj.__globals__['__file__']
                     )
                 )

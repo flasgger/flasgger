@@ -69,7 +69,7 @@ def convert_schemas(d, definitions=None):
         if inspect.isclass(v) and issubclass(v, Schema):
             definitions[v.__name__] = schema2jsonschema(v)
             ref = {
-               "$ref": "#/definitions/{0}".format(v.__name__)
+                "$ref": "#/definitions/{0}".format(v.__name__)
             }
             if k == 'parameters':
                 new[k] = schema2parameters(v)

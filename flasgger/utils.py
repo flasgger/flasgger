@@ -31,7 +31,8 @@ def swag_from(specs=None, filetype=None, endpoint=None, methods=None,
     def resolve_path(function, filepath):
         if not filepath.startswith('/'):
             if not hasattr(function, 'root_path'):
-                function.root_path = os.path.dirname(os.path.abspath(
+                function.root_path = os.path.dirname(
+                    os.path.abspath(
                         function.__globals__['__file__']
                     )
                 )
