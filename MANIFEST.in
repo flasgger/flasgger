@@ -1,8 +1,20 @@
 include *.md LICENSE
-include flasgger/username_definitions.yml
-recursive-include flasgger/swaggerui *
-recursive-include flasgger/swaggerui/js *
-recursive-include flasgger/swaggerui/lang *
-recursive-include flasgger/swaggerui/images *
-recursive-include flasgger/swaggerui/fonts *
-recursive-include flasgger/swaggerui/css *
+recursive-include flasgger *
+recursive-include flasgger/ui2 *
+recursive-include flasgger/ui2/static *
+recursive-include flasgger/ui2/static/css *
+recursive-include flasgger/ui2/static/fonts *
+recursive-include flasgger/ui2/static/images *
+recursive-include flasgger/ui2/static/lang *
+recursive-include flasgger/ui2/static/lib *
+recursive-include flasgger/ui2/templates *
+recursive-include flasgger/ui2/templates/flasgger *
+recursive-include flasgger/ui3 *
+recursive-include flasgger/ui3/static *
+recursive-include flasgger/ui3/static/css *
+recursive-include flasgger/ui3/static/fonts *
+recursive-include flasgger/ui3/static/images *
+recursive-include flasgger/ui3/static/lang *
+recursive-include flasgger/ui3/static/lib *
+recursive-include flasgger/ui3/templates *
+recursive-include flasgger/ui3/templates/flasgger *
