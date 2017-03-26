@@ -46,6 +46,7 @@ Swagger(app)
 @app.route('/colors/<palette>/')
 def colors(palette):
     """Example endpoint returning a list of colors by palette
+    This is using docstrings for specifications.
     ---
     parameters:
       - name: palette
@@ -144,11 +145,9 @@ def colors(palette):
     ...
 ```
 
-If you do not want to use the decorator you can use the docsting shortcut.
+If you do not want to use the decorator you can use the docsting `file:` shortcut.
 
 ```python
-from flasgger import swag_from
-
 @app.route('/colors/<palette>/')
 def colors(palette):
     """
@@ -160,7 +159,7 @@ def colors(palette):
 
 ## Using dictionaries as raw specs
 
-Create a Python dictionary with as:
+Create a Python dictionary as:
 
 ```python
 specs_dict = {
@@ -219,7 +218,7 @@ Now take the same function and use the dict in the place of YAML file.
 @swag_from(specs_dict)
 def colors(palette):
     """Example endpoint returning a list of colors by palette
-    In this example the specification is taken from external YAML file
+    In this example the specification is taken from specs_dict
     """
     ...
 ```
@@ -236,11 +235,9 @@ from flasgger import Swagger, SwaggerView, Schema, fields
 class Color(Schema):
     name = fields.Str()
 
-
 class Palette(Schema):
     pallete_name = fields.Str()
     colors = fields.Nested(Color, many=True)
-
 
 class PaletteView(SwaggerView):
     parameters = [
@@ -274,7 +271,6 @@ class PaletteView(SwaggerView):
         else:
             result = {palette: all_colors.get(palette)}
         return jsonify(result)
-
 
 app = Flask(__name__)
 Swagger(app)
@@ -313,7 +309,11 @@ def fromfile_decorated(username=None):
     return jsonify({'username': username})
 ```
 
-# Use the same yaml file to validate your API data
+And the same can be achieved with multiple methods in a `MethodView` or `SwaggerView` by
+registering the `url_rule` many times. Take a look at `examples/example_app`
+
+
+# Use the same data to validate your API POST body.
 
 ```python
 from flasgger import swag_from, validate
@@ -335,6 +335,9 @@ def post():
     # if not validate returns ValidationError response with status 400
     # also returns the validation message.
 ```
+
+It is also possible to define `validation=True` in `SwaggerView` and also use
+`specs_dict` for validation.
 
 Take a look at `examples/validation.py` for more information.
 
@@ -382,7 +385,7 @@ Swagger(app)
 
 ```
 
-# Starting with defauts.
+# Initializing Flasgger with default data.
 
 You can start your Swagger spec with any default data providing a template:
 
