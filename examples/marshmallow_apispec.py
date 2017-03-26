@@ -6,9 +6,8 @@ from flasgger import Swagger, SwaggerView, fields, Schema
 
 app = Flask(__name__)
 app.config['SWAGGER'] = {
-    "title": "API using Marshmallow APISpec",
-    "uiversion": 2,
-    "apispec": True
+    "title": "API using Marshmallow",
+    "uiversion": 2
 }
 
 Swagger(app)
@@ -16,7 +15,7 @@ Swagger(app)
 
 class User(Schema):
     username = fields.Str(required=True)
-    age = fields.Int(requred=True, min=18)
+    age = fields.Int(required=True, min=18)
     tags = fields.List(fields.Str())
 
 

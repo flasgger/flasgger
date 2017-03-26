@@ -10,7 +10,7 @@ import yaml
 from flask import request, abort, Response
 from jsonschema import ValidationError  # noqa
 from six import string_types
-from .base import _extract_definitions, load_from_file
+from flasgger.base import _extract_definitions, load_from_file
 
 
 def swag_from(specs=None, filetype=None, endpoint=None, methods=None,

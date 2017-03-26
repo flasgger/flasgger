@@ -17,12 +17,8 @@ from flask import (Blueprint, Markup, current_app, jsonify, redirect,
                    render_template, request, url_for)
 from flask.views import MethodView
 from mistune import markdown
-from flasgger.marshmallow_apispec import (
-    # create_apispec,
-    SwaggerView,
-    # Schema,
-    convert_schemas
-)
+from flasgger.constants import OPTIONAL_FIELDS
+from flasgger.marshmallow_apispec import SwaggerView, convert_schemas
 
 
 NO_SANITIZER = lambda text: text  # noqa
@@ -229,6 +225,7 @@ class APIDocsView(MethodView):
             "title": self.config.get('title', 'Flasgger')
         }
         if request.args.get('json'):
+            # calling with ?json returns specs
             return jsonify(data)
         else:
             return render_template(
@@ -278,9 +275,6 @@ class APISpecsView(MethodView):
             if model_filter(definition)
         }
 
-    # def update_swag_from_swagger_view(self, swag, apispec_swag):
-    #     swag.update(convert_schemas(apispec_swag))
-
     def get(self):
         data = {
             "swagger": self.config.get('swagger') or self.config.get(
@@ -317,10 +311,7 @@ class APISpecsView(MethodView):
         )
 
         # technically only responses is non-optional
-        optional_fields = self.config.get('optional_fields') or [
-            'tags', 'consumes', 'produces', 'schemes', 'security',
-            'deprecated', 'operationId', 'externalDocs'
-        ]
+        optional_fields = self.config.get('optional_fields') or OPTIONAL_FIELDS
 
         for name, def_model in self.get_def_models(
                 self.spec.get('definition_filter')).items():
@@ -470,7 +461,7 @@ class Swagger(object):
             }
         ],
         "static_url_path": "/flasgger_static",
-        # "static_folder": "static",  # must be set ny user
+        # "static_folder": "static",  # must be set by user
         "specs_route": "/apidocs/"
     }
 
@@ -496,21 +487,6 @@ class Swagger(object):
                                                             tags=tags))
             return obj
         return wrapper
-
-    # def load_apispec(self, app):
-    #     if 'apispec' in self.config:
-    #         if isinstance(self.config['apispec'], dict):
-    #             kwargs = self.config['apispec']
-    #         else:
-    #             kwargs = {}
-
-    #         if 'title' not in kwargs:
-    #             kwargs['title'] = self.config.get('title')
-
-    #         if 'version' not in kwargs:
-    #             kwargs['version'] = self.config.get('version')
-
-    #         self.apispec = create_apispec(**kwargs)
 
     def load_config(self, app):
         self.config.update(app.config.get('SWAGGER', {}))

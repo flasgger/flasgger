@@ -13,6 +13,7 @@ Swagger(app)
 @app.route('/colors/<palette>/')
 def colors(palette):
     """Example endpoint return a list of colors by palette
+    This is using docstring for specifications
     ---
     tags:
       - colors

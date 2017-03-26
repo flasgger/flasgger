@@ -1,6 +1,7 @@
 # coding: utf-8
 import inspect
 from flask.views import MethodView
+import flasgger
 
 try:
     from marshmallow import Schema, fields
@@ -31,6 +32,22 @@ class SwaggerView(MethodView):
     externalDocs = {}
     summary = None
     description = None
+    validation = False
+
+    def dispatch_request(self, *args, **kwargs):
+        if self.validation:
+            specs = {}
+            attrs = flasgger.constants.OPTIONAL_FIELDS + [
+                'parameters', 'definitions', 'responses',
+                'summary', 'description'
+            ]
+            for attr in attrs:
+                specs[attr] = getattr(self, attr)
+            definitions = {}
+            specs.update(convert_schemas(specs, definitions))
+            specs['definitions'] = definitions
+            flasgger.utils.validate(specs=specs)
+        return super(SwaggerView, self).dispatch_request(*args, **kwargs)
 
 
 def convert_schemas(d, definitions=None):
@@ -62,4 +79,6 @@ def convert_schemas(d, definitions=None):
         else:
             new[k] = v
 
+        if k == 'definitions':
+            new['definitions'] = definitions
     return new

@@ -1,7 +1,13 @@
 from flask import Flask, jsonify, request
+from flasgger import (
+    Schema,
+    Swagger,
+    SwaggerView,
+    fields,
+    swag_from,
+    validate
+)
 
-from flasgger import Swagger
-from flasgger.utils import swag_from, validate
 
 app = Flask(__name__)
 Swagger(app)
@@ -116,4 +122,42 @@ def autovalidation_from_spec_dict():
     return jsonify(data)
 
 
+class User(Schema):
+    username = fields.Str(required=True, default="Sirius Black")
+    # wrong default "180" to force validation error
+    age = fields.Int(required=True, min=18, default="180")
+    tags = fields.List(fields.Str(), default=["wizard", "hogwarts", "dead"])
+
+
+class UserPostView(SwaggerView):
+    tags = ['users']
+    parameters = User
+    responses = {
+        200: {
+            'description': 'A single user item',
+            'schema': User
+        }
+    }
+    validation = True
+
+    def post(self):
+        """
+        Example using marshmallow Schema
+        validation=True forces validation of parameters in body
+        ---
+        # This value overwrites the attributes above
+        deprecated: true
+        """
+        return jsonify(request.json)
+
+
+app.add_url_rule(
+    '/schemevalidation',
+    view_func=UserPostView.as_view('schemevalidation'),
+    methods=['POST']
+)
+
 app.run(debug=True)
+
+
+
