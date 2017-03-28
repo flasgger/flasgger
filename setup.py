@@ -48,6 +48,7 @@ setup(
         'Flask>=0.10',
         'PyYAML>=3.0',
         'jsonschema>=2.5.1',
-        'mistune'
+        'mistune',
+        'six>=1.10.0'
     ]
 )
