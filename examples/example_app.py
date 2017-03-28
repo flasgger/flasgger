@@ -130,6 +130,7 @@ class UserAPI(MethodView):
                 type: array
                 items:
                     $ref: '#/definitions/User'
+          import: "bad_request.yaml"
         """
         return jsonify(
             {"data": request.json, "status": "New user created"}

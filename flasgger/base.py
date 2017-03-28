@@ -84,6 +84,8 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
             doc_filepath = os.path.join(obj.root_path, swag_path)
             full_doc = load_from_file(doc_filepath, swag_type)
 
+        full_doc = _parse_imports(full_doc)
+
         line_feed = full_doc.find('\n')
         if line_feed != -1:
             first_line = process_doc(full_doc[:line_feed])
@@ -136,6 +138,20 @@ def _parse_definition_docstring(obj, process_doc):
             doc_lines = process_doc(full_doc)
 
     return doc_lines, swag
+
+
+def _parse_imports(full_doc):
+    regex = re.compile('import: "(.*)"')
+    import_prop = regex.search(full_doc)
+    if import_prop:
+        start = import_prop.start()
+        spaces_num = start - full_doc.rfind('\n', 0, start) - 1
+        filepath = import_prop.group(1)
+        imported_doc = load_from_file(filepath)
+        indented_imported_doc = imported_doc.replace('\n', '\n' + ' ' * spaces_num)
+        full_doc = regex.sub(indented_imported_doc, full_doc, count=1)
+        return _parse_imports(full_doc)
+    return full_doc
 
 
 def _extract_definitions(alist, level=None, endpoint=None, verb=None):
