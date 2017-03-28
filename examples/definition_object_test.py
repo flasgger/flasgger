@@ -114,4 +114,6 @@ class Foo(View):
 
 
 app.add_url_rule('/dispatch_request', view_func=Foo.as_view('foo'))
-app.run(debug=True)
+
+if __name__ == "__main__":
+    app.run(debug=True)
