@@ -1,6 +1,6 @@
 .PHONY: install
 install:
-	python setup.py develop
+	@python setup.py develop
 
 .PHONY: test
 test:
