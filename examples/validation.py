@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, Blueprint
 from flasgger import (
     Schema,
     Swagger,
@@ -157,7 +157,100 @@ app.add_url_rule(
     methods=['POST']
 )
 
-app.run(debug=True)
+
+# ensure the same works for blueprints
+
+example_blueprint = Blueprint(
+  "example", __name__, url_prefix='/blueprint')
 
 
+@example_blueprint.route('/manualvalidation', methods=['POST'])
+@swag_from("test_validation.yml")
+def manualvalidation_bp():
+    """
+    In this example you need to call validate() manually
+    passing received data, Definition (schema: id), specs filename
+    """
+    data = request.json
+    validate(data, 'User', "test_validation.yml")
+    return jsonify(data)
 
+
+@example_blueprint.route('/autovalidation', methods=['POST'])
+@swag_from("test_validation.yml", validation=True)
+def autovalidation_bp():
+    """
+    Example using auto validation from yaml file.
+    In this example you don't need to call validate() because
+    `validation=True` on @swag_from does that for you.
+    In this case it will use the same provided filename
+    and will extract the schema from `in: body` definition
+    and the data will default to `request.json`
+
+    or you can specify:
+    @swag_from('file.yml',
+               validation=True,
+               definition='User',
+               data=lambda: request.json,  # any callable
+               )
+    """
+    data = request.json
+    return jsonify(data)
+
+
+@example_blueprint.route("/autovalidationfromspecdict", methods=['POST'])
+@swag_from(test_specs_1, validation=True)
+def autovalidation_from_spec_dict_bp():
+    """
+    Example using data from dict to validate.
+    In this example you don't need to call validate() because
+    `validation=True` on @swag_from does that for you.
+    In this case it will use the same provided filename
+    and will extract the schema from `in: body` definition
+    and the data will default to `request.json`
+
+    or you can specify:
+    @swag_from('file.yml',
+               validation=True,
+               definition='User',
+               data=lambda: request.json,  # any callable
+               )
+    """
+    data = request.json
+    return jsonify(data)
+
+
+class BPUserPostView(SwaggerView):
+    tags = ['users']
+    parameters = User
+    responses = {
+        200: {
+            'description': 'A single user item',
+            'schema': User
+        }
+    }
+    validation = True
+
+    def post(self):
+        """
+        Example using marshmallow Schema
+        validation=True forces validation of parameters in body
+        ---
+        # This value overwrites the attributes above
+        deprecated: true
+        """
+        return jsonify(request.json)
+
+
+example_blueprint.add_url_rule(
+    '/schemevalidation',
+    view_func=BPUserPostView.as_view('schemevalidation'),
+    methods=['POST']
+)
+
+
+app.register_blueprint(example_blueprint)
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
