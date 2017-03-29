@@ -3,7 +3,7 @@ FIRST:
 pip install flask-restful
 """
 from flask import Flask
-from flasgger import Swagger
+from flasgger import Swagger, swag_from
 from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
@@ -154,8 +154,15 @@ class TodoList(Resource):
         return TODOS[todo_id], 201
 
 
+class Username(Resource):
+    @swag_from('username_specs.yml', methods=['GET'])
+    def get(self, username):
+        return {'username': username}, 200
+
+
 api.add_resource(TodoList, '/todos')
 api.add_resource(Todo, '/todos/<todo_id>')
+api.add_resource(Username, '/username/<username>')
 
 
 if __name__ == '__main__':
