@@ -72,7 +72,7 @@ def swag_from(specs=None, filetype=None, endpoint=None, methods=None,
             swag_paths = getattr(function, 'swag_paths', None)
             validate_args = {
                 'filepath': swag_path or swag_paths,
-                'root': function.root_path
+                'root': getattr(function, 'root_path', None)
             }
         if isinstance(specs, dict):
             set_from_specs_dict(function)
