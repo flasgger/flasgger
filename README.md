@@ -15,6 +15,7 @@ Flasgger also **provides validation** of the incoming data, using the same speci
 
 Flasgger can work with simple function views or MethodViews using docstring for especification, or using `@swag_from` decorator to get specification from **YAML** or **dict** and also provides **SwaggerView** which can use **Marshmallow Schemas**  as specification.
 
+Flasgger is compatible with `Flask-RESTful` so you can use `Resources` and `swag` specifications together, take a look at [restful example.](examples/restfull.py)
 
 # Installation
 
@@ -292,6 +293,51 @@ app.run(debug=True)
 
 > NOTE: when catching arguments in path rule always use explicit types, bad: ``/api/<username>`` good: ``/api/<string:username>``
 
+
+## Using **Flask RESTful** Resources
+
+Flasgger is compatible with Flask-RESTful you only need to install `pip install flask-restful` and then:
+
+```python
+
+from flask import Flask
+from flasgger import Swagger
+from flask_restful import Api, Resource
+
+app = Flask(__name__)
+api = Api(app)
+Swagger(app)
+
+class Username(Resource):
+    def get(self, username):
+       """
+       This examples uses FlaskRESTful Resource
+       It works also with swag_from, schemas and spec_dict
+       ---
+       parameters:
+         - in: path
+           name: username
+           type: string
+           required: true
+       responses:
+         200:
+           description: A single user item
+           schema:
+             id: User
+             properties:
+               username:
+                 type: string
+                 description: The name of the user
+                 default: Steven Wilson
+        """
+        return {'username': username}, 200
+
+
+api.add_resource(Username, '/username/<username>')
+        
+app.run(debug=True)
+
+```
 
 ## Handling multiple http methods and routes for a single function
 
