@@ -1,11 +1,16 @@
+# required
 Flask>=0.10
 PyYAML>=3.0
 jsonschema>=2.5.1
 six>=1.10.0
 mistune
 
-# dev
+# optional (for dev)
+marshmallow
+apispec
+flask-restful
 pep8==1.5.7
 flake8==2.4.1
 
+# install flasgger itself as editable
 -e .
