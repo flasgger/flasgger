@@ -282,13 +282,25 @@ class APISpecsView(MethodView):
             "swagger": self.config.get('swagger') or self.config.get(
                 'swagger_version', "2.0"
             ),
+            # try to get from config['SWAGGER']['info']
+            # then config['SWAGGER']['specs'][x]
+            # then config['SWAGGER']
+            # then default
             "info": self.config.get('info') or {
-                "version": self.spec.get('version', "0.0.1"),
-                "title": self.spec.get('title', "A swagger API"),
-                "description": self.spec.get('description',
-                                             "API description"),
-                "termsOfService": self.spec.get('termsOfService',
-                                                "Terms of service"),
+                "version": self.spec.get(
+                    'version', self.config.get('version', "0.0.1")
+                ),
+                "title": self.spec.get(
+                    'title', self.config.get('title', "A swagger API 2")
+                ),
+                "description": self.spec.get(
+                    'description', self.config.get('description',
+                                                   "powered by Flasgger")
+                ),
+                "termsOfService": self.spec.get(
+                    'termsOfService', self.config.get('termsOfService',
+                                                      "/tos")
+                ),
             },
             "paths": self.config.get('paths') or defaultdict(dict),
             "definitions": self.config.get('definitions') or defaultdict(dict)
@@ -454,8 +466,6 @@ class Swagger(object):
         ],
         "specs": [
             {
-                "version": "1.0.1",
-                "title": "A swagger API",
                 "endpoint": 'apispec_1',
                 "route": '/apispec_1.json',
                 "rule_filter": lambda rule: True,  # all in
