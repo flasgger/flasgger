@@ -386,6 +386,11 @@ class APISpecsView(MethodView):
                 if method is None:  # for method view
                     method = klass.__dict__.get(verb)
 
+                if method is None:
+                    raise RuntimeError(
+                        'Cannot detect view_func for rule {0}'.format(rule)
+                    )
+
                 swag = {}
                 swagged = False
 
@@ -505,6 +510,7 @@ class Swagger(object):
 
     def __init__(self, app=None, config=None,
                  sanitizer=None, template=None):
+        self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
         self.sanitizer = sanitizer or BR_SANITIZER
@@ -518,6 +524,12 @@ class Swagger(object):
         # self.load_apispec(app)
         self.register_views(app)
         self.add_headers(app)
+        self._configured = True
+        app.swag = self
+
+    @property
+    def configured(self):
+        return self._configured
 
     def definition(self, name, tags=None):
         def wrapper(obj):
