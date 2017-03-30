@@ -39,7 +39,7 @@ def json_to_yaml(content):
     return content
 
 
-def load_from_file(swag_path, swag_type='yml'):
+def load_from_file(swag_path, swag_type='yml', root_path=None):
     if swag_type not in ('yaml', 'yml'):
         raise AttributeError("Currently only yaml or yml supported")
         # TODO: support JSON
@@ -48,7 +48,9 @@ def load_from_file(swag_path, swag_type='yml'):
             return yaml_file.read()
     except IOError:
         # not in the same dir, add dirname
-        swag_path = os.path.join(os.path.dirname(__file__), swag_path)
+        swag_path = os.path.join(
+            root_path or os.path.dirname(__file__), swag_path
+        )
         with open(swag_path) as yaml_file:
             return yaml_file.read()
 
@@ -60,6 +62,11 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
     swag_path = getattr(obj, 'swag_path', None)
     swag_type = getattr(obj, 'swag_type', 'yml')
     swag_paths = getattr(obj, 'swag_paths', None)
+    root_path = os.path.dirname(
+        os.path.abspath(
+            obj.__globals__['__file__']
+        )
+    )
 
     if swag_path is not None:
         full_doc = load_from_file(swag_path, swag_type)
@@ -68,6 +75,8 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
             if key in swag_paths:
                 full_doc = load_from_file(swag_paths[key], swag_type)
                 break
+        # TODO: handle multiple root_paths
+        # to support `import: ` from multiple places
     else:
         full_doc = inspect.getdoc(obj)
 
@@ -75,14 +84,12 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
 
         if full_doc.startswith('file:'):
             if not hasattr(obj, 'root_path'):
-                obj.root_path = os.path.dirname(
-                    os.path.abspath(
-                        obj.__globals__['__file__']
-                    )
-                )
+                obj.root_path = root_path
             swag_path, swag_type = get_path_from_doc(full_doc)
             doc_filepath = os.path.join(obj.root_path, swag_path)
             full_doc = load_from_file(doc_filepath, swag_type)
+
+        full_doc = _parse_imports(full_doc, root_path)
 
         line_feed = full_doc.find('\n')
         if line_feed != -1:
@@ -136,6 +143,25 @@ def _parse_definition_docstring(obj, process_doc):
             doc_lines = process_doc(full_doc)
 
     return doc_lines, swag
+
+
+def _parse_imports(full_doc, root_path=None):
+    regex = re.compile('import: "(.*)"')
+    import_prop = regex.search(full_doc)
+    if import_prop:
+        start = import_prop.start()
+        spaces_num = start - full_doc.rfind('\n', 0, start) - 1
+        filepath = import_prop.group(1)
+        if filepath.startswith('/'):
+            imported_doc = load_from_file(filepath)
+        else:
+            imported_doc = load_from_file(filepath, root_path=root_path)
+        indented_imported_doc = imported_doc.replace(
+            '\n', '\n' + ' ' * spaces_num
+        )
+        full_doc = regex.sub(indented_imported_doc, full_doc, count=1)
+        return _parse_imports(full_doc)
+    return full_doc
 
 
 def _extract_definitions(alist, level=None, endpoint=None, verb=None):
