@@ -366,27 +366,33 @@ class APISpecsView(MethodView):
             endpoint = current_app.view_functions[rule.endpoint]
             methods = dict()
             is_mv = is_valid_method_view(endpoint)
+
             for verb in rule.methods.difference(ignore_verbs):
                 if not is_mv and has_valid_dispatch_view_docs(endpoint):
                     endpoint.methods = endpoint.methods or ['GET']
                     if verb in endpoint.methods:
                         methods[verb.lower()] = endpoint
-                elif hasattr(endpoint, 'methods') and verb in endpoint.methods:
-                    verb = verb.lower()
-                    methods[verb] = getattr(endpoint.view_class, verb)
+                elif getattr(endpoint, 'methods', None) is not None:
+                    if verb in endpoint.methods:
+                        verb = verb.lower()
+                        methods[verb] = getattr(endpoint.view_class, verb)
                 else:
                     methods[verb.lower()] = endpoint
+
             operations = dict()
+
             for verb, method in methods.items():
                 klass = method.__dict__.get('view_class', None)
                 if not is_mv and klass and hasattr(klass, 'verb'):
                     method = klass.__dict__.get('verb')
                 elif klass and hasattr(klass, 'dispatch_request'):
                     method = klass.__dict__.get('dispatch_request')
-                if method is None:  # for method view
+                if method is None:  # for MethodView
                     method = klass.__dict__.get(verb)
 
                 if method is None:
+                    if is_mv:  # #76 Empty MethodViews
+                        continue
                     raise RuntimeError(
                         'Cannot detect view_func for rule {0}'.format(rule)
                     )
