@@ -11,6 +11,8 @@ apispec
 flask-restful
 pep8==1.5.7
 flake8==2.4.1
+pytest
+flex
 
 # install flasgger itself as editable
 -e .

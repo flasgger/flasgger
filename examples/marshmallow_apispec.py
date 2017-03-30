@@ -70,5 +70,5 @@ app.add_url_rule(
     methods=['POST']
 )
 
-
-app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
