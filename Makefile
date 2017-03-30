@@ -2,9 +2,13 @@
 install:
 	@python setup.py develop
 
-.PHONY: test
-test:
+.PHONY: pep8
+pep8:
 	@flake8 flasgger --ignore=F403
+
+.PHONY: test
+test: pep8
+	@py.test -s -vv
 
 .PHONY: sdist
 sdist: test
