@@ -4,6 +4,8 @@ import os
 import copy
 import inspect
 from functools import wraps
+from collections import OrderedDict
+from copy import deepcopy
 
 import jsonschema
 import yaml
@@ -193,3 +195,47 @@ def validate(data=None, schema_id=None, filepath=None, root=None,
         jsonschema.validate(data, main_def)
     except ValidationError as e:
         abort(Response(str(e), status=400))
+
+
+def apispec_to_template(app, spec, definitions=None, paths=None):
+    """
+    Converts apispec object in to flasgger definitions template
+    :param app: Current app
+    :param spec: apispec.APISpec
+    :param definitions: a list of [Schema, ..] or [('Name', Schema), ..]
+    :param paths: A list of flask views
+    """
+    definitions = definitions or []
+    paths = paths or []
+    spec_dict = spec.to_dict()
+
+    with app.app_context():
+        for definition in definitions:
+            if isinstance(definition, (tuple, list)):
+                name, schema = definition
+            else:
+                schema = definition
+                name = schema.__name__.replace('Schema', '')
+
+            spec.definition(name, schema=schema)
+
+        for path in paths:
+            spec.add_path(view=path)
+
+    ret = ordered_dict_to_dict(spec_dict)
+    return ret
+
+
+def ordered_dict_to_dict(d):
+    """
+    Converts inner OrderedDict to bare dict
+    """
+    ret = {}
+    new_d = deepcopy(d)
+    for k, v in new_d.items():
+        if isinstance(v, OrderedDict):
+            v = dict(v)
+        if isinstance(v, dict):
+            v = ordered_dict_to_dict(v)
+        ret[k] = v
+    return ret

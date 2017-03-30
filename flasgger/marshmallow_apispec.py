@@ -8,11 +8,33 @@ try:
     from apispec.ext.marshmallow.swagger import (
         schema2jsonschema, schema2parameters
     )
+    from apispec import APISpec as BaseAPISpec
 except ImportError:
     Schema = None
     fields = None
     schema2jsonschema = lambda schema: {}  # noqa
     schema2parameters = lambda schema: []  # noqa
+    BaseAPISpec = object
+
+
+class APISpec(BaseAPISpec):
+    """
+    Wrapper around APISpec to add `to_flasgger` method
+    """
+    def to_flasgger(self, app=None, definitions=None, paths=None):
+        """
+        Converts APISpec dict to flasgger suitable dict
+        also adds definitions and paths (optional)
+        """
+        if Schema is None:
+            raise RuntimeError('Please install marshmallow and apispec')
+
+        return flasgger.utils.apispec_to_template(
+            app,
+            self,
+            definitions=definitions,
+            paths=paths
+        )
 
 
 class SwaggerView(MethodView):
@@ -35,6 +57,9 @@ class SwaggerView(MethodView):
     validation = False
 
     def dispatch_request(self, *args, **kwargs):
+        """
+        If validation=True perform validation
+        """
         if self.validation:
             specs = {}
             attrs = flasgger.constants.OPTIONAL_FIELDS + [
@@ -51,6 +76,9 @@ class SwaggerView(MethodView):
 
 
 def convert_schemas(d, definitions=None):
+    """
+    Convert Marshmallow schemas to dict definitions
+    """
     if Schema is None:
         raise RuntimeError('Please install marshmallow and apispec')
 

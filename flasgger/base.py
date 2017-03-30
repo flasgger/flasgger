@@ -27,6 +27,9 @@ MK_SANITIZER = lambda text: Markup(markdown(text)) if text else text  # noqa
 
 
 def get_path_from_doc(full_doc):
+    """
+    If `file:` is provided import the file.
+    """
     swag_path = full_doc.replace('file:', '').strip()
     swag_type = swag_path.split('.')[-1]
     return swag_path, swag_type
@@ -40,6 +43,9 @@ def json_to_yaml(content):
 
 
 def load_from_file(swag_path, swag_type='yml', root_path=None):
+    """
+    Load specs from YAML file
+    """
     if swag_type not in ('yaml', 'yml'):
         raise AttributeError("Currently only yaml or yml supported")
         # TODO: support JSON
@@ -56,6 +62,9 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
 
 
 def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
+    """
+    Gets swag data for method/view docstring
+    """
     first_line, other_lines, swag = None, None, None
 
     full_doc = None
@@ -109,6 +118,9 @@ def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
 
 
 def _parse_definition_docstring(obj, process_doc):
+    """
+    Gets swag data from docstring for class based definitions
+    """
     doc_lines, swag = None, None
 
     full_doc = None
@@ -146,6 +158,9 @@ def _parse_definition_docstring(obj, process_doc):
 
 
 def _parse_imports(full_doc, root_path=None):
+    """
+    Supports `import: otherfile.yml` in docstring specs
+    """
     regex = re.compile('import: "(.*)"')
     import_prop = regex.search(full_doc)
     if import_prop:
@@ -176,6 +191,9 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
     endpoint = endpoint.replace('.', '_')
 
     def _extract_array_defs(source):
+        """
+        Extracts definitions identified by `id`
+        """
         # extract any definitions that are within arrays
         # this occurs recursively
         ret = []
@@ -232,12 +250,19 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
 
 
 class APIDocsView(MethodView):
+    """
+    The /apidocs
+    """
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
         self.config = view_args.get('config')
         super(APIDocsView, self).__init__(*args, **kwargs)
 
     def get(self):
+        """
+        The data under /apidocs
+        json or Swagger UI
+        """
         base_endpoint = self.config.get('endpoint', 'flasgger')
         specs = [
             {
@@ -263,6 +288,9 @@ class APIDocsView(MethodView):
 
 
 def has_valid_dispatch_view_docs(endpoint):
+    """
+    Return True if dispatch_request is swaggable
+    """
     klass = endpoint.__dict__.get('view_class', None)
     return klass and hasattr(klass, 'dispatch_request') \
         and hasattr(endpoint, 'methods') \
@@ -270,6 +298,9 @@ def has_valid_dispatch_view_docs(endpoint):
 
 
 def is_valid_method_view(endpoint):
+    """
+    Return True if obj is MethodView
+    """
     klass = endpoint.__dict__.get('view_class', None)
     try:
         return issubclass(klass, MethodView)
@@ -278,6 +309,9 @@ def is_valid_method_view(endpoint):
 
 
 class APISpecsView(MethodView):
+    """
+    The /apispec_1.json and other specs
+    """
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
         self.config = view_args.get('config')
@@ -288,6 +322,9 @@ class APISpecsView(MethodView):
         super(APISpecsView, self).__init__(*args, **kwargs)
 
     def get_url_mappings(self, rule_filter=None):
+        """
+        Returns all werkzeug rules
+        """
         rule_filter = rule_filter or (lambda rule: True)
         app_rules = [
             rule for rule in current_app.url_map.iter_rules()
@@ -296,6 +333,9 @@ class APISpecsView(MethodView):
         return app_rules
 
     def get_def_models(self, definition_filter=None):
+        """
+        Used for class based definitions
+        """
         model_filter = definition_filter or (lambda tag: True)
         return {
             definition.name: definition.obj
@@ -304,6 +344,9 @@ class APISpecsView(MethodView):
         }
 
     def get(self):
+        """
+        The Swagger view get method outputs to /apispecs_1.json
+        """
         data = {
             "swagger": self.config.get('swagger') or self.config.get(
                 'swagger_version', "2.0"
@@ -490,6 +533,9 @@ class APISpecsView(MethodView):
 
 
 class SwaggerDefinition(object):
+    """
+    Class based definition
+    """
     def __init__(self, name, obj, tags=None):
         self.name = name
         self.obj = obj
@@ -526,6 +572,9 @@ class Swagger(object):
             self.init_app(app)
 
     def init_app(self, app):
+        """
+        Initialize the app with Swagger plugin
+        """
         self.load_config(app)
         # self.load_apispec(app)
         self.register_views(app)
@@ -535,9 +584,15 @@ class Swagger(object):
 
     @property
     def configured(self):
+        """
+        Return if `init_app` is configured
+        """
         return self._configured
 
     def definition(self, name, tags=None):
+        """
+        Decorator to add class based definitions
+        """
         def wrapper(obj):
             self.definition_models.append(SwaggerDefinition(name, obj,
                                                             tags=tags))
@@ -545,9 +600,15 @@ class Swagger(object):
         return wrapper
 
     def load_config(self, app):
+        """
+        Copy config from app
+        """
         self.config.update(app.config.get('SWAGGER', {}))
 
     def register_views(self, app):
+        """
+        Register Flasgger views
+        """
         uiversion = self.config.get('uiversion', 2)
         blueprint = Blueprint(
             self.config.get('endpoint', 'flasgger'),
@@ -596,6 +657,9 @@ class Swagger(object):
         app.register_blueprint(blueprint)
 
     def add_headers(self, app):
+        """
+        Inject headers after request
+        """
         @app.after_request
         def after_request(response):  # noqa
             for header, value in self.config.get('headers'):
