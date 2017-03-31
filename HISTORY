@@ -1,0 +1,40 @@
+Changelog
+=========
+
+These are all the changes in Flasgger since the 0.6.0 release
+
+
+0.6.2
+-----
+- introduced tests on Travis CI (examples apps as test cases)
+- Fix blueprint support (examples/blueprint_example.py)
+- Added `prefix_ids = True` for compat with <= 05.14 (see examples/compat.py)
+- Added `import: another.yml` to inherit YAML files.
+- Fix missing `lib` static folder
+- Added support for Flask RESTful (examples/restful.py)
+- Added APISpec support (examples/apispec.py)
+- Fix error in case of empty MethodViews
+
+0.6.1
+-----
+- HOTFIX: added six (missing requirement)
+
+0.6.0
+-----
+
+- Fixed support for MethodViews
+- Added swag.definition to class based definitions
+- Added support for docs in dispatch_request (for FlaskRESTful compat)
+- Upgrades Swagger UI
+- Added `uiversion = 3` to support new experimental swagger UI
+- Improved `validate` to abort with error so no need for try: validate...
+- `validate` does not require `root` argument
+- Definitions is no more prefixed with fucntion and http method names
+- Dictionary can be used as specs in `@swag_from`
+
+0.5.14
+------
+
+No history for older versions
+
+
