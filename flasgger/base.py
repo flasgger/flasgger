@@ -179,7 +179,8 @@ def _parse_imports(full_doc, root_path=None):
     return full_doc
 
 
-def _extract_definitions(alist, level=None, endpoint=None, verb=None):
+def _extract_definitions(alist, level=None, endpoint=None, verb=None,
+                         prefix_ids=False):
     """
     Since we couldn't be bothered to register models elsewhere
     our definitions need to be extracted from the parameters.
@@ -199,7 +200,8 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
         ret = []
         items = source.get('items')
         if items is not None and 'schema' in items:
-            ret += _extract_definitions([items], level + 1, endpoint, verb)
+            ret += _extract_definitions([items], level + 1, endpoint, verb,
+                                        prefix_ids)
         return ret
 
     # for tracking level of recursion
@@ -216,10 +218,12 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
                 schema_id = schema.get("id")
                 if schema_id is not None:
                     # add endpoint_verb to schema id to avoid conflicts
-                    # schema['id'] = schema_id = "{}_{}_{}".format(endpoint,
-                    #                                              verb,
-                    #                                              schema_id)
-                    # ^ removed for compliance with swagger specs
+                    if prefix_ids:
+                        schema['id'] = schema_id = "{}_{}_{}".format(
+                            endpoint, verb, schema_id
+                        )
+                    # ^ api['SWAGGER']['prefix_ids'] = True
+                    # ... for backwards compatibility with <= 0.5.14
 
                     defs.append(schema)
                     ref = {"$ref": "#/definitions/{}".format(schema_id)}
@@ -239,7 +243,8 @@ def _extract_definitions(alist, level=None, endpoint=None, verb=None):
                 properties = schema.get('properties')
                 if properties is not None:
                     defs += _extract_definitions(
-                        properties.values(), level + 1, endpoint, verb
+                        properties.values(), level + 1, endpoint, verb,
+                        prefix_ids
                     )
 
                 defs += _extract_array_defs(schema)
@@ -267,8 +272,8 @@ class APIDocsView(MethodView):
         specs = [
             {
                 "url": url_for(".".join((base_endpoint, spec['endpoint']))),
-                "title": spec.get('title'),
-                "version": spec.get("version"),
+                "title": spec.get('title', 'API Spec 1'),
+                "version": spec.get("version", '0.0.1'),
                 "endpoint": spec.get('endpoint')
             }
             for spec in self.config.get('specs', [])
@@ -374,6 +379,10 @@ class APISpecsView(MethodView):
             "paths": self.config.get('paths') or defaultdict(dict),
             "definitions": self.config.get('definitions') or defaultdict(dict)
         }
+
+        # if True schemaa ids will be prefized by function_method_{id}
+        # for backwards compatibility with <= 0.5.14
+        prefix_ids = self.config.get('prefix_ids')
 
         if self.config.get('host'):
             data['host'] = self.config.get('host')
@@ -482,12 +491,15 @@ class APISpecsView(MethodView):
                     definitions.update(swag.get('definitions', {}))
                     defs = []  # swag.get('definitions', [])
                     defs += _extract_definitions(
-                        defs, endpoint=rule.endpoint, verb=verb)
+                        defs, endpoint=rule.endpoint, verb=verb,
+                        prefix_ids=prefix_ids
+                    )
 
                     params = swag.get('parameters', [])
                     defs += _extract_definitions(params,
                                                  endpoint=rule.endpoint,
-                                                 verb=verb)
+                                                 verb=verb,
+                                                 prefix_ids=prefix_ids)
 
                     responses = swag.get('responses', {})
                     responses = {
@@ -498,7 +510,8 @@ class APISpecsView(MethodView):
                         defs = defs + _extract_definitions(
                             responses.values(),
                             endpoint=rule.endpoint,
-                            verb=verb
+                            verb=verb,
+                            prefix_ids=prefix_ids
                         )
                     for definition in defs:
                         if 'id' not in definition:
@@ -520,7 +533,12 @@ class APISpecsView(MethodView):
                     # other optionals
                     for key in optional_fields:
                         if key in swag:
-                            operation[key] = swag.get(key)
+                            value = swag.get(key)
+                            if key in ('produces', 'consumes'):
+                                if not isinstance(value, (list, tuple)):
+                                    value = [value]
+
+                            operation[key] = value
                     operations[verb] = operation
 
             if len(operations):
