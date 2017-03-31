@@ -68,5 +68,19 @@ def colors(palette):
 
     return jsonify(result)
 
+
+def test_swag(client, specs_data):
+    """
+    This test is runs automatically in Travis CI
+
+    :param client: Flask app test client
+    :param specs_data: {'url': {swag_specs}} for every spec in app
+    """
+    for url, spec in specs_data.items():
+        assert 'Palette' in spec['definitions']
+        assert 'Color' in spec['definitions']
+        assert 'colors' in spec['paths']['/colors/{palette}/']['get']['tags']
+
+
 if __name__ == "__main__":
     app.run(debug=True)

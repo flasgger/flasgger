@@ -8,3 +8,6 @@ before_install:
 
 script:
   - make test
+
+after_success:
+  - coveralls

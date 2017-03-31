@@ -13,6 +13,8 @@ pep8==1.5.7
 flake8==2.4.1
 pytest
 flex
+coveralls
+pytest-cov
 
 # install flasgger itself as editable
 -e .
