@@ -3,7 +3,6 @@ from flask import Blueprint, Flask, jsonify
 from flasgger import Swagger
 from flasgger.utils import swag_from
 
-
 app = Flask(__name__)
 
 example_blueprint = Blueprint("example_blueprint", __name__)

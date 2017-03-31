@@ -1,9 +1,7 @@
 # coding: utf-8
 from flask import Flask, jsonify
-from flasgger import (
-    Swagger, APISpec, Schema, fields
-)
 
+from flasgger import APISpec, Schema, Swagger, fields
 
 # Create an APISpec
 spec = APISpec(
@@ -72,5 +70,3 @@ Swagger(app, template=template)
 
 if __name__ == '__main__':
     app.run(debug=True)
-
-

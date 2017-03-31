@@ -1,13 +1,6 @@
-from flask import Flask, jsonify, request, Blueprint
-from flasgger import (
-    Schema,
-    Swagger,
-    SwaggerView,
-    fields,
-    swag_from,
-    validate
-)
+from flask import Blueprint, Flask, jsonify, request
 
+from flasgger import Schema, Swagger, SwaggerView, fields, swag_from, validate
 
 app = Flask(__name__)
 Swagger(app)

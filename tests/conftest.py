@@ -1,9 +1,9 @@
-import os
-from importlib import import_module
-from flasgger import Swagger
-import random
 import json
+import os
+import random
+from importlib import import_module
 
+from flasgger import Swagger
 
 EXAMPLES_DIR = "examples/"
 

@@ -1,17 +1,18 @@
 # coding: utf-8
 
-import os
 import copy
 import inspect
-from functools import wraps
+import os
 from collections import OrderedDict
 from copy import deepcopy
+from functools import wraps
 
 import jsonschema
 import yaml
-from flask import request, abort, Response
+from flask import Response, abort, request
 from jsonschema import ValidationError  # noqa
 from six import string_types
+
 from flasgger.base import _extract_definitions, load_from_file
 
 

@@ -3,8 +3,9 @@ FIRST:
 pip install flask-restful
 """
 from flask import Flask
+from flask_restful import Api, Resource, abort, reqparse
+
 from flasgger import Swagger, swag_from
-from flask_restful import reqparse, abort, Api, Resource
 
 app = Flask(__name__)
 api = Api(app)

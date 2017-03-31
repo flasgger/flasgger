@@ -7,8 +7,8 @@ Test compatibility with pre 0.5.14 version
 
 
 from flask import Flask, jsonify, request
-from flasgger import Swagger
 
+from flasgger import Swagger
 
 app = Flask(__name__)
 app.config['SWAGGER'] = {

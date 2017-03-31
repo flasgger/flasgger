@@ -1,6 +1,7 @@
 # coding: utf-8
 from flask import Flask, jsonify
-from flasgger import Swagger, SwaggerView, Schema, fields
+
+from flasgger import Schema, Swagger, SwaggerView, fields
 
 
 class Color(Schema):

@@ -3,7 +3,6 @@ from flask import Flask, jsonify
 from flasgger import Swagger
 from flasgger.utils import swag_from
 
-
 app = Flask(__name__)
 app.config['SWAGGER'] = {
     'title': 'Colors API',

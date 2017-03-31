@@ -5,8 +5,8 @@ no swagabble views.
 """
 from flask import Flask
 from flask.views import MethodView
-from flasgger import Swagger
 
+from flasgger import Swagger
 
 app = Flask(__name__)
 swag = Swagger()

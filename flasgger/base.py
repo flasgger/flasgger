@@ -17,9 +17,9 @@ from flask import (Blueprint, Markup, current_app, jsonify, redirect,
                    render_template, request, url_for)
 from flask.views import MethodView
 from mistune import markdown
+
 from flasgger.constants import OPTIONAL_FIELDS
 from flasgger.marshmallow_apispec import SwaggerView, convert_schemas
-
 
 NO_SANITIZER = lambda text: text  # noqa
 BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa

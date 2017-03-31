@@ -1,6 +1,8 @@
 # coding: utf-8
 import inspect
+
 from flask.views import MethodView
+
 import flasgger
 
 try:

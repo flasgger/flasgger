@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
-from flasgger import Swagger
 from flask.views import MethodView
+
+from flasgger import Swagger
 
 
 class BaseAPIView(MethodView):

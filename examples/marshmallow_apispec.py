@@ -1,8 +1,8 @@
 # coding: utf-8
 
 from flask import Flask, jsonify, request
-from flasgger import Swagger, SwaggerView, fields, Schema
 
+from flasgger import Schema, Swagger, SwaggerView, fields
 
 app = Flask(__name__)
 app.config['SWAGGER'] = {
