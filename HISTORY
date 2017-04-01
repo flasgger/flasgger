@@ -3,6 +3,9 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.6.3
+-----
+- HOTFIX: Support views using `decorator` package (#80)
 
 0.6.2
 -----

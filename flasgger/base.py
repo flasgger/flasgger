@@ -6,13 +6,10 @@ If a swagger yaml description is found in the docstrings for an endpoint
 we add the endpoint to swagger specification output
 
 """
-import inspect
-import os
 import re
 from collections import defaultdict
 from copy import deepcopy
 
-import yaml
 from flask import (Blueprint, Markup, current_app, jsonify, redirect,
                    render_template, request, url_for)
 from flask.views import MethodView
@@ -20,238 +17,13 @@ from mistune import markdown
 
 from flasgger.constants import OPTIONAL_FIELDS
 from flasgger.marshmallow_apispec import SwaggerView, convert_schemas
+from flasgger.utils import (extract_definitions, has_valid_dispatch_view_docs,
+                            is_valid_method_view, parse_definition_docstring,
+                            parse_docstring)
 
 NO_SANITIZER = lambda text: text  # noqa
 BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
 MK_SANITIZER = lambda text: Markup(markdown(text)) if text else text  # noqa
-
-
-def get_path_from_doc(full_doc):
-    """
-    If `file:` is provided import the file.
-    """
-    swag_path = full_doc.replace('file:', '').strip()
-    swag_type = swag_path.split('.')[-1]
-    return swag_path, swag_type
-
-
-def json_to_yaml(content):
-    """
-    TODO: convert json to yaml
-    """
-    return content
-
-
-def load_from_file(swag_path, swag_type='yml', root_path=None):
-    """
-    Load specs from YAML file
-    """
-    if swag_type not in ('yaml', 'yml'):
-        raise AttributeError("Currently only yaml or yml supported")
-        # TODO: support JSON
-    try:
-        with open(swag_path) as yaml_file:
-            return yaml_file.read()
-    except IOError:
-        # not in the same dir, add dirname
-        swag_path = os.path.join(
-            root_path or os.path.dirname(__file__), swag_path
-        )
-        with open(swag_path) as yaml_file:
-            return yaml_file.read()
-
-
-def _parse_docstring(obj, process_doc, endpoint=None, verb=None):
-    """
-    Gets swag data for method/view docstring
-    """
-    first_line, other_lines, swag = None, None, None
-
-    full_doc = None
-    swag_path = getattr(obj, 'swag_path', None)
-    swag_type = getattr(obj, 'swag_type', 'yml')
-    swag_paths = getattr(obj, 'swag_paths', None)
-    root_path = os.path.dirname(
-        os.path.abspath(
-            obj.__globals__['__file__']
-        )
-    )
-
-    if swag_path is not None:
-        full_doc = load_from_file(swag_path, swag_type)
-    elif swag_paths is not None:
-        for key in ("{}_{}".format(endpoint, verb), endpoint, verb.lower()):
-            if key in swag_paths:
-                full_doc = load_from_file(swag_paths[key], swag_type)
-                break
-        # TODO: handle multiple root_paths
-        # to support `import: ` from multiple places
-    else:
-        full_doc = inspect.getdoc(obj)
-
-    if full_doc:
-
-        if full_doc.startswith('file:'):
-            if not hasattr(obj, 'root_path'):
-                obj.root_path = root_path
-            swag_path, swag_type = get_path_from_doc(full_doc)
-            doc_filepath = os.path.join(obj.root_path, swag_path)
-            full_doc = load_from_file(doc_filepath, swag_type)
-
-        full_doc = _parse_imports(full_doc, root_path)
-
-        line_feed = full_doc.find('\n')
-        if line_feed != -1:
-            first_line = process_doc(full_doc[:line_feed])
-            yaml_sep = full_doc[line_feed + 1:].find('---')
-            if yaml_sep != -1:
-                other_lines = process_doc(
-                    full_doc[line_feed + 1: line_feed + yaml_sep]
-                )
-                swag = yaml.load(full_doc[line_feed + yaml_sep:])
-            else:
-                other_lines = process_doc(full_doc[line_feed + 1:])
-        else:
-            first_line = full_doc
-
-    return first_line, other_lines, swag
-
-
-def _parse_definition_docstring(obj, process_doc):
-    """
-    Gets swag data from docstring for class based definitions
-    """
-    doc_lines, swag = None, None
-
-    full_doc = None
-    swag_path = getattr(obj, 'swag_path', None)
-    swag_type = getattr(obj, 'swag_type', 'yml')
-
-    if swag_path is not None:
-        full_doc = load_from_file(swag_path, swag_type)
-    else:
-        full_doc = inspect.getdoc(obj)
-
-    if full_doc:
-
-        if full_doc.startswith('file:'):
-            if not hasattr(obj, 'root_path'):
-                obj.root_path = os.path.dirname(
-                    os.path.abspath(
-                        obj.__globals__['__file__']
-                    )
-                )
-            swag_path, swag_type = get_path_from_doc(full_doc)
-            doc_filepath = os.path.join(obj.root_path, swag_path)
-            full_doc = load_from_file(doc_filepath, swag_type)
-
-        yaml_sep = full_doc.find('---')
-        if yaml_sep != -1:
-            doc_lines = process_doc(
-                full_doc[:yaml_sep - 1]
-            )
-            swag = yaml.load(full_doc[yaml_sep:])
-        else:
-            doc_lines = process_doc(full_doc)
-
-    return doc_lines, swag
-
-
-def _parse_imports(full_doc, root_path=None):
-    """
-    Supports `import: otherfile.yml` in docstring specs
-    """
-    regex = re.compile('import: "(.*)"')
-    import_prop = regex.search(full_doc)
-    if import_prop:
-        start = import_prop.start()
-        spaces_num = start - full_doc.rfind('\n', 0, start) - 1
-        filepath = import_prop.group(1)
-        if filepath.startswith('/'):
-            imported_doc = load_from_file(filepath)
-        else:
-            imported_doc = load_from_file(filepath, root_path=root_path)
-        indented_imported_doc = imported_doc.replace(
-            '\n', '\n' + ' ' * spaces_num
-        )
-        full_doc = regex.sub(indented_imported_doc, full_doc, count=1)
-        return _parse_imports(full_doc)
-    return full_doc
-
-
-def _extract_definitions(alist, level=None, endpoint=None, verb=None,
-                         prefix_ids=False):
-    """
-    Since we couldn't be bothered to register models elsewhere
-    our definitions need to be extracted from the parameters.
-    We require an 'id' field for the schema to be correctly
-    added to the definitions list.
-    """
-    endpoint = endpoint or request.endpoint.lower()
-    verb = verb or request.method.lower()
-    endpoint = endpoint.replace('.', '_')
-
-    def _extract_array_defs(source):
-        """
-        Extracts definitions identified by `id`
-        """
-        # extract any definitions that are within arrays
-        # this occurs recursively
-        ret = []
-        items = source.get('items')
-        if items is not None and 'schema' in items:
-            ret += _extract_definitions([items], level + 1, endpoint, verb,
-                                        prefix_ids)
-        return ret
-
-    # for tracking level of recursion
-    if level is None:
-        level = 0
-
-    defs = list()
-    if alist is not None:
-        for item in alist:
-            if not getattr(item, 'get'):
-                raise RuntimeError('definitions must be a list of dicts')
-            schema = item.get("schema")
-            if schema is not None:
-                schema_id = schema.get("id")
-                if schema_id is not None:
-                    # add endpoint_verb to schema id to avoid conflicts
-                    if prefix_ids:
-                        schema['id'] = schema_id = "{}_{}_{}".format(
-                            endpoint, verb, schema_id
-                        )
-                    # ^ api['SWAGGER']['prefix_ids'] = True
-                    # ... for backwards compatibility with <= 0.5.14
-
-                    defs.append(schema)
-                    ref = {"$ref": "#/definitions/{}".format(schema_id)}
-                    # only add the reference as a schema if we are in a
-                    # response or
-                    # a parameter i.e. at the top level
-                    # directly ref if a definition is used within another
-                    # definition
-                    if level == 0:
-                        item['schema'] = ref
-                    else:
-                        item.update(ref)
-                        del item['schema']
-
-                # extract any definitions that are within properties
-                # this occurs recursively
-                properties = schema.get('properties')
-                if properties is not None:
-                    defs += _extract_definitions(
-                        properties.values(), level + 1, endpoint, verb,
-                        prefix_ids
-                    )
-
-                defs += _extract_array_defs(schema)
-
-            defs += _extract_array_defs(item)
-
-    return defs
 
 
 class APIDocsView(MethodView):
@@ -290,27 +62,6 @@ class APIDocsView(MethodView):
                 'flasgger/index.html',
                 **data
             )
-
-
-def has_valid_dispatch_view_docs(endpoint):
-    """
-    Return True if dispatch_request is swaggable
-    """
-    klass = endpoint.__dict__.get('view_class', None)
-    return klass and hasattr(klass, 'dispatch_request') \
-        and hasattr(endpoint, 'methods') \
-        and getattr(klass, 'dispatch_request').__doc__
-
-
-def is_valid_method_view(endpoint):
-    """
-    Return True if obj is MethodView
-    """
-    klass = endpoint.__dict__.get('view_class', None)
-    try:
-        return issubclass(klass, MethodView)
-    except TypeError:
-        return False
 
 
 class APISpecsView(MethodView):
@@ -407,7 +158,7 @@ class APISpecsView(MethodView):
 
         for name, def_model in self.get_def_models(
                 self.spec.get('definition_filter')).items():
-            description, swag = _parse_definition_docstring(
+            description, swag = parse_definition_docstring(
                 def_model, self.process_doc)
             if name and swag:
                 if description:
@@ -473,7 +224,7 @@ class APISpecsView(MethodView):
                     swag.update(deepcopy(method.specs_dict))
                     swagged = True
 
-                doc_summary, doc_description, doc_swag = _parse_docstring(
+                doc_summary, doc_description, doc_swag = parse_docstring(
                     method, self.process_doc,
                     endpoint=rule.endpoint, verb=verb
                 )
@@ -490,16 +241,16 @@ class APISpecsView(MethodView):
 
                     definitions.update(swag.get('definitions', {}))
                     defs = []  # swag.get('definitions', [])
-                    defs += _extract_definitions(
+                    defs += extract_definitions(
                         defs, endpoint=rule.endpoint, verb=verb,
                         prefix_ids=prefix_ids
                     )
 
                     params = swag.get('parameters', [])
-                    defs += _extract_definitions(params,
-                                                 endpoint=rule.endpoint,
-                                                 verb=verb,
-                                                 prefix_ids=prefix_ids)
+                    defs += extract_definitions(params,
+                                                endpoint=rule.endpoint,
+                                                verb=verb,
+                                                prefix_ids=prefix_ids)
 
                     responses = swag.get('responses', {})
                     responses = {
@@ -507,7 +258,7 @@ class APISpecsView(MethodView):
                         for key, value in responses.items()
                     }
                     if responses is not None:
-                        defs = defs + _extract_definitions(
+                        defs = defs + extract_definitions(
                             responses.values(),
                             endpoint=rule.endpoint,
                             verb=verb,
@@ -683,3 +434,7 @@ class Swagger(object):
             for header, value in self.config.get('headers'):
                 response.headers[header] = value
             return response
+
+
+# backwards compatibility
+Flasgger = Swagger  # noqa
