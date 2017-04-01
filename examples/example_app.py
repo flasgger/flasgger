@@ -1,3 +1,6 @@
+"""
+A general example
+"""
 from flask import Flask, jsonify, request
 from flask.views import MethodView
 

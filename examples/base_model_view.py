@@ -1,3 +1,6 @@
+"""
+A test to ensure that MethodView inheritance works as expected
+"""
 from flask import Flask, jsonify
 from flask.views import MethodView
 

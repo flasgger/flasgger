@@ -1,3 +1,6 @@
+"""
+Example of JSON body validation in POST with various kinds of specs and views.
+"""
 from flask import Blueprint, Flask, jsonify, request
 
 from flasgger import Schema, Swagger, SwaggerView, fields, swag_from, validate
@@ -154,7 +157,7 @@ app.add_url_rule(
 # ensure the same works for blueprints
 
 example_blueprint = Blueprint(
-  "example", __name__, url_prefix='/blueprint')
+    "example", __name__, url_prefix='/blueprint')
 
 
 @example_blueprint.route('/manualvalidation', methods=['POST'])

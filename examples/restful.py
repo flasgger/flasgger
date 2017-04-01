@@ -1,6 +1,6 @@
 """
-FIRST:
-pip install flask-restful
+Example if Flask RESTFul integration.
+requires: `pip install flask-restful`
 """
 from flask import Flask
 from flask_restful import Api, Resource, abort, reqparse

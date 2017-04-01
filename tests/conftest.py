@@ -1,35 +1,8 @@
 import json
-import os
 import random
-from importlib import import_module
 
 from flasgger import Swagger
-
-EXAMPLES_DIR = "examples/"
-
-
-def remove_suffix(fpath):
-    """Remove all file ending suffixes"""
-    return os.path.splitext(fpath)[0]
-
-
-def is_python_file(fpath):
-    """Naive Python module filterer"""
-    return ".py" in fpath and "__" not in fpath
-
-
-def pathify(basenames):
-    """*nix to python module path"""
-    example = EXAMPLES_DIR.replace("/", ".")
-    return [example + basename for basename in basenames]
-
-
-def examples():
-    """All example modules"""
-    all_files = os.listdir(EXAMPLES_DIR)
-    python_files = [f for f in all_files if is_python_file(f)]
-    basenames = [remove_suffix(f) for f in python_files]
-    return [import_module(module) for module in pathify(basenames)]
+from flasgger.utils import get_examples
 
 
 def get_specs_data(mod):
@@ -63,7 +36,7 @@ def pytest_generate_tests(metafunc):
     """
     test_data = [
         (mod, mod.app.test_client(), get_specs_data(mod))
-        for mod in examples()
+        for mod in get_examples()
     ]
 
     metafunc.parametrize(

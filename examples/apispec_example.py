@@ -1,3 +1,6 @@
+"""
+Example using marshmallow APISpec as base template for Flasgger specs
+"""
 # coding: utf-8
 from flask import Flask, jsonify
 

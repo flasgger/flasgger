@@ -1,3 +1,6 @@
+"""
+A test to ensure routes from Blueprints are swagged as expected.
+"""
 from flask import Blueprint, Flask, jsonify
 
 from flasgger import Swagger

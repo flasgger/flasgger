@@ -1,3 +1,6 @@
+"""
+Example using a dictionary as specification instead of YAML
+"""
 from flask import Flask, jsonify
 
 from flasgger import Swagger

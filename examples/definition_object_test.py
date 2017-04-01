@@ -1,13 +1,5 @@
 """
-# create a virtualenv
-mkvirtualenv test_api
-
-# install dependencies
-pip install flask
-pip install flasgger
-
-# run the following script
-python simple_test.py
+A test using simple class based definitions
 """
 from flask import Flask, jsonify, request
 from flask.views import View

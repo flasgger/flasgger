@@ -6,6 +6,7 @@ import os
 from collections import OrderedDict
 from copy import deepcopy
 from functools import wraps
+from importlib import import_module
 
 import jsonschema
 import yaml
@@ -240,3 +241,27 @@ def ordered_dict_to_dict(d):
             v = ordered_dict_to_dict(v)
         ret[k] = v
     return ret
+
+
+def remove_suffix(fpath):  # pragma: no cover
+    """Remove all file ending suffixes"""
+    return os.path.splitext(fpath)[0]
+
+
+def is_python_file(fpath):  # pragma: no cover
+    """Naive Python module filterer"""
+    return ".py" in fpath and "__" not in fpath
+
+
+def pathify(basenames, examples_dir="examples/"):  # pragma: no cover
+    """*nix to python module path"""
+    example = examples_dir.replace("/", ".")
+    return [example + basename for basename in basenames]
+
+
+def get_examples(examples_dir="examples/"):  # pragma: no cover
+    """All example modules"""
+    all_files = os.listdir(examples_dir)
+    python_files = [f for f in all_files if is_python_file(f)]
+    basenames = [remove_suffix(f) for f in python_files]
+    return [import_module(module) for module in pathify(basenames)]

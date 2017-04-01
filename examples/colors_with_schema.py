@@ -1,3 +1,6 @@
+"""
+Example using Marshmallow Schema and fields as definitions
+"""
 # coding: utf-8
 from flask import Flask, jsonify
 

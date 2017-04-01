@@ -1,3 +1,6 @@
+"""
+Another example using Marshmallow schemas in SwaggerView (MethodView)
+"""
 # coding: utf-8
 
 from flask import Flask, jsonify, request
