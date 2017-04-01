@@ -22,6 +22,11 @@ Flasgger is compatible with `Flask-RESTful` so you can use `Resources` and `swag
 
 Flasgger also supports `Marshmallow APISpec` as base template for specification, if you are using APISPec from Marshmallow take a look at [apispec example.](examples/apispec_example.py)
 
+# Examples and demo app
+
+There are some [example applications](examples/) and you can also play with examples in [Flasgger demo app](http://flasgger.pythonanywhere.com/)
+
+> NOTE: all the examples apps are also test cases and run automatically in Travis CI to ensure quality and coverage.
 
 # Installation
 
