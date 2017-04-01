@@ -16,6 +16,7 @@ flex
 coveralls
 pytest-cov
 decorator
+wheel
 
 # install flasgger itself as editable
 -e .
