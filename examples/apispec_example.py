@@ -54,7 +54,7 @@ template = spec.to_flasgger(
 )
 
 """
-optionally if using apisepc.APISpec from original module
+optionally if using apispec.APISpec from original module
 you can do:
 
 from flasgger.utils import apispec_to_template
