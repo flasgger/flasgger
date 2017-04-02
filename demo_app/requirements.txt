@@ -1,3 +1,5 @@
 flasgger
 marshmallow
 apispec
+flask-restful
+decorator
