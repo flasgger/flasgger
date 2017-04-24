@@ -7,6 +7,12 @@ we add the endpoint to swagger specification output
 
 """
 import re
+import codecs
+try:
+    import simplejson as json
+except ImportError:
+    import json
+import yaml
 from collections import defaultdict
 from copy import deepcopy
 
@@ -330,13 +336,15 @@ class Swagger(object):
     }
 
     def __init__(self, app=None, config=None,
-                 sanitizer=None, template=None):
+                 sanitizer=None, template=None, template_file=None):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
         self.sanitizer = sanitizer or BR_SANITIZER
         self.config = config or self.DEFAULT_CONFIG.copy()
         self.template = template
+        if template_file is not None:
+            self.template = self.load_swagger_file(template_file)
         if app:
             self.init_app(app)
 
@@ -350,6 +358,22 @@ class Swagger(object):
         self.add_headers(app)
         self._configured = True
         app.swag = self
+
+    def load_swagger_file(self, filename):
+        if filename.endswith('.json'):
+            loader = json.load
+        elif filename.endswith('.yml') or filename.endswith('.yaml'):
+            loader = yaml.load
+        else:
+            with codecs.open(filename, 'r', 'utf-8') as f:
+                contents = f.read()
+                contents = contents.strip()
+                if contents[0] in ['{', '[']:
+                    loader = json.load
+                else:
+                    loader = yaml.load
+        with codecs.open(filename, 'r', 'utf-8') as f:
+            return loader(f)
 
     @property
     def configured(self):
