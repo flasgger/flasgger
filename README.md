@@ -459,6 +459,7 @@ template = {
       "responsibleDeveloper": "Me",
       "email": "me@me.com",
       "url": "www.me.com",
+    },
     "termsOfService": "http://me.com/terms",
     "version": "0.0.1"
   },
