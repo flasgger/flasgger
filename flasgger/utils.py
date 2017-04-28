@@ -315,8 +315,9 @@ def validate(
             definitions[defi['id']] = defi
 
     # support definitions informed in dict
-    if schema_id in swag.get('definitions', {}):
-        main_def = swag.get('definitions', {}).get(schema_id)
+    swag_defs = swag.get('definitions')
+    if swag_defs:
+        definitions.update(swag_defs)
 
     main_def['definitions'] = definitions
 
