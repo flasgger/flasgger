@@ -1,0 +1,89 @@
+{
+  "basePath": "/colors_template_yaml", 
+  "definitions": {
+    "Color": {
+      "type": "string"
+    }, 
+    "Palette": {
+      "properties": {
+        "palette_name": {
+          "items": {
+            "$ref": "#/definitions/Color"
+          }, 
+          "type": "array"
+        }
+      }, 
+      "type": "object"
+    }
+  }, 
+  "info": {
+    "description": "powered by Flasgger and YAML template", 
+    "termsOfService": "/tos", 
+    "title": "Colors API", 
+    "version": "0.0.1"
+  }, 
+  "paths": {
+    "/colors/{palette}/": {
+      "get": {
+        "consumes": [
+          "application/json"
+        ], 
+        "deprecated": true, 
+        "description": "This is the description<br/>You can also set 'summary' and 'description' in<br/>specs_dict", 
+        "externalDocs": {
+          "description": "Project repository", 
+          "url": "http://github.com/rochacbruno/flasgger"
+        }, 
+        "operationId": "get_colors", 
+        "parameters": [
+          {
+            "default": "all", 
+            "description": "Which palette to filter?", 
+            "enum": [
+              "all", 
+              "rgb", 
+              "cmyk"
+            ], 
+            "in": "path", 
+            "name": "palette", 
+            "required": true, 
+            "type": "string"
+          }
+        ], 
+        "produces": [
+          "application/json"
+        ], 
+        "responses": {
+          "200": {
+            "description": "A list of colors (may be filtered by palette)", 
+            "examples": {
+              "rgb": [
+                "red", 
+                "green", 
+                "blue"
+              ]
+            }, 
+            "schema": {
+              "$ref": "#/definitions/Palette"
+            }
+          }
+        }, 
+        "schemes": [
+          "http", 
+          "https"
+        ], 
+        "security": {
+          "colors_auth": [
+            "write:colors", 
+            "read:colors"
+          ]
+        }, 
+        "summary": "Example using a dictionary as specification", 
+        "tags": [
+          "colors"
+        ]
+      }
+    }
+  }, 
+  "swagger": "2.0"
+}
