@@ -7,6 +7,7 @@ we add the endpoint to swagger specification output
 
 """
 import re
+import os
 import codecs
 try:
     import simplejson as json
@@ -63,7 +64,7 @@ class APIDocsView(MethodView):
         if request.args.get('json'):
             # calling with ?json returns specs
             return jsonify(data)
-        else:
+        else:  # pragma: no cover
             return render_template(
                 'flasgger/index.html',
                 **data
@@ -217,7 +218,9 @@ class APISpecsView(MethodView):
                         'summary', 'description'
                     ]
                     for attr in apispec_attrs:
-                        apispec_swag[attr] = getattr(view_class, attr)
+                        value = getattr(view_class, attr)
+                        if value:
+                            apispec_swag[attr] = value
 
                     apispec_definitions = apispec_swag.get('definitions', {})
                     swag.update(
@@ -258,32 +261,35 @@ class APISpecsView(MethodView):
                                                 verb=verb,
                                                 prefix_ids=prefix_ids)
 
-                    responses = swag.get('responses', {})
-                    responses = {
-                        str(key): value
-                        for key, value in responses.items()
-                    }
-                    if responses is not None:
-                        defs = defs + extract_definitions(
-                            responses.values(),
-                            endpoint=rule.endpoint,
-                            verb=verb,
-                            prefix_ids=prefix_ids
-                        )
-                    for definition in defs:
-                        if 'id' not in definition:
-                            definitions.update(definition)
-                            continue
-                        def_id = definition.pop('id')
-                        if def_id is not None:
-                            definitions[def_id].update(definition)
+                    responses = None
+                    if 'responses' in swag:
+                        responses = swag.get('responses', {})
+                        responses = {
+                            str(key): value
+                            for key, value in responses.items()
+                        }
+                        if responses is not None:
+                            defs = defs + extract_definitions(
+                                responses.values(),
+                                endpoint=rule.endpoint,
+                                verb=verb,
+                                prefix_ids=prefix_ids
+                            )
+                        for definition in defs:
+                            if 'id' not in definition:
+                                definitions.update(definition)
+                                continue
+                            def_id = definition.pop('id')
+                            if def_id is not None:
+                                definitions[def_id].update(definition)
 
                     operation = dict(
                         summary=swag.get('summary'),
                         description=swag.get('description'),
-                        responses=responses
                     )
 
+                    if responses:
+                        operation['responses'] = responses
                     # parameters - swagger ui dislikes empty parameter lists
                     if len(params) > 0:
                         operation['parameters'] = params
@@ -299,11 +305,16 @@ class APISpecsView(MethodView):
                     operations[verb] = operation
 
             if len(operations):
-                rule = str(rule)
+                srule = str(rule)
                 # old regex '(<(.*?\:)?(.*?)>)'
-                for arg in re.findall('(<([^<>]*:)?([^<>]*)>)', rule):
-                    rule = rule.replace(arg[0], '{%s}' % arg[2])
-                paths[rule].update(operations)
+                for arg in re.findall('(<([^<>]*:)?([^<>]*)>)', srule):
+                    srule = srule.replace(arg[0], '{%s}' % arg[2])
+
+                for key, val in operations.items():
+                    if key in paths[srule]:
+                        paths[srule][key].update(val)
+                    else:
+                        paths[srule][key] = val
         return jsonify(data)
 
 
@@ -343,8 +354,7 @@ class Swagger(object):
         self.sanitizer = sanitizer or BR_SANITIZER
         self.config = config or self.DEFAULT_CONFIG.copy()
         self.template = template
-        if template_file is not None:
-            self.template = self.load_swagger_file(template_file)
+        self.template_file = template_file
         if app:
             self.init_app(app)
 
@@ -352,14 +362,24 @@ class Swagger(object):
         """
         Initialize the app with Swagger plugin
         """
+        self.app = app
+
         self.load_config(app)
         # self.load_apispec(app)
+        if self.template_file is not None:
+            self.template = self.load_swagger_file(self.template_file)
         self.register_views(app)
         self.add_headers(app)
         self._configured = True
         app.swag = self
 
     def load_swagger_file(self, filename):
+        if not filename.startswith('/'):
+            filename = os.path.join(
+                self.app.root_path,
+                filename
+            )
+
         if filename.endswith('.json'):
             loader = json.load
         elif filename.endswith('.yml') or filename.endswith('.yaml'):
