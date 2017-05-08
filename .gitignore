@@ -54,3 +54,8 @@ target/
 
 .idea
 *.idea
+*.swp
+.eggs/
+venv/
+.activate.sh
+.deactivate.sh
