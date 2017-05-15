@@ -11,7 +11,7 @@ from importlib import import_module
 
 import jsonschema
 import yaml
-from flask import Response, abort, request
+from flask import abort, request, Response
 from flask.views import MethodView
 from jsonschema import ValidationError  # noqa
 from six import string_types
@@ -520,3 +520,16 @@ def is_valid_method_view(endpoint):
         return issubclass(klass, MethodView)
     except TypeError:
         return False
+
+
+def get_vendor_extension_fields(mapping):
+    """
+    Identify vendor extension fields and extract them into a new dictionary.
+
+    Examples:
+        >>> get_vendor_extension_fields({'test': 1})
+        {}
+        >>> get_vendor_extension_fields({'test': 1, 'x-test': 2})
+        {'x-test': 2}
+    """
+    return {k: v for k, v in mapping.items() if k.startswith('x-')}

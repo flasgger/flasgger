@@ -8,7 +8,7 @@ pep8:
 
 .PHONY: test
 test: pep8
-	@py.test tests -s -vv --cov --cov-config=.coveragerc
+	@py.test tests -s -vv --cov --cov-config=.coveragerc --doctest-modules flasgger
 
 .PHONY: sdist
 sdist: test
