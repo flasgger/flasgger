@@ -26,7 +26,7 @@ from flasgger.constants import OPTIONAL_FIELDS
 from flasgger.marshmallow_apispec import SwaggerView, convert_schemas
 from flasgger.utils import (extract_definitions, has_valid_dispatch_view_docs,
                             is_valid_method_view, parse_definition_docstring,
-                            parse_docstring)
+                            parse_docstring, get_vendor_extension_fields)
 
 NO_SANITIZER = lambda text: text  # noqa
 BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
@@ -137,6 +137,11 @@ class APISpecsView(MethodView):
             "paths": self.config.get('paths') or defaultdict(dict),
             "definitions": self.config.get('definitions') or defaultdict(dict)
         }
+
+        # Support extension properties in the top level config
+        top_level_extension_options = get_vendor_extension_fields(self.config)
+        if top_level_extension_options:
+            data.update(top_level_extension_options)
 
         # if True schemaa ids will be prefized by function_method_{id}
         # for backwards compatibility with <= 0.5.14
