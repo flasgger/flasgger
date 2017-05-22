@@ -11,7 +11,8 @@ from importlib import import_module
 
 import jsonschema
 import yaml
-from flask import abort, request, Response
+import imp
+from flask import Response, abort, request
 from flask.views import MethodView
 from jsonschema import ValidationError  # noqa
 from six import string_types
@@ -298,8 +299,18 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
         swag_path = os.path.join(
             root_path or os.path.dirname(__file__), swag_path
         )
-        with open(swag_path) as yaml_file:
-            return yaml_file.read()
+        try:
+            with open(swag_path) as yaml_file:
+                return yaml_file.read()
+        except IOError:
+            # if package dir
+            path = swag_path.replace(
+                (root_path or os.path.dirname(__file__)), ''
+            ).split('/')[1:]
+            site_package = imp.find_module(path[0])[1]
+            swag_path = os.path.join(site_package, "/".join(path[1:]))
+            with open(swag_path) as yaml_file:
+                return yaml_file.read()
 
 
 def parse_docstring(obj, process_doc, endpoint=None, verb=None):
@@ -525,7 +536,6 @@ def is_valid_method_view(endpoint):
 def get_vendor_extension_fields(mapping):
     """
     Identify vendor extension fields and extract them into a new dictionary.
-
     Examples:
         >>> get_vendor_extension_fields({'test': 1})
         {}
