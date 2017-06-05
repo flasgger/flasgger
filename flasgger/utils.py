@@ -304,11 +304,11 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
                 return yaml_file.read()
         except IOError:
             # if package dir
-            path = swag_path.replace(
+            path = swag_path.replace("/", os.sep).replace("\\", os.sep).replace(
                 (root_path or os.path.dirname(__file__)), ''
-            ).split('/')[1:]
+            ).split(os.sep)[1:]
             site_package = imp.find_module(path[0])[1]
-            swag_path = os.path.join(site_package, "/".join(path[1:]))
+            swag_path = os.path.join(site_package, os.sep.join(path[1:]))
             with open(swag_path) as yaml_file:
                 return yaml_file.read()
 
