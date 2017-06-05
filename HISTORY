@@ -3,6 +3,11 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.6.4
+-----
+
+- template_file argument added to Swagger class
+
 0.6.3
 -----
 - HOTFIX: Support views using `decorator` package (#80)
