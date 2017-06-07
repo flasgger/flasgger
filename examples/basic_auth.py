@@ -67,7 +67,7 @@ Swagger(app,
 )
 
 @app.route("/echo/<name>", methods=["GET", "POST"])
-def list_users(name):
+def echo(name):
     """
     Echo back the name and any posted parameters.
     ---
