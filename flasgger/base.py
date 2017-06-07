@@ -352,7 +352,8 @@ class Swagger(object):
     }
 
     def __init__(self, app=None, config=None,
-                 sanitizer=None, template=None, template_file=None):
+                 sanitizer=None, template=None, template_file=None,
+                 decorators=None):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
@@ -360,6 +361,7 @@ class Swagger(object):
         self.config = config or self.DEFAULT_CONFIG.copy()
         self.template = template
         self.template_file = template_file
+        self.decorators = decorators
         if app:
             self.init_app(app)
 
@@ -427,6 +429,14 @@ class Swagger(object):
         """
         Register Flasgger views
         """
+
+        # Wrap the views in an arbitrary number of decorators.
+        def wrap_view(view):
+            if self.decorators:
+                for decorator in self.decorators:
+                    view = decorator(view)
+            return view
+
         uiversion = self.config.get('uiversion', 2)
         blueprint = Blueprint(
             self.config.get('endpoint', 'flasgger'),
@@ -446,7 +456,7 @@ class Swagger(object):
             blueprint.add_url_rule(
                 spec['route'],
                 spec['endpoint'],
-                view_func=APISpecsView().as_view(
+                view_func=wrap_view(APISpecsView().as_view(
                     spec['endpoint'],
                     view_args=dict(
                         app=app, config=self.config,
@@ -454,16 +464,16 @@ class Swagger(object):
                         template=self.template,
                         definition_models=self.definition_models
                     )
-                )
+                ))
             )
 
         blueprint.add_url_rule(
             self.config.get('specs_route', '/apidocs/'),
             'apidocs',
-            view_func=APIDocsView().as_view(
-                'spidocs',
+            view_func=wrap_view(APIDocsView().as_view(
+                'apidocs',
                 view_args=dict(config=self.config)
-            )
+            ))
         )
 
         # backwards compatibility with old url style
