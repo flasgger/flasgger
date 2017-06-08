@@ -288,11 +288,11 @@ class APISpecsView(MethodView):
                             if def_id is not None:
                                 definitions[def_id].update(definition)
 
-                    operation = dict(
-                        summary=swag.get('summary'),
-                        description=swag.get('description'),
-                    )
-
+                    operation = {}
+                    if swag.get('summary'):
+                        operation['summary'] = swag.get('summary')
+                    if swag.get('description'):
+                        operation['description'] = swag.get('description')
                     if responses:
                         operation['responses'] = responses
                     # parameters - swagger ui dislikes empty parameter lists
