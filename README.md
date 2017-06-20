@@ -482,6 +482,31 @@ And then the template is the default data unless some view changes it. You
 can also provide all your specs as template and have no views. Or views in
 external APP.
 
+# Customize default configurations
+
+Custom configurations such as a different specs route can be provided to Flasgger:
+
+```python
+swagger_config = {
+    "headers": [
+    ],
+    "specs": [
+        {
+            "endpoint": 'apispec_1',
+            "route": '/apispec_1.json',
+            "rule_filter": lambda rule: True,  # all in
+            "model_filter": lambda tag: True,  # all in
+        }
+    ],
+    "static_url_path": "/flasgger_static",
+    # "static_folder": "static",  # must be set by user
+    "specs_route": "/apidocs/"
+}
+
+swagger = Swagger(app, config=swagger_config)
+
+```
+
 ## Extracting Definitions
 
 Definitions can be extracted when `id` is found in spec, example:
