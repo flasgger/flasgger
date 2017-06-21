@@ -376,7 +376,7 @@ class Swagger(object):
         # self.load_apispec(app)
         if self.template_file is not None:
             self.template = self.load_swagger_file(self.template_file)
-        if self.config.get('swagger_ui'):
+        if self.config.get('swagger_ui', True):
             self.register_views(app)
             self.add_headers(app)
         self._configured = True
