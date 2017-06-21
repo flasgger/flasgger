@@ -13,7 +13,7 @@ app.config['SWAGGER'] = {
     'title': 'Flasgger RESTful',
     'uiversion': 2
 }
-Swagger(app)
+swag = Swagger(app)
 
 
 TODOS = {

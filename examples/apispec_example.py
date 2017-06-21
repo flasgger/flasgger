@@ -67,8 +67,8 @@ template = apispec_to_template(
 
 """
 
-# start Flsgger using a template from apispec
-Swagger(app, template=template)
+# start Flasgger using a template from apispec
+swag = Swagger(app, template=template)
 
 
 if __name__ == '__main__':

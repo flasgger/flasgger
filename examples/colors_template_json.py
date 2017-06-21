@@ -10,7 +10,7 @@ app.config['SWAGGER'] = {
     'title': 'Colors API',
     'uiversion': 2
 }
-Swagger(app, template_file='colors_template.json')
+swag = Swagger(app, template_file='colors_template.json')
 
 
 @app.route('/colors/<palette>/')

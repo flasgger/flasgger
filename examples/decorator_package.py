@@ -6,7 +6,7 @@ from flask import Flask, jsonify
 from flasgger import Swagger
 
 app = Flask(__name__)
-Swagger(app)
+swag = Swagger(app)
 
 
 @decorator

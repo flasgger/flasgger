@@ -18,7 +18,7 @@ app.config['SWAGGER'] = {
     # $ref: '#/definitions/index_post_alert'
     'prefix_ids': True
 }
-Swagger(app)
+swag = Swagger(app)
 
 
 @app.route('/', methods=['POST'])

@@ -11,7 +11,7 @@ app.config['SWAGGER'] = {
     'uiversion': 2,
     'x-groupTag': 'Test',
 }
-Swagger(app)
+swag = Swagger(app)
 
 
 def test_swag(client, specs_data):

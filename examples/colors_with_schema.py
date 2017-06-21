@@ -52,7 +52,7 @@ class PaletteView(SwaggerView):
 
 
 app = Flask(__name__)
-Swagger(app)
+swag = Swagger(app)
 
 app.add_url_rule(
     '/colors/<palette>',

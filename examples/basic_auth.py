@@ -49,7 +49,7 @@ app.config["SWAGGER"] = {
     "title": "Swagger Basic Auth App",
     "uiversion": 2,
 }
-Swagger(app,
+swag = Swagger(app,
     decorators=[ requires_basic_auth ],
     template={
         "swagger": "2.0",

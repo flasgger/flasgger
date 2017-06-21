@@ -11,7 +11,7 @@ app.config['SWAGGER'] = {
     'title': 'Colors API',
     'uiversion': 2
 }
-Swagger(app)
+swag = Swagger(app)
 
 
 colors_spec = {
