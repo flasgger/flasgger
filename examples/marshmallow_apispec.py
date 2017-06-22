@@ -13,7 +13,7 @@ app.config['SWAGGER'] = {
     "uiversion": 2
 }
 
-Swagger(app)
+swag = Swagger(app)
 
 
 class User(Schema):

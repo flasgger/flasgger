@@ -12,20 +12,37 @@ def get_specs_data(mod):
     # for each example app in /examples folder
     client = mod.app.test_client()
     # init swag if not yet inititalized (no-routes example)
+    specs_route = None
+    specs_data = {}
     if getattr(mod.app, 'swag', None) is None:
         _swag = Swagger()
         _swag.config['endpoint'] = str(random.randint(1, 5000))
         _swag.init_app(mod.app)
     # get all the specs defined for the example app
-    apidocs = client.get('/apidocs/?json=true')
+    else:
+        try:
+            flasgger_config = mod.swag.config
+
+            if flasgger_config.get('swagger_ui') is False:
+                return specs_data
+
+            specs_route = flasgger_config.get('specs_route', '/apidocs/')
+        except AttributeError:
+            pass
+
+    if specs_route is None:
+        specs_route = '/apidocs/'
+
+    apidocs = client.get('?'.join((specs_route, 'json=true')))
     specs = json.loads(apidocs.data.decode("utf-8")).get('specs')
-    specs_data = {}
+
     for spec in specs:
         # for each spec get the spec url
         url = spec['url']
         response = client.get(url)
         decoded = response.data.decode("utf-8")
         specs_data[url] = json.loads(decoded)
+
     return specs_data
 
 
