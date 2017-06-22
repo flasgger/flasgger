@@ -2,7 +2,10 @@
 In this example Swagger UI is disabled.
 """
 from flask import Flask
-
+try:
+    from http import HTTPStatus
+except ImportError:
+    import httplib as HTTPStatus
 from flasgger import Swagger
 
 swagger_config = {
@@ -30,8 +33,10 @@ def test_swag(client, specs_data):
     :param client: Flask app test client
     :param specs_data: {'url': {swag_specs}} for every spec in app
     """
-    
+
     assert not specs_data
+    assert client.get('/apidocs/').status_code == HTTPStatus.NOT_FOUND
+    assert client.get('/apispec.json').status_code == HTTPStatus.OK
 
 if __name__ == '__main__':
     app.run(debug=True)

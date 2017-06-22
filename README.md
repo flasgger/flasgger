@@ -484,7 +484,7 @@ external APP.
 
 # Customize default configurations
 
-Custom configurations such as a different specs route can be provided to Flasgger:
+Custom configurations such as a different specs route or disabling Swagger UI can be provided to Flasgger:
 
 ```python
 swagger_config = {
