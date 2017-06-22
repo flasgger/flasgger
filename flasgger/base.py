@@ -348,6 +348,7 @@ class Swagger(object):
         ],
         "static_url_path": "/flasgger_static",
         # "static_folder": "static",  # must be set by user
+        "swagger_ui": True,
         "specs_route": "/apidocs/"
     }
 
@@ -375,8 +376,9 @@ class Swagger(object):
         # self.load_apispec(app)
         if self.template_file is not None:
             self.template = self.load_swagger_file(self.template_file)
-        self.register_views(app)
-        self.add_headers(app)
+        if self.config.get('swagger_ui', True):
+            self.register_views(app)
+            self.add_headers(app)
         self._configured = True
         app.swag = self
 
