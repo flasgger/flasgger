@@ -376,9 +376,8 @@ class Swagger(object):
         # self.load_apispec(app)
         if self.template_file is not None:
             self.template = self.load_swagger_file(self.template_file)
-        if self.config.get('swagger_ui', True):
-            self.register_views(app)
-            self.add_headers(app)
+        self.register_views(app)
+        self.add_headers(app)
         self._configured = True
         app.swag = self
 
@@ -439,20 +438,42 @@ class Swagger(object):
                     view = decorator(view)
             return view
 
-        uiversion = self.config.get('uiversion', 2)
-        blueprint = Blueprint(
-            self.config.get('endpoint', 'flasgger'),
-            __name__,
-            url_prefix=self.config.get('url_prefix', None),
-            subdomain=self.config.get('subdomain', None),
-            template_folder=self.config.get(
-                'template_folder', 'ui{0}/templates'.format(uiversion)
-            ),
-            static_folder=self.config.get(
-                'static_folder', 'ui{0}/static'.format(uiversion)
-            ),
-            static_url_path=self.config.get('static_url_path', None)
-        )
+        if self.config.get('swagger_ui', True):
+            uiversion = self.config.get('uiversion', 2)
+            blueprint = Blueprint(
+                self.config.get('endpoint', 'flasgger'),
+                __name__,
+                url_prefix=self.config.get('url_prefix', None),
+                subdomain=self.config.get('subdomain', None),
+                template_folder=self.config.get(
+                    'template_folder', 'ui{0}/templates'.format(uiversion)
+                ),
+                static_folder=self.config.get(
+                    'static_folder', 'ui{0}/static'.format(uiversion)
+                ),
+                static_url_path=self.config.get('static_url_path', None)
+            )
+
+            blueprint.add_url_rule(
+                self.config.get('specs_route', '/apidocs/'),
+                'apidocs',
+                view_func=wrap_view(APIDocsView().as_view(
+                    'apidocs',
+                    view_args=dict(config=self.config)
+                ))
+            )
+
+            # backwards compatibility with old url style
+            blueprint.add_url_rule(
+                '/apidocs/index.html',
+                view_func=lambda: redirect(url_for('flasgger.apidocs'))
+            )
+        else:
+            blueprint = Blueprint(
+                self.config.get('endpoint', 'flasgger'),
+                __name__
+            )
+
         for spec in self.config['specs']:
             self.endpoints.append(spec['endpoint'])
             blueprint.add_url_rule(
@@ -468,21 +489,6 @@ class Swagger(object):
                     )
                 ))
             )
-
-        blueprint.add_url_rule(
-            self.config.get('specs_route', '/apidocs/'),
-            'apidocs',
-            view_func=wrap_view(APIDocsView().as_view(
-                'apidocs',
-                view_args=dict(config=self.config)
-            ))
-        )
-
-        # backwards compatibility with old url style
-        blueprint.add_url_rule(
-            '/apidocs/index.html',
-            view_func=lambda: redirect(url_for('flasgger.apidocs'))
-        )
 
         app.register_blueprint(blueprint)
 
