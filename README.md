@@ -374,23 +374,41 @@ registering the `url_rule` many times. Take a look at `examples/example_app`
 
 # Use the same data to validate your API POST body.
 
-```python
-from flasgger import swag_from, validate
-
-@swag_from('defs.yml')
-def post():
-    validate(request.json, 'UserSchema', 'defs.yml')
-    # if not validate returns ValidationError response with status 400
-    # also returns the validation message.
-```
-
-You can also tell `swag_from` to validate automatically
+Setting `swag_from`'s _validation_ parameter to `True` will validate incoming data automatically:
 
 ```python
 from flasgger import swag_from
 
 @swag_from('defs.yml', validation=True)
 def post():
+    # if not validate returns ValidationError response with status 400
+    # also returns the validation message.
+```
+
+Using `swagger.validate` annotation is also possible:
+
+```python
+from flasgger import Swagger
+
+swagger = Swagger(app)
+
+@swagger.validate('UserSchema')
+def post():
+    '''
+    file: defs.yml
+    '''
+    # if not validate returns ValidationError response with status 400
+    # also returns the validation message.
+```
+
+Yet you can call `validate` manually:
+
+```python
+from flasgger import swag_from, validate
+
+@swag_from('defs.yml')
+def post():
+    validate(request.json, 'UserSchema', 'defs.yml')
     # if not validate returns ValidationError response with status 400
     # also returns the validation message.
 ```

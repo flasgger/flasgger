@@ -1,9 +1,16 @@
 """
 Example of JSON body validation in POST with various kinds of specs and views.
 """
-from flask import Blueprint, Flask, jsonify, request
-
-from flasgger import Schema, Swagger, SwaggerView, fields, swag_from, validate
+from flask import Blueprint
+from flask import Flask
+from flask import jsonify
+from flask import request
+from flasgger import Schema
+from flasgger import Swagger
+from flasgger import SwaggerView
+from flasgger import fields
+from flasgger import swag_from
+from flasgger import validate
 
 app = Flask(__name__)
 swag = Swagger(app)
@@ -18,6 +25,18 @@ def manualvalidation():
     """
     data = request.json
     validate(data, 'User', "test_validation.yml")
+    return jsonify(data)
+
+
+@app.route("/validateannotation", methods=['POST'])
+@swag.validate('User')
+@swag_from("test_validation.yml")
+def validateannotation():
+    """
+    In this example you use validate(schema_id) annotation on the
+    method in which you want to validate received data
+    """
+    data = request.json
     return jsonify(data)
 
 
@@ -158,6 +177,52 @@ app.add_url_rule(
 
 example_blueprint = Blueprint(
     "example", __name__, url_prefix='/blueprint')
+
+
+@example_blueprint.route("/autovalidationfromdocstring", methods=['POST'])
+@swag.validate('Officer')
+def autovalidation_from_docstring():
+    """
+    Test validation using JsonSchema
+
+    The default payload is invalid, try it, then change the age to a
+    valid integer and try again
+    ---
+    tags:
+      - officer
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          id: Officer
+          required:
+            - name
+            - age
+          properties:
+            name:
+              type: string
+              description: The officer's name.
+              default: "James T. Kirk"
+            age:
+              type: integer
+              description: The officer's age (should be integer)
+              default: "138"
+            tags:
+              type: array
+              description: optional list of tags
+              default: ["starfleet", "captain", "enterprise", "dead"]
+              items:
+                type: string
+
+    responses:
+      200:
+        description: A single officer item
+        schema:
+          $ref: '#/definitions/Officer'
+    """
+    data = request.json
+    return jsonify(data)
 
 
 @example_blueprint.route('/manualvalidation', methods=['POST'])

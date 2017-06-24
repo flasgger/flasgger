@@ -4,17 +4,107 @@ import copy
 import inspect
 import os
 import re
-from collections import OrderedDict
+import jsonschema
+import yaml
+from six import string_types
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-
-import jsonschema
-import yaml
-from flask import abort, request, Response
+from collections import OrderedDict
+from flask import abort
+from flask import request
+from flask import Response
+from flask import current_app
 from flask.views import MethodView
 from jsonschema import ValidationError  # noqa
-from six import string_types
+from flasgger.marshmallow_apispec import SwaggerView
+from flasgger.marshmallow_apispec import convert_schemas
+
+
+def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
+
+    specs = []
+    for rule in rules:
+        endpoint = current_app.view_functions[rule.endpoint]
+        methods = dict()
+        is_mv = is_valid_method_view(endpoint)
+
+        for verb in rule.methods.difference(ignore_verbs):
+            if not is_mv and has_valid_dispatch_view_docs(endpoint):
+                endpoint.methods = endpoint.methods or ['GET']
+                if verb in endpoint.methods:
+                    methods[verb.lower()] = endpoint
+            elif getattr(endpoint, 'methods', None) is not None:
+                if verb in endpoint.methods:
+                    verb = verb.lower()
+                    methods[verb] = getattr(endpoint.view_class, verb)
+            else:
+                methods[verb.lower()] = endpoint
+
+        verbs = []
+        for verb, method in methods.items():
+
+            klass = method.__dict__.get('view_class', None)
+            if not is_mv and klass and hasattr(klass, 'verb'):
+                method = klass.__dict__.get('verb')
+            elif klass and hasattr(klass, 'dispatch_request'):
+                method = klass.__dict__.get('dispatch_request')
+            if method is None:  # for MethodView
+                method = klass.__dict__.get(verb)
+
+            if method is None:
+                if is_mv:  # #76 Empty MethodViews
+                    continue
+                raise RuntimeError(
+                    'Cannot detect view_func for rule {0}'.format(rule)
+                )
+
+            swag = {}
+            swagged = False
+
+            view_class = getattr(endpoint, 'view_class', None)
+            if view_class and issubclass(view_class, SwaggerView):
+                apispec_swag = {}
+                apispec_attrs = optional_fields + [
+                    'parameters', 'definitions', 'responses',
+                    'summary', 'description'
+                ]
+                for attr in apispec_attrs:
+                    value = getattr(view_class, attr)
+                    if value:
+                        apispec_swag[attr] = value
+
+                apispec_definitions = apispec_swag.get('definitions', {})
+                swag.update(
+                    convert_schemas(apispec_swag, apispec_definitions)
+                )
+
+                swagged = True
+
+            if getattr(method, 'specs_dict', None):
+                swag.update(deepcopy(method.specs_dict))
+                swagged = True
+
+            doc_summary, doc_description, doc_swag = parse_docstring(
+                method, sanitizer, endpoint=rule.endpoint, verb=verb)
+
+            if doc_swag:
+                swag.update(doc_swag or {})
+                swagged = True
+
+            if swagged:
+                if doc_summary:
+                    swag['summary'] = doc_summary
+
+                if doc_description:
+                    swag['description'] = doc_description
+
+                verbs.append((verb, swag))
+
+        if verbs:
+            specs.append((rule, verbs))
+
+    return specs
 
 
 def swag_from(specs=None, filetype=None, endpoint=None, methods=None,
