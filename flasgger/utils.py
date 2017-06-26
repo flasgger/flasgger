@@ -391,7 +391,7 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
         try:
             with open(swag_path) as yaml_file:
                 return yaml_file.read()
-        except IOError:
+        except IOError:  # pragma: no cover
             # if package dir
             # see https://github.com/rochacbruno/flasgger/pull/104
             # Still not able to reproduce this case
