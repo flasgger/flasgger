@@ -9,24 +9,28 @@ we add the endpoint to swagger specification output
 import re
 import os
 import codecs
+import yaml
 try:
     import simplejson as json
 except ImportError:
     import json
-import yaml
-from collections import defaultdict
-from copy import deepcopy
 
-from flask import (Blueprint, Markup, current_app, jsonify, redirect,
-                   render_template, request, url_for)
+from functools import wraps
+from collections import defaultdict
+from flask import Blueprint
+from flask import Markup
+from flask import current_app
+from flask import jsonify
+from flask import redirect
+from flask import render_template
+from flask import request, url_for
 from flask.views import MethodView
 from mistune import markdown
-
 from flasgger.constants import OPTIONAL_FIELDS
-from flasgger.marshmallow_apispec import SwaggerView, convert_schemas
-from flasgger.utils import (extract_definitions, has_valid_dispatch_view_docs,
-                            is_valid_method_view, parse_definition_docstring,
-                            parse_docstring, get_vendor_extension_fields)
+from flasgger.utils import extract_definitions, get_specs
+from flasgger.utils import parse_definition_docstring
+from flasgger.utils import get_vendor_extension_fields
+from flasgger.utils import validate
 
 NO_SANITIZER = lambda text: text  # noqa
 BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
@@ -177,137 +181,68 @@ class APISpecsView(MethodView):
                     swag.update({'description': description})
                 definitions[name].update(swag)
 
-        for rule in self.get_url_mappings(self.spec.get('rule_filter')):
-            endpoint = current_app.view_functions[rule.endpoint]
-            methods = dict()
-            is_mv = is_valid_method_view(endpoint)
+        specs = get_specs(
+            self.get_url_mappings(self.spec.get('rule_filter')), ignore_verbs,
+            optional_fields, self.process_doc)
 
-            for verb in rule.methods.difference(ignore_verbs):
-                if not is_mv and has_valid_dispatch_view_docs(endpoint):
-                    endpoint.methods = endpoint.methods or ['GET']
-                    if verb in endpoint.methods:
-                        methods[verb.lower()] = endpoint
-                elif getattr(endpoint, 'methods', None) is not None:
-                    if verb in endpoint.methods:
-                        verb = verb.lower()
-                        methods[verb] = getattr(endpoint.view_class, verb)
-                else:
-                    methods[verb.lower()] = endpoint
-
+        for rule, verbs in specs:
             operations = dict()
-
-            for verb, method in methods.items():
-                klass = method.__dict__.get('view_class', None)
-                if not is_mv and klass and hasattr(klass, 'verb'):
-                    method = klass.__dict__.get('verb')
-                elif klass and hasattr(klass, 'dispatch_request'):
-                    method = klass.__dict__.get('dispatch_request')
-                if method is None:  # for MethodView
-                    method = klass.__dict__.get(verb)
-
-                if method is None:
-                    if is_mv:  # #76 Empty MethodViews
-                        continue
-                    raise RuntimeError(
-                        'Cannot detect view_func for rule {0}'.format(rule)
-                    )
-
-                swag = {}
-                swagged = False
-
-                view_class = getattr(endpoint, 'view_class', None)
-                if view_class and issubclass(view_class, SwaggerView):
-                    apispec_swag = {}
-                    apispec_attrs = optional_fields + [
-                        'parameters', 'definitions', 'responses',
-                        'summary', 'description'
-                    ]
-                    for attr in apispec_attrs:
-                        value = getattr(view_class, attr)
-                        if value:
-                            apispec_swag[attr] = value
-
-                    apispec_definitions = apispec_swag.get('definitions', {})
-                    swag.update(
-                        convert_schemas(apispec_swag, apispec_definitions)
-                    )
-
-                    swagged = True
-
-                if getattr(method, 'specs_dict', None):
-                    swag.update(deepcopy(method.specs_dict))
-                    swagged = True
-
-                doc_summary, doc_description, doc_swag = parse_docstring(
-                    method, self.process_doc,
-                    endpoint=rule.endpoint, verb=verb
+            for verb, swag in verbs:
+                definitions.update(swag.get('definitions', {}))
+                defs = []  # swag.get('definitions', [])
+                defs += extract_definitions(
+                    defs, endpoint=rule.endpoint, verb=verb,
+                    prefix_ids=prefix_ids
                 )
-                if doc_swag:
-                    swag.update(doc_swag or {})
-                    swagged = True
 
-                # we only add swagged endpoints
-                if swagged:
-                    if doc_summary:
-                        swag['summary'] = doc_summary
-                    if doc_description:
-                        swag['description'] = doc_description
+                params = swag.get('parameters', [])
+                defs += extract_definitions(params,
+                                            endpoint=rule.endpoint,
+                                            verb=verb,
+                                            prefix_ids=prefix_ids)
 
-                    definitions.update(swag.get('definitions', {}))
-                    defs = []  # swag.get('definitions', [])
-                    defs += extract_definitions(
-                        defs, endpoint=rule.endpoint, verb=verb,
-                        prefix_ids=prefix_ids
-                    )
+                responses = None
+                if 'responses' in swag:
+                    responses = swag.get('responses', {})
+                    responses = {
+                        str(key): value
+                        for key, value in responses.items()
+                    }
+                    if responses is not None:
+                        defs = defs + extract_definitions(
+                            responses.values(),
+                            endpoint=rule.endpoint,
+                            verb=verb,
+                            prefix_ids=prefix_ids
+                        )
+                    for definition in defs:
+                        if 'id' not in definition:
+                            definitions.update(definition)
+                            continue
+                        def_id = definition.pop('id')
+                        if def_id is not None:
+                            definitions[def_id].update(definition)
 
-                    params = swag.get('parameters', [])
-                    defs += extract_definitions(params,
-                                                endpoint=rule.endpoint,
-                                                verb=verb,
-                                                prefix_ids=prefix_ids)
+                operation = {}
+                if swag.get('summary'):
+                    operation['summary'] = swag.get('summary')
+                if swag.get('description'):
+                    operation['description'] = swag.get('description')
+                if responses:
+                    operation['responses'] = responses
+                # parameters - swagger ui dislikes empty parameter lists
+                if len(params) > 0:
+                    operation['parameters'] = params
+                # other optionals
+                for key in optional_fields:
+                    if key in swag:
+                        value = swag.get(key)
+                        if key in ('produces', 'consumes'):
+                            if not isinstance(value, (list, tuple)):
+                                value = [value]
 
-                    responses = None
-                    if 'responses' in swag:
-                        responses = swag.get('responses', {})
-                        responses = {
-                            str(key): value
-                            for key, value in responses.items()
-                        }
-                        if responses is not None:
-                            defs = defs + extract_definitions(
-                                responses.values(),
-                                endpoint=rule.endpoint,
-                                verb=verb,
-                                prefix_ids=prefix_ids
-                            )
-                        for definition in defs:
-                            if 'id' not in definition:
-                                definitions.update(definition)
-                                continue
-                            def_id = definition.pop('id')
-                            if def_id is not None:
-                                definitions[def_id].update(definition)
-
-                    operation = {}
-                    if swag.get('summary'):
-                        operation['summary'] = swag.get('summary')
-                    if swag.get('description'):
-                        operation['description'] = swag.get('description')
-                    if responses:
-                        operation['responses'] = responses
-                    # parameters - swagger ui dislikes empty parameter lists
-                    if len(params) > 0:
-                        operation['parameters'] = params
-                    # other optionals
-                    for key in optional_fields:
-                        if key in swag:
-                            value = swag.get(key)
-                            if key in ('produces', 'consumes'):
-                                if not isinstance(value, (list, tuple)):
-                                    value = [value]
-
-                            operation[key] = value
-                    operations[verb] = operation
+                        operation[key] = value
+                operations[verb] = operation
 
             if len(operations):
                 srule = str(rule)
@@ -501,6 +436,62 @@ class Swagger(object):
             for header, value in self.config.get('headers'):
                 response.headers[header] = value
             return response
+
+    def validate(self, schema_id):
+        """
+        A decorator that is used to validate incoming requests data
+        against a schema
+
+            swagger = Swagger(app)
+
+            @app.route('/pets', methods=['POST'])
+            @swagger.validate('Pet')
+            @swag_from("pet_post_endpoint.yml")
+            def post():
+                return db.insert(request.data)
+
+        This annotation only works if the endpoint is already swagged,
+        i.e. placing @swag_from above @validate or not declaring the
+        swagger specifications in the method's docstring **won't work**
+
+        Naturally, if you use @app.route annotation it still needs to
+        be the outermost annotation
+
+        :param schema_id: the id of the schema with which the data will
+                          be validated
+        """
+
+        def decorator(func):
+
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+                ignore_verbs = set(
+                    self.config.get('ignore_verbs', ("HEAD", "OPTIONS"))
+                )
+
+                # technically only responses is non-optional
+                optional_fields \
+                    = self.config.get('optional_fields') or OPTIONAL_FIELDS
+
+                with self.app.app_context():
+                    specs = get_specs(
+                        current_app.url_map.iter_rules(), ignore_verbs,
+                        optional_fields, self.sanitizer)
+
+                    swags = (swag for _, verbs in specs for _, swag in verbs
+                             if swag is not None)
+
+                for swag in swags:
+                    for d in swag.get('parameters', []):
+                        if d.get('schema', {}).get('id') == schema_id:
+                            specs = swag
+
+                validate(schema_id=schema_id, specs=specs)
+                return func(*args, **kwargs)
+
+            return wrapper
+
+        return decorator
 
 
 # backwards compatibility
