@@ -484,10 +484,8 @@ template = {
   "host": "mysite.com",  # overrides localhost:500
   "basePath": "/api",  # base bash for blueprint registration
   "schemes": [
-    [
-      "http",
-      "https"
-    ]
+    "http",
+    "https"
   ],
   "operationId": "getmyData"
 }
