@@ -1,6 +1,10 @@
 """
 Example of JSON body validation in POST with various kinds of specs and views.
 """
+try:
+    from http import HTTPStatus
+except ImportError:
+    import httplib as HTTPStatus
 from flask import Blueprint
 from flask import Flask
 from flask import jsonify
@@ -311,6 +315,159 @@ example_blueprint.add_url_rule(
 
 
 app.register_blueprint(example_blueprint)
+
+
+def test_swag(client, specs_data):
+    """
+    This test is runs automatically in Travis CI
+
+    :param client: Flask app test client
+    :param specs_data: {'url': {swag_specs}} for every spec in app
+    """
+
+    apispec = specs_data.get('/apispec_1.json')
+
+    assert apispec is not None
+
+    paths = apispec.get('paths')
+
+    expected_user_paths = (
+        '/autovalidation',
+        '/validateannotation',
+        '/autovalidationfromspecdict',
+        '/blueprint/autovalidation',
+        '/blueprint/autovalidationfromspecdict',
+        '/blueprint/manualvalidation',
+        '/blueprint/schemevalidation',
+        '/manualvalidation',
+        '/schemevalidation',
+    )
+
+    expected_officer_paths = (
+        '/blueprint/autovalidationfromdocstring',
+    )
+
+    invalid_users = (
+        """
+        {
+          "username": "Sirius Black",
+          "age": "180",
+          "tags": [
+            "wizard",
+            "hogwarts",
+            "dead"
+          ]
+        }
+        """,
+        """
+        {
+          "age": 180,
+          "tags": [
+            "wizard"
+          ]
+        }
+        """,
+    )
+
+    valid_users = (
+        """
+        {
+          "username": "Sirius Black",
+          "age": 180,
+          "tags": [
+            "wizard",
+            "hogwarts",
+            "dead"
+          ]
+        }
+        """,
+        """
+        {
+          "username": "Ronald Weasley",
+          "age": 22
+        }
+        """,
+    )
+
+    invalid_officers = (
+        """
+        {
+          "name": "James T. Kirk",
+          "age": "138",
+          "tags": [
+            "captain",
+            "enterprise",
+            "dead"
+          ]
+        }
+        """,
+        """
+        {
+          "age": 138,
+          "tags": [
+            "captain"
+          ]
+        }
+        """,
+    )
+
+    valid_officers = (
+        """
+        {
+          "name": "James T. Kirk",
+          "age": 138,
+          "tags": [
+            "captain",
+            "enterprise",
+            "dead"
+          ]
+        }
+        """,
+        """
+        {
+          "name": "Jean-Luc Picard",
+          "age": 60
+        }
+        """,
+    )
+
+    assert paths is not None and len(paths) > 0
+
+    definitions = apispec.get('definitions')
+
+    assert definitions is not None
+    assert definitions.get('User') is not None
+    assert definitions.get('Officer') is not None
+
+    for expected_path in expected_user_paths:
+        assert paths.get(expected_path) is not None
+
+        for invalid_user in invalid_users:
+            response = client.post(
+                expected_path, data=invalid_user,
+                content_type='application/json')
+            assert response.status_code == HTTPStatus.BAD_REQUEST
+
+        for valid_user in valid_users:
+            response = client.post(
+                expected_path, data=valid_user,
+                content_type='application/json')
+            assert response.status_code == HTTPStatus.OK
+
+    for expected_path in expected_officer_paths:
+        assert paths.get(expected_path) is not None
+
+        for invalid_officer in invalid_officers:
+            response = client.post(
+                expected_path, data=invalid_officer,
+                content_type='application/json')
+            assert response.status_code == HTTPStatus.BAD_REQUEST
+
+        for valid_officer in valid_officers:
+            response = client.post(
+                expected_path, data=valid_officer,
+                content_type='application/json')
+            assert response.status_code == HTTPStatus.OK
 
 
 if __name__ == "__main__":
