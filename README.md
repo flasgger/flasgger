@@ -55,7 +55,7 @@ from flask import Flask, jsonify
 from flasgger import Swagger
 
 app = Flask(__name__)
-Swagger(app)
+swagger = Swagger(app)
 
 @app.route('/colors/<palette>/')
 def colors(palette):
@@ -287,7 +287,7 @@ class PaletteView(SwaggerView):
         return jsonify(result)
 
 app = Flask(__name__)
-Swagger(app)
+swagger = Swagger(app)
 
 app.add_url_rule(
     '/colors/<palette>',
@@ -317,7 +317,7 @@ from flask_restful import Api, Resource
 
 app = Flask(__name__)
 api = Api(app)
-Swagger(app)
+swagger = Swagger(app)
 
 class Username(Resource):
     def get(self, username):
@@ -426,17 +426,17 @@ By default Flasgger will try to sanitize the content in YAML definitions
 replacing every ```\n``` with ```<br>``` but you can change this behaviour
 setting another kind of sanitizer.
 
-```
+```python
 from flasgger import Swagger, NO_SANITIZER
 
 app =Flask()
-Swagger(app, sanitizer=NO_SANITIZER)
+swagger = Swagger(app, sanitizer=NO_SANITIZER)
 ```
 
 You can write your own sanitizer
 
-```
-Swagger(app, sanitizer=lambda text: do_anything_with(text))
+```python
+swagger = Swagger(app, sanitizer=lambda text: do_anything_with(text))
 ```
 
 There is also a Markdown parser available, if you want to be able to render
@@ -458,7 +458,7 @@ app.config['SWAGGER'] = {
     'title': 'My API',
     'uiversion': 3
 }
-Swagger(app)
+swagger = Swagger(app)
 
 ```
 
@@ -535,7 +535,7 @@ from flask import Flask, jsonify
 from flasgger import Swagger
 
 app = Flask(__name__)
-Swagger(app)
+swagger = Swagger(app)
 
 @app.route('/colors/<palette>/')
 def colors(palette):
