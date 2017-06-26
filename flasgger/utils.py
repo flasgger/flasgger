@@ -1,24 +1,23 @@
 # coding: utf-8
 
 import copy
+import imp
 import inspect
 import os
 import re
-import jsonschema
-import yaml
-from six import string_types
+from collections import OrderedDict
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-from collections import OrderedDict
-from flask import abort
-from flask import request
-from flask import Response
-from flask import current_app
+
+import jsonschema
+import yaml
+from flask import Response, abort, current_app, request
 from flask.views import MethodView
 from jsonschema import ValidationError  # noqa
-from flasgger.marshmallow_apispec import SwaggerView
-from flasgger.marshmallow_apispec import convert_schemas
+from six import string_types
+
+from flasgger.marshmallow_apispec import SwaggerView, convert_schemas
 
 
 def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
@@ -380,6 +379,7 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
     if swag_type not in ('yaml', 'yml'):
         raise AttributeError("Currently only yaml or yml supported")
         # TODO: support JSON
+
     try:
         with open(swag_path) as yaml_file:
             return yaml_file.read()
@@ -388,8 +388,23 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
         swag_path = os.path.join(
             root_path or os.path.dirname(__file__), swag_path
         )
-        with open(swag_path) as yaml_file:
-            return yaml_file.read()
+        try:
+            with open(swag_path) as yaml_file:
+                return yaml_file.read()
+        except IOError:
+            # if package dir
+            # see https://github.com/rochacbruno/flasgger/pull/104
+            # Still not able to reproduce this case
+            # test are in examples/package_example
+            # need more detail on how to reproduce IOError here
+            swag_path = swag_path.replace("/", os.sep).replace("\\", os.sep)
+            path = swag_path.replace(
+                (root_path or os.path.dirname(__file__)), ''
+            ).split(os.sep)[1:]
+            site_package = imp.find_module(path[0])[1]
+            swag_path = os.path.join(site_package, os.sep.join(path[1:]))
+            with open(swag_path) as yaml_file:
+                return yaml_file.read()
 
 
 def parse_docstring(obj, process_doc, endpoint=None, verb=None):
@@ -615,7 +630,6 @@ def is_valid_method_view(endpoint):
 def get_vendor_extension_fields(mapping):
     """
     Identify vendor extension fields and extract them into a new dictionary.
-
     Examples:
         >>> get_vendor_extension_fields({'test': 1})
         {}
