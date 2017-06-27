@@ -3,6 +3,15 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.6.5
+-----
+
+- Suporting for decorating FlasggerViews (to protect with login etc)
+- description and summary are now optional
+- specs_route fix to be customized `/specs_route` to `/anything`
+- enable/disable swagger UI (if you only need specs json)
+- attempt to fix #102 allowing `import:` from subfolders
+
 0.6.4
 -----
 
