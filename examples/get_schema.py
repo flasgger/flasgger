@@ -59,7 +59,10 @@ def test_swag(client, specs_data):
 
     retrieved_schema = json.loads(response.data.decode('utf-8'))
     actual_schema = specs_data['/apispec_1.json']['definitions']['Officer']
-    assert retrieved_schema.items() >= actual_schema.items()
+    try:
+        assert retrieved_schema.viewitems() >= actual_schema.viewitems()
+    except AttributeError:
+        assert retrieved_schema.items() >= actual_schema.items()
 
 if __name__ == "__main__":
     app.run(debug=True)
