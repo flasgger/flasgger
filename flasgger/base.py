@@ -453,7 +453,7 @@ class Swagger(object):
 
         This annotation only works if the endpoint is already swagged,
         i.e. placing @swag_from above @validate or not declaring the
-        swagger specifications in the method's docstring **won't work**
+        swagger specifications in the method's docstring *won't work*
 
         Naturally, if you use @app.route annotation it still needs to
         be the outermost annotation
@@ -474,9 +474,22 @@ class Swagger(object):
         return decorator
 
     def get_schema(self, schema_id):
+        """
+        This method finds a schema known to Flasgger and returns it.
+
+        :raise KeyError: when the specified :param schema_id: is not
+        found by Flasgger
+
+        :param schema_id: the id of the desired schema
+        """
+        schema_specs = get_schema_specs(schema_id, self)
+
+        if schema_specs is None:
+            raise KeyError('Specified schema_id \'{0}\' not found')
+
         for schema in (
                 parameter.get('schema') for parameter in
-                get_schema_specs(schema_id, self)['parameters']):
+                schema_specs['parameters']):
             if schema is not None and schema.get('id').lower() == schema_id:
                 return schema
 

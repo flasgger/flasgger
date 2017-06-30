@@ -35,6 +35,6 @@ parameters:
 
 responses:
   200:
-    description: A single officer item
+    description: The officer inserted in the database
     schema:
       $ref: '#/definitions/Officer'
