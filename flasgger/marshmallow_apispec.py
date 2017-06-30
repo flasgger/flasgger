@@ -57,6 +57,7 @@ class SwaggerView(MethodView):
     summary = None
     description = None
     validation = False
+    validation_function = None
 
     def dispatch_request(self, *args, **kwargs):
         """
@@ -73,7 +74,8 @@ class SwaggerView(MethodView):
             definitions = {}
             specs.update(convert_schemas(specs, definitions))
             specs['definitions'] = definitions
-            flasgger.utils.validate(specs=specs)
+            flasgger.utils.validate(
+                specs=specs, validation_function=self.validation_function)
         return super(SwaggerView, self).dispatch_request(*args, **kwargs)
 
 
