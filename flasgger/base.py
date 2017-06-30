@@ -474,7 +474,11 @@ class Swagger(object):
         return decorator
 
     def get_schema(self, schema_id):
-        return get_schema_specs(schema_id, self)['parameters'][0]['schema']
+        for schema in (
+                parameter.get('schema') for parameter in
+                get_schema_specs(schema_id, self)['parameters']):
+            if schema is not None and schema.get('id').lower() == schema_id:
+                return schema
 
 
 # backwards compatibility
