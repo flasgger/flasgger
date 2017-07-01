@@ -425,9 +425,10 @@ All validation options can be found at http://json-schema.org/latest/json-schema
 By default Flasgger will use [python-jsonschema](https://python-jsonschema.readthedocs.io/en/latest/)
 to perform validation.
 
-Custom validation functions are supported as long as they take two
-positional arguments: the data to be validated as:
- - the first and the schema to validate against as the second argument; and
+Custom validation functions are supported as long as they meet the requirements:
+ - take two, and only two, positional arguments:
+    - the data to be validated as the first; and
+    - the schema to validate against as the second argument
  - raise any kind of exception when validation fails.
 
 Any return value is discarded.
