@@ -420,6 +420,57 @@ Take a look at `examples/validation.py` for more information.
 
 All validation options can be found at http://json-schema.org/latest/json-schema-validation.html
 
+### Custom validation
+
+By default Flasgger will use [python-jsonschema](https://python-jsonschema.readthedocs.io/en/latest/)
+to perform validation.
+
+Custom validation functions are supported as long as they meet the requirements:
+ - take two, and only two, positional arguments:
+    - the data to be validated as the first; and
+    - the schema to validate against as the second argument
+ - raise any kind of exception when validation fails.
+
+Any return value is discarded.
+
+
+Providing the function to the Swagger instance will make it the default:
+
+```python
+from flasgger import Swagger
+
+swagger = Swagger(app, validation_function=my_validation_function)
+```
+
+Providing the function as parameter of `swag_from` or `swagger.validate`
+annotations or directly to the `validate` function will force it's use
+over the default validation function for Swagger:
+
+```python
+from flasgger import swag_from
+
+@swag_from('spec.yml', validation=True, validation_function=my_function)
+...
+```
+
+```python
+from flasgger import Swagger
+
+swagger = Swagger(app)
+
+@swagger.validate('Pet', validation_function=my_function)
+...
+```
+
+```python
+from flasgger import validate
+
+...
+
+    validate(
+        request.json, 'Pet', 'defs.yml', validation_function=my_function)
+```
+
 # Get defined schemas as python dictionaries
 
 You may wish to use schemas you defined in your Swagger specs as dictionaries

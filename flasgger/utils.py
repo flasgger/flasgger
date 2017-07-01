@@ -12,7 +12,6 @@ from copy import deepcopy
 from functools import wraps
 from importlib import import_module
 from collections import OrderedDict
-from jsonschema import ValidationError  # noqa
 from flask import Response
 from flask import abort
 from flask import current_app
@@ -133,8 +132,10 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
     return specs
 
 
-def swag_from(specs=None, filetype=None, endpoint=None, methods=None,
-              validation=False, schema_id=None, data=None, definition=None):
+def swag_from(
+        specs=None, filetype=None, endpoint=None, methods=None,
+        validation=False, schema_id=None, data=None, definition=None,
+        validation_function=None):
     """
     Takes a filename.yml, a dictionary or object and loads swagger specs.
 
@@ -146,6 +147,10 @@ def swag_from(specs=None, filetype=None, endpoint=None, methods=None,
     :param schema_id: Definition id ot name to use for validation
     :param data: data to validate (default is request.json)
     :param definition: alias to schema_id
+    :param validation_function:
+        custom validation function which takes the positional
+        arguments: data to be validated at first and schema to validate
+        against at second
     """
 
     def resolve_path(function, filepath):
@@ -200,6 +205,7 @@ def swag_from(specs=None, filetype=None, endpoint=None, methods=None,
                 validate(
                     data,
                     schema_id or definition,
+                    validation_function=validation_function,
                     **validate_args
                 )
             return function(*args, **kwargs)
@@ -209,7 +215,7 @@ def swag_from(specs=None, filetype=None, endpoint=None, methods=None,
 
 
 def validate(data=None, schema_id=None, filepath=None, root=None,
-             definition=None, specs=None):
+             definition=None, specs=None, validation_function=None):
     """
     This method is available to use YAML swagger definitions file
     or specs (dict or object) to validate data against its jsonschema.
@@ -221,11 +227,15 @@ def validate(data=None, schema_id=None, filepath=None, root=None,
     :param data: data to validate, by defaull is request.json
     :param schema_id: The definition id to use to validate (from specs)
     :param filepath: definition filepath to load specs
-    :parm root: root folder (inferred if not provided), unused if path starts
-        with `/`
-    :param definition: Alias to schema_id (kept for backwards compatibility)
-    :param specs: load definitions from dict or object passed here intead of
-        a file.
+    :param root: root folder (inferred if not provided), unused if path
+        starts with `/`
+    :param definition: Alias to schema_id (kept for backwards
+        compatibility)
+    :param specs: load definitions from dict or object passed here
+        instead of a file.
+    :param validation_function: custom validation function which takes
+        the positional arguments: data to be validated at first and
+        schema to validate against at second
     """
     schema_id = schema_id or definition
 
@@ -305,9 +315,12 @@ def validate(data=None, schema_id=None, filepath=None, root=None,
         if 'id' in value:
             del value['id']
 
+    if validation_function is None:
+        validation_function = jsonschema.validate
+
     try:
-        jsonschema.validate(data, main_def)
-    except ValidationError as e:
+        validation_function(data, main_def)
+    except Exception as e:
         abort(Response(str(e), status=400))
 
 

@@ -288,9 +288,9 @@ class Swagger(object):
         "specs_route": "/apidocs/"
     }
 
-    def __init__(self, app=None, config=None,
-                 sanitizer=None, template=None, template_file=None,
-                 decorators=None):
+    def __init__(
+            self, app=None, config=None, sanitizer=None, template=None,
+            template_file=None, decorators=None, validation_function=None):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
@@ -299,6 +299,7 @@ class Swagger(object):
         self.template = template
         self.template_file = template_file
         self.decorators = decorators
+        self.validation_function = validation_function
         if app:
             self.init_app(app)
 
@@ -438,7 +439,7 @@ class Swagger(object):
                 response.headers[header] = value
             return response
 
-    def validate(self, schema_id):
+    def validate(self, schema_id, validation_function=None):
         """
         A decorator that is used to validate incoming requests data
         against a schema
@@ -459,14 +460,23 @@ class Swagger(object):
         be the outermost annotation
 
         :param schema_id: the id of the schema with which the data will
-                          be validated
+            be validated
+
+        :param validation_function: custom validation function which
+            takes the positional arguments: data to be validated at
+            first and schema to validate against at second
         """
+
+        if validation_function is None:
+            validation_function = self.validation_function
 
         def decorator(func):
             @wraps(func)
             def wrapper(*args, **kwargs):
                 specs = get_schema_specs(schema_id, self)
-                validate(schema_id=schema_id, specs=specs)
+                validate(
+                    schema_id=schema_id, specs=specs,
+                    validation_function=validation_function)
                 return func(*args, **kwargs)
 
             return wrapper
