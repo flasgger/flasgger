@@ -14,7 +14,6 @@ try:
     import simplejson as json
 except ImportError:
     import json
-
 from functools import wraps
 from collections import defaultdict
 from flask import Blueprint
@@ -27,7 +26,9 @@ from flask import request, url_for
 from flask.views import MethodView
 from mistune import markdown
 from flasgger.constants import OPTIONAL_FIELDS
-from flasgger.utils import extract_definitions, get_specs
+from flasgger.utils import extract_definitions
+from flasgger.utils import get_specs
+from flasgger.utils import get_schema_specs
 from flasgger.utils import parse_definition_docstring
 from flasgger.utils import get_vendor_extension_fields
 from flasgger.utils import validate
@@ -452,7 +453,7 @@ class Swagger(object):
 
         This annotation only works if the endpoint is already swagged,
         i.e. placing @swag_from above @validate or not declaring the
-        swagger specifications in the method's docstring **won't work**
+        swagger specifications in the method's docstring *won't work*
 
         Naturally, if you use @app.route annotation it still needs to
         be the outermost annotation
@@ -462,36 +463,35 @@ class Swagger(object):
         """
 
         def decorator(func):
-
             @wraps(func)
             def wrapper(*args, **kwargs):
-                ignore_verbs = set(
-                    self.config.get('ignore_verbs', ("HEAD", "OPTIONS"))
-                )
-
-                # technically only responses is non-optional
-                optional_fields \
-                    = self.config.get('optional_fields') or OPTIONAL_FIELDS
-
-                with self.app.app_context():
-                    specs = get_specs(
-                        current_app.url_map.iter_rules(), ignore_verbs,
-                        optional_fields, self.sanitizer)
-
-                    swags = (swag for _, verbs in specs for _, swag in verbs
-                             if swag is not None)
-
-                for swag in swags:
-                    for d in swag.get('parameters', []):
-                        if d.get('schema', {}).get('id') == schema_id:
-                            specs = swag
-
+                specs = get_schema_specs(schema_id, self)
                 validate(schema_id=schema_id, specs=specs)
                 return func(*args, **kwargs)
 
             return wrapper
 
         return decorator
+
+    def get_schema(self, schema_id):
+        """
+        This method finds a schema known to Flasgger and returns it.
+
+        :raise KeyError: when the specified :param schema_id: is not
+        found by Flasgger
+
+        :param schema_id: the id of the desired schema
+        """
+        schema_specs = get_schema_specs(schema_id, self)
+
+        if schema_specs is None:
+            raise KeyError('Specified schema_id \'{0}\' not found')
+
+        for schema in (
+                parameter.get('schema') for parameter in
+                schema_specs['parameters']):
+            if schema is not None and schema.get('id').lower() == schema_id:
+                return schema
 
 
 # backwards compatibility

@@ -420,6 +420,56 @@ Take a look at `examples/validation.py` for more information.
 
 All validation options can be found at http://json-schema.org/latest/json-schema-validation.html
 
+# Get defined schemas as python dictionaries
+
+You may wish to use schemas you defined in your Swagger specs as dictionaries
+without replicating the specification. For that you can use the `get_schema`
+method:
+
+```python
+from flask import Flask, jsonify
+from flasgger import Swagger, swag_from
+
+app = Flask(__name__)
+swagger = Swagger(app)
+
+@swagger.validate('Product')
+def post():
+    """
+    post endpoint
+    ---
+    tags:
+      - products
+    parameters:
+      - name: body
+        in: body
+        required: true
+        schema:
+          id: Product
+          required:
+            - name
+          properties:
+            name:
+              type: string
+              description: The product's name.
+              default: "Guarana"
+    responses:
+      200:
+        description: The product inserted in the database
+        schema:
+          $ref: '#/definitions/Product'
+    """
+    rv = db.insert(request.json)
+    return jsonify(rv)
+
+...
+
+product_schema = swagger.get_schema('product')
+```
+
+This method returns a dictionary which contains the Flasgger schema id,
+all defined parameters and a list of required parameters.
+
 # HTML sanitizer
 
 By default Flasgger will try to sanitize the content in YAML definitions

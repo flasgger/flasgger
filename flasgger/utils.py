@@ -5,19 +5,46 @@ import imp
 import inspect
 import os
 import re
-from collections import OrderedDict
+import jsonschema
+import yaml
+from six import string_types
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-
-import jsonschema
-import yaml
-from flask import Response, abort, current_app, request
-from flask.views import MethodView
+from collections import OrderedDict
 from jsonschema import ValidationError  # noqa
-from six import string_types
+from flask import Response
+from flask import abort
+from flask import current_app
+from flask import request
+from flask.views import MethodView
+from flasgger.constants import OPTIONAL_FIELDS
+from flasgger.marshmallow_apispec import SwaggerView
+from flasgger.marshmallow_apispec import convert_schemas
 
-from flasgger.marshmallow_apispec import SwaggerView, convert_schemas
+
+def get_schema_specs(schema_id, swagger):
+    ignore_verbs = set(
+        swagger.config.get('ignore_verbs', ("HEAD", "OPTIONS")))
+
+    # technically only responses is non-optional
+    optional_fields \
+        = swagger.config.get('optional_fields') or OPTIONAL_FIELDS
+
+    with swagger.app.app_context():
+        specs = get_specs(
+            current_app.url_map.iter_rules(), ignore_verbs,
+            optional_fields, swagger.sanitizer)
+
+        swags = (swag for _, verbs in specs for _, swag in verbs
+                 if swag is not None)
+
+    for swag in swags:
+        for d in swag.get('parameters', []):
+            d_schema_id = d.get('schema', {}).get('id')
+            if d_schema_id is not None \
+                    and d_schema_id.lower() == schema_id.lower():
+                return swag
 
 
 def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
