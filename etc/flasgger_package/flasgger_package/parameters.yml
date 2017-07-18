@@ -1,0 +1,5 @@
+parameters:
+  - in: path
+    name: username
+    type: string
+    required: true
