@@ -3,6 +3,15 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.6.6
+-----
+
+- Support custom validation functions
+- (TODO) Allow the caller to handle validation exceptions (solves #122)
+- Swagger::get_schema method to get defined schemas as python dicts
+- Updated static UI versions from latest github distribution
+- Better test for `import` functionality
+
 0.6.5
 -----
 
