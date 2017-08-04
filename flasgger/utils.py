@@ -135,7 +135,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
 def swag_from(
         specs=None, filetype=None, endpoint=None, methods=None,
         validation=False, schema_id=None, data=None, definition=None,
-        validation_function=None):
+        validation_function=None, validation_error_handler=None):
     """
     Takes a filename.yml, a dictionary or object and loads swagger specs.
 
@@ -151,6 +151,10 @@ def swag_from(
         custom validation function which takes the positional
         arguments: data to be validated at first and schema to validate
         against at second
+    :param validation_error_handler: custom function to handle
+        exceptions thrown when validating which takes the exception
+        thrown as the first, the data being validated as the second and
+        the schema being used to validate as the third argument
     """
 
     def resolve_path(function, filepath):
@@ -206,6 +210,7 @@ def swag_from(
                     data,
                     schema_id or definition,
                     validation_function=validation_function,
+                    validation_error_handler=validation_error_handler,
                     **validate_args
                 )
             return function(*args, **kwargs)
@@ -214,8 +219,9 @@ def swag_from(
     return decorator
 
 
-def validate(data=None, schema_id=None, filepath=None, root=None,
-             definition=None, specs=None, validation_function=None):
+def validate(
+        data=None, schema_id=None, filepath=None, root=None, definition=None,
+        specs=None, validation_function=None, validation_error_handler=None):
     """
     This method is available to use YAML swagger definitions file
     or specs (dict or object) to validate data against its jsonschema.
@@ -236,6 +242,10 @@ def validate(data=None, schema_id=None, filepath=None, root=None,
     :param validation_function: custom validation function which takes
         the positional arguments: data to be validated at first and
         schema to validate against at second
+    :param validation_error_handler: custom function to handle
+        exceptions thrown when validating which takes the exception
+        thrown as the first, the data being validated as the second and
+        the schema being used to validate as the third argument
     """
     schema_id = schema_id or definition
 
@@ -283,8 +293,7 @@ def validate(data=None, schema_id=None, filepath=None, root=None,
 
     definitions = {}
     main_def = {}
-    raw_definitions = extract_definitions(
-        params, endpoint=endpoint, verb=verb)
+    raw_definitions = extract_definitions(params, endpoint=endpoint, verb=verb)
 
     if schema_id is None:
         for param in params:
@@ -320,8 +329,11 @@ def validate(data=None, schema_id=None, filepath=None, root=None,
 
     try:
         validation_function(data, main_def)
-    except Exception as e:
-        abort(Response(str(e), status=400))
+    except Exception as err:
+        if validation_error_handler is not None:
+            validation_error_handler(err, data, main_def)
+        else:
+            abort(Response(str(err), status=400))
 
 
 def apispec_to_template(app, spec, definitions=None, paths=None):
@@ -579,6 +591,10 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
     We require an 'id' field for the schema to be correctly
     added to the definitions list.
     """
+    defs = list()
+    if alist is None:
+        return defs
+
     endpoint = endpoint or request.endpoint.lower()
     verb = verb or request.method.lower()
     endpoint = endpoint.replace('.', '_')
@@ -592,56 +608,51 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
         ret = []
         items = source.get('items')
         if items is not None and 'schema' in items:
-            ret += extract_definitions([items], level + 1, endpoint, verb,
-                                       prefix_ids)
+            ret += extract_definitions(
+                [items], level + 1, endpoint, verb, prefix_ids)
         return ret
 
     # for tracking level of recursion
     if level is None:
         level = 0
 
-    defs = list()
-    if alist is not None:
-        for item in alist:
-            if not getattr(item, 'get'):
-                raise RuntimeError('definitions must be a list of dicts')
-            schema = item.get("schema")
-            if schema is not None:
-                schema_id = schema.get("id")
-                if schema_id is not None:
-                    # add endpoint_verb to schema id to avoid conflicts
-                    if prefix_ids:
-                        schema['id'] = schema_id = "{}_{}_{}".format(
-                            endpoint, verb, schema_id
-                        )
-                    # ^ api['SWAGGER']['prefix_ids'] = True
-                    # ... for backwards compatibility with <= 0.5.14
-
-                    defs.append(schema)
-                    ref = {"$ref": "#/definitions/{}".format(schema_id)}
-                    # only add the reference as a schema if we are in a
-                    # response or
-                    # a parameter i.e. at the top level
-                    # directly ref if a definition is used within another
-                    # definition
-                    if level == 0:
-                        item['schema'] = ref
-                    else:
-                        item.update(ref)
-                        del item['schema']
-
-                # extract any definitions that are within properties
-                # this occurs recursively
-                properties = schema.get('properties')
-                if properties is not None:
-                    defs += extract_definitions(
-                        properties.values(), level + 1, endpoint, verb,
-                        prefix_ids
+    for item in alist:
+        if not getattr(item, 'get'):
+            raise RuntimeError('definitions must be a list of dicts')
+        schema = item.get("schema")
+        if schema is not None:
+            schema_id = schema.get("id")
+            if schema_id is not None:
+                # add endpoint_verb to schema id to avoid conflicts
+                if prefix_ids:
+                    schema['id'] = schema_id = "{}_{}_{}".format(
+                        endpoint, verb, schema_id
                     )
+                # ^ api['SWAGGER']['prefix_ids'] = True
+                # ... for backwards compatibility with <= 0.5.14
 
-                defs += _extract_array_defs(schema)
+                defs.append(schema)
+                ref = {"$ref": "#/definitions/{}".format(schema_id)}
+                # only add the reference as a schema if we are in a
+                # response or a parameter i.e. at the top level
+                # directly ref if a definition is used within another
+                # definition
+                if level == 0:
+                    item['schema'] = ref
+                else:
+                    item.update(ref)
+                    del item['schema']
 
-            defs += _extract_array_defs(item)
+            # extract any definitions that are within properties
+            # this occurs recursively
+            properties = schema.get('properties')
+            if properties is not None:
+                defs += extract_definitions(
+                    properties.values(), level + 1, endpoint, verb, prefix_ids)
+
+            defs += _extract_array_defs(schema)
+
+        defs += _extract_array_defs(item)
 
     return defs
 

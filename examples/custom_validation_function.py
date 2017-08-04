@@ -8,7 +8,8 @@ try:
     from http import HTTPStatus
 except ImportError:
     import httplib as HTTPStatus
-from flask import Flask, jsonify
+from flask import Flask
+from flask import jsonify
 from flask import request
 from flasgger import Swagger
 
@@ -198,72 +199,66 @@ def test_swag(client, specs_data):
     :param client: Flask app test client
     :param specs_data: {'url': {swag_specs}} for every spec in app
     """
-    cat = \
-        """
-        {
-          "_id": "594dba7b2879334e411f3dcc",
-          "name": "Tom",
-          "address": "MGM, 245 N. Beverly Drive, Beverly Hills, CA 90210"
-        }
-        """
+    cat = {
+        '_id': "594dba7b2879334e411f3dcc",
+        'name': "Tom",
+        'address': "MGM, 245 N. Beverly Drive, Beverly Hills, CA 90210"
+    }
+
     with client.post(
-            '/cat', data=cat, content_type='application/json') as response:
+            '/cat', data=json.dumps(cat), content_type='application/json') as response:
         assert response.status_code == HTTPStatus.OK
 
-        sent = json.loads(cat)
         received = json.loads(response.data.decode('utf-8'))
         assert received.get('_id') is None
         assert received.get('timestamp') is None
         assert received.get('special') is None
         try:
-            assert received.viewitems() < sent.viewitems()
+            assert received.viewitems() < cat.viewitems()
         except AttributeError:
-            assert received.items() < sent.items()
+            assert received.items() < cat.items()
 
     with client.post(
-            '/timestamped/cat', data=cat,
+            '/timestamped/cat', data=json.dumps(cat),
             content_type='application/json') as response:
         assert response.status_code == HTTPStatus.OK
 
-        sent = json.loads(cat)
         received = json.loads(response.data.decode('utf-8'))
-        assert received.get('_id') == sent.get('_id')
+        assert received.get('_id') == cat.get('_id')
         assert received.get('timestamp') is not None
         assert received.get('special') is None
         try:
-            assert received.viewitems() > sent.viewitems()
+            assert received.viewitems() > cat.viewitems()
         except AttributeError:
-            assert received.items() > sent.items()
+            assert received.items() > cat.items()
 
     with client.post(
-            '/special/cat', data=cat,
+            '/special/cat', data=json.dumps(cat),
             content_type='application/json') as response:
         assert response.status_code == HTTPStatus.OK
 
-        sent = json.loads(cat)
         received = json.loads(response.data.decode('utf-8'))
-        assert received.get('_id') == sent.get('_id')
+        assert received.get('_id') == cat.get('_id')
         assert received.get('timestamp') is None
         assert received.get('special') is not None
         try:
-            assert received.viewitems() > sent.viewitems()
+            assert received.viewitems() > cat.viewitems()
         except AttributeError:
-            assert received.items() > sent.items()
+            assert received.items() > cat.items()
 
     with client.post(
-            '/regular/cat', data=cat,
+            '/regular/cat', data=json.dumps(cat),
             content_type='application/json') as response:
         assert response.status_code == HTTPStatus.OK
 
-        sent = json.loads(cat)
         received = json.loads(response.data.decode('utf-8'))
-        assert received.get('_id') == sent.get('_id')
+        assert received.get('_id') == cat.get('_id')
         assert received.get('timestamp') is None
         assert received.get('special') is None
         try:
-            assert received.viewitems() == sent.viewitems()
+            assert received.viewitems() == cat.viewitems()
         except AttributeError:
-            assert received.items() == sent.items()
+            assert received.items() == cat.items()
 
 if __name__ == "__main__":
     app.run(debug=True)
