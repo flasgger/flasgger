@@ -20,52 +20,6 @@ app = Flask(__name__)
 swag = Swagger(app)
 
 
-@app.route("/manualvalidation", methods=['POST'])
-@swag_from("test_validation.yml")
-def manualvalidation():
-    """
-    In this example you need to call validate() manually
-    passing received data, Definition (schema: id), specs filename
-    """
-    data = request.json
-    validate(data, 'User', "test_validation.yml")
-    return jsonify(data)
-
-
-@app.route("/validateannotation", methods=['POST'])
-@swag.validate('User')
-@swag_from("test_validation.yml")
-def validateannotation():
-    """
-    In this example you use validate(schema_id) annotation on the
-    method in which you want to validate received data
-    """
-    data = request.json
-    return jsonify(data)
-
-
-@app.route("/autovalidation", methods=['POST'])
-@swag_from("test_validation.yml", validation=True)
-def autovalidation():
-    """
-    Example using auto validation from yaml file.
-    In this example you don't need to call validate() because
-    `validation=True` on @swag_from does that for you.
-    In this case it will use the same provided filename
-    and will extract the schema from `in: body` definition
-    and the data will default to `request.json`
-
-    or you can specify:
-    @swag_from('file.yml',
-               validation=True,
-               definition='User',
-               data=lambda: request.json,  # any callable
-               )
-    """
-    data = request.json
-    return jsonify(data)
-
-
 test_specs_1 = {
   "tags": [
     "users"
@@ -117,6 +71,52 @@ test_specs_1 = {
     }
   }
 }
+
+
+@app.route("/manualvalidation", methods=['POST'])
+@swag_from("test_validation.yml")
+def manualvalidation():
+    """
+    In this example you need to call validate() manually
+    passing received data, Definition (schema: id), specs filename
+    """
+    data = request.json
+    validate(data, 'User', "test_validation.yml")
+    return jsonify(data)
+
+
+@app.route("/validateannotation", methods=['POST'])
+@swag.validate('User')
+@swag_from("test_validation.yml")
+def validateannotation():
+    """
+    In this example you use validate(schema_id) annotation on the
+    method in which you want to validate received data
+    """
+    data = request.json
+    return jsonify(data)
+
+
+@app.route("/autovalidation", methods=['POST'])
+@swag_from("test_validation.yml", validation=True)
+def autovalidation():
+    """
+    Example using auto validation from yaml file.
+    In this example you don't need to call validate() because
+    `validation=True` on @swag_from does that for you.
+    In this case it will use the same provided filename
+    and will extract the schema from `in: body` definition
+    and the data will default to `request.json`
+
+    or you can specify:
+    @swag_from('file.yml',
+               validation=True,
+               definition='User',
+               data=lambda: request.json,  # any callable
+               )
+    """
+    data = request.json
+    return jsonify(data)
 
 
 @app.route("/autovalidationfromspecdict", methods=['POST'])
@@ -468,7 +468,6 @@ def test_swag(client, specs_data):
                 expected_path, data=valid_officer,
                 content_type='application/json')
             assert response.status_code == HTTPStatus.OK
-
 
 if __name__ == "__main__":
     app.run(debug=True)

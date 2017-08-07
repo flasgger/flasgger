@@ -591,10 +591,6 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
     We require an 'id' field for the schema to be correctly
     added to the definitions list.
     """
-    defs = list()
-    if alist is None:
-        return defs
-
     endpoint = endpoint or request.endpoint.lower()
     verb = verb or request.method.lower()
     endpoint = endpoint.replace('.', '_')
@@ -616,6 +612,7 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
     if level is None:
         level = 0
 
+    defs = list()
     for item in alist:
         if not getattr(item, 'get'):
             raise RuntimeError('definitions must be a list of dicts')
