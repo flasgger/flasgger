@@ -471,6 +471,61 @@ from flasgger import validate
         request.json, 'Pet', 'defs.yml', validation_function=my_function)
 ```
 
+### Validation Error handling
+
+By default Flasgger will handle validation errors by aborting the
+request with a 400 BAD REQUEST response with the error message.
+
+A custom validation error handling function can be provided to
+supersede default behavior as long as it meets the requirements:
+ - take three, and only three, positional arguments:
+    - the error raised as the first;
+    - the data which failed validation as the second; and
+    - the schema used in to validate as the third argument
+
+
+Providing the function to the Swagger instance will make it the default:
+
+```python
+from flasgger import Swagger
+
+swagger = Swagger(app, validation_error_handler=my_handler)
+```
+
+Providing the function as parameter of `swag_from` or `swagger.validate`
+annotations or directly to the `validate` function will force it's use
+over the default validation function for Swagger:
+
+```python
+from flasgger import swag_from
+
+@swag_from(
+    'spec.yml', validation=True, validation_error_handler=my_handler)
+...
+```
+
+```python
+from flasgger import Swagger
+
+swagger = Swagger(app)
+
+@swagger.validate('Pet', validation_error_handler=my_handler)
+...
+```
+
+```python
+from flasgger import validate
+
+...
+
+    validate(
+        request.json, 'Pet', 'defs.yml',
+        validation_error_handler=my_handler)
+```
+
+Examples of use of a custom validation error handler function can be
+found at [example validation_error_handler.py](examples/validation_error_handler.py)
+
 # Get defined schemas as python dictionaries
 
 You may wish to use schemas you defined in your Swagger specs as dictionaries
