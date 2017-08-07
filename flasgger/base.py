@@ -290,7 +290,8 @@ class Swagger(object):
 
     def __init__(
             self, app=None, config=None, sanitizer=None, template=None,
-            template_file=None, decorators=None, validation_function=None):
+            template_file=None, decorators=None, validation_function=None,
+            validation_error_handler=None):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
@@ -300,6 +301,7 @@ class Swagger(object):
         self.template_file = template_file
         self.decorators = decorators
         self.validation_function = validation_function
+        self.validation_error_handler = validation_error_handler
         if app:
             self.init_app(app)
 
@@ -439,7 +441,9 @@ class Swagger(object):
                 response.headers[header] = value
             return response
 
-    def validate(self, schema_id, validation_function=None):
+    def validate(
+            self, schema_id, validation_function=None,
+            validation_error_handler=None):
         """
         A decorator that is used to validate incoming requests data
         against a schema
@@ -465,10 +469,18 @@ class Swagger(object):
         :param validation_function: custom validation function which
             takes the positional arguments: data to be validated at
             first and schema to validate against at second
+
+        :param validation_error_handler: custom function to handle
+            exceptions thrown when validating which takes the exception
+            thrown as the first, the data being validated as the second
+            and the schema being used to validate as the third argument
         """
 
         if validation_function is None:
             validation_function = self.validation_function
+
+        if validation_error_handler is None:
+            validation_error_handler = self.validation_error_handler
 
         def decorator(func):
             @wraps(func)
@@ -476,7 +488,8 @@ class Swagger(object):
                 specs = get_schema_specs(schema_id, self)
                 validate(
                     schema_id=schema_id, specs=specs,
-                    validation_function=validation_function)
+                    validation_function=validation_function,
+                    validation_error_handler=validation_error_handler)
                 return func(*args, **kwargs)
 
             return wrapper
