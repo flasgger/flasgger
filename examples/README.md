@@ -12,7 +12,8 @@ Please contribute adding your example to increase our test coverage
 
 The only rules to follow is:
 
-- Add extra requirements to `requirements.txt`
+- Add extra production requirements to `requirements.txt` and `setup.py`
+- Add extra development requirements to `requirements-dev.txt`
 - use `if __name__ == '__main__':` before `app.run()`
 
 # testing
