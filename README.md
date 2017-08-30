@@ -159,7 +159,7 @@ def colors(palette):
     ...
 ```
 
-If you do not want to use the decorator you can use the docsting `file:` shortcut.
+If you do not want to use the decorator you can use the docstring `file:` shortcut.
 
 ```python
 @app.route('/colors/<palette>/')
