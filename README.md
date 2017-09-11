@@ -16,7 +16,7 @@ Flasgger also comes with **[SwaggerUI](http://swagger.io/swagger-ui/) embedded**
 
 Flasgger also **provides validation** of the incoming data, using the same specification it can validates if the data received as as a POST, PUT, PATCH is valid against the schema defined using **YAML**, **Python dictionaries** or **Marshmallow Schemas**.
 
-Flasgger can work with simple function views or MethodViews using docstring for especification, or using `@swag_from` decorator to get specification from **YAML** or **dict** and also provides **SwaggerView** which can use **Marshmallow Schemas**  as specification.
+Flasgger can work with simple function views or MethodViews using docstring as specification, or using `@swag_from` decorator to get specification from **YAML** or **dict** and also provides **SwaggerView** which can use **Marshmallow Schemas**  as specification.
 
 Flasgger is compatible with `Flask-RESTful` so you can use `Resources` and `swag` specifications together, take a look at [restful example.](examples/restful.py)
 
