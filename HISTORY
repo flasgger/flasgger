@@ -3,6 +3,10 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.7.0
+-----
+- Added support for LazyString https://github.com/rochacbruno/flasgger/issues/158
+
 0.6.6
 -----
 

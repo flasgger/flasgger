@@ -654,6 +654,28 @@ And then the template is the default data unless some view changes it. You
 can also provide all your specs as template and have no views. Or views in
 external APP.
 
+## Getting default data at runtime
+
+Sometimes you need to get some data at runtime depending on dynamic values ex: you want to check `request.is_secure` to decide if `schemes` will be `https` you can do that by using `LazyString`.
+
+```py
+template = dict(
+    info={
+        'title': LazyString(lambda: 'Lazy Title'),
+        'version': LazyString(lambda: '99.9.9'),
+        'description': LazyString(lambda: 'Hello Lazy World'),
+        'termsOfService': LazyString(lambda: '/there_is_no_tos')
+    },
+    host=LazyString(lambda: request.host),
+    schemes=[LazyString(lambda: 'https' if request.is_secure else 'http')],
+    foo=LazyString(lambda: "Bar")
+)
+Swagger(app, template=template)
+
+```
+
+The `LazyString` values will be evaluated only when `jsonify` encodes the value at runtime, so you have access to Flask `request, session, g, etc..` and also may want to access a database.
+
 # Customize default configurations
 
 Custom configurations such as a different specs route or disabling Swagger UI can be provided to Flasgger:

@@ -7,7 +7,7 @@ import os
 import re
 import jsonschema
 import yaml
-from six import string_types
+from six import string_types, text_type
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
@@ -17,9 +17,9 @@ from flask import abort
 from flask import current_app
 from flask import request
 from flask.views import MethodView
-from flasgger.constants import OPTIONAL_FIELDS
-from flasgger.marshmallow_apispec import SwaggerView
-from flasgger.marshmallow_apispec import convert_schemas
+from .constants import OPTIONAL_FIELDS
+from .marshmallow_apispec import SwaggerView
+from .marshmallow_apispec import convert_schemas
 
 
 def get_schema_specs(schema_id, swagger):
@@ -685,3 +685,106 @@ def get_vendor_extension_fields(mapping):
         {'x-test': 2}
     """
     return {k: v for k, v in mapping.items() if k.startswith('x-')}
+
+
+class StringLike(object):
+    """
+    Class to mimic the behavior of a regular string. Classes that inherit (or
+    mixin) this class must implement the `__str__` magic method. Whatever that
+    method returns is used by the various string-like methods.
+    """
+
+    def __getattr__(self, attr):
+        """
+        Forwards any non-magic methods to the resulting string's class. This
+        allows support for string methods like `upper()`, `lower()`, etc.
+        """
+        string = self.text_type(self)
+        if hasattr(string, attr):
+            return getattr(string, attr)
+        raise AttributeError(attr)
+
+    def __len__(self):
+        return len(self.text_type(self))
+
+    def __getitem__(self, key):
+        return self.text_type(self)[key]
+
+    def __iter__(self):
+        return iter(self.text_type(self))
+
+    def __contains__(self, item):
+        return item in self.text_type(self)
+
+    def __add__(self, other):
+        return self.text_type(self) + other
+
+    def __radd__(self, other):
+        return other + self.text_type(self)
+
+    def __mul__(self, other):
+        return self.text_type(self) * other
+
+    def __rmul__(self, other):
+        return other * self.text_type(self)
+
+    def __lt__(self, other):
+        return self.text_type(self) < other
+
+    def __le__(self, other):
+        return self.text_type(self) <= other
+
+    def __eq__(self, other):
+        return self.text_type(self) == other
+
+    def __ne__(self, other):
+        return self.text_type(self) != other
+
+    def __gt__(self, other):
+        return self.text_type(self) > other
+
+    def __ge__(self, other):
+        return self.text_type(self) >= other
+
+    @property
+    def text_type(self):
+        return text_type
+
+
+class LazyString(StringLike):
+    """
+    A lazy string *without* caching. The resulting string is regenerated for
+    every request.
+    """
+    def __init__(self, func):
+        """
+        Creates a `LazyString` object using `func` as the delayed closure.
+        `func` must return a string.
+        """
+        self._func = func
+
+    def __str__(self):
+        """
+        Returns the actual string.
+        """
+        return self.text_type(self._func())
+
+
+class CachedLazyString(LazyString):
+    """
+    A lazy string with caching.
+    """
+    def __init__(self, func):
+        """
+        Uses `__init__()` from the parent and initializes a cache.
+        """
+        super(CachedLazyString, self).__init__(func)
+        self._cache = None
+
+    def __str__(self):
+        """
+        Returns the actual string and caches the result.
+        """
+        if not self._cache:
+            self._cache = self.text_type(self._func())
+        return self._cache

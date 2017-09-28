@@ -24,14 +24,16 @@ from flask import redirect
 from flask import render_template
 from flask import request, url_for
 from flask.views import MethodView
+from flask.json import JSONEncoder
 from mistune import markdown
-from flasgger.constants import OPTIONAL_FIELDS
-from flasgger.utils import extract_definitions
-from flasgger.utils import get_specs
-from flasgger.utils import get_schema_specs
-from flasgger.utils import parse_definition_docstring
-from flasgger.utils import get_vendor_extension_fields
-from flasgger.utils import validate
+from .constants import OPTIONAL_FIELDS
+from .utils import extract_definitions
+from .utils import get_specs
+from .utils import get_schema_specs
+from .utils import parse_definition_docstring
+from .utils import get_vendor_extension_fields
+from .utils import validate
+from .utils import LazyString
 
 NO_SANITIZER = lambda text: text  # noqa
 BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
@@ -128,7 +130,7 @@ class APISpecsView(MethodView):
                     'version', self.config.get('version', "0.0.1")
                 ),
                 "title": self.spec.get(
-                    'title', self.config.get('title', "A swagger API 2")
+                    'title', self.config.get('title', "A swagger API")
                 ),
                 "description": self.spec.get(
                     'description', self.config.get('description',
@@ -319,6 +321,7 @@ class Swagger(object):
         self.add_headers(app)
         self._configured = True
         app.swag = self
+        self.register_json_encoder()
 
     def load_swagger_file(self, filename):
         if not filename.startswith('/'):
@@ -431,6 +434,9 @@ class Swagger(object):
 
         app.register_blueprint(blueprint)
 
+    def register_json_encoder(self):
+        self.app.json_encoder = LazyJSONEncoder
+
     def add_headers(self, app):
         """
         Inject headers after request
@@ -519,3 +525,10 @@ class Swagger(object):
 
 # backwards compatibility
 Flasgger = Swagger  # noqa
+
+
+class LazyJSONEncoder(JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, LazyString):
+            return str(obj)
+        return super(LazyJSONEncoder, self).default(obj)
