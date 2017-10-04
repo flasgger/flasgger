@@ -4,9 +4,13 @@ Test the use of LazyString to populate a template at runtime.
 
 from flask import Flask, jsonify, request
 
-from flasgger import Swagger, LazyString
+from flasgger import Swagger, LazyString, LazyJSONEncoder
 
 app = Flask(__name__)
+
+# Set the LAzyString JSON Encoder
+app.json_encoder = LazyJSONEncoder
+
 app.config['SWAGGER'] = {
     'uiversion': 2
 }

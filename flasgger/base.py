@@ -321,7 +321,6 @@ class Swagger(object):
         self.add_headers(app)
         self._configured = True
         app.swag = self
-        self.register_json_encoder()
 
     def load_swagger_file(self, filename):
         if not filename.startswith('/'):
@@ -433,9 +432,6 @@ class Swagger(object):
             )
 
         app.register_blueprint(blueprint)
-
-    def register_json_encoder(self):
-        self.app.json_encoder = LazyJSONEncoder
 
     def add_headers(self, app):
         """

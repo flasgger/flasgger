@@ -659,6 +659,15 @@ external APP.
 Sometimes you need to get some data at runtime depending on dynamic values ex: you want to check `request.is_secure` to decide if `schemes` will be `https` you can do that by using `LazyString`.
 
 ```py
+from flask import Flask
+from flasgger import, Swagger, LazyString, LazyJSONEncoder
+
+app = Flask(__init__)
+
+# Set the custom Encoder (Inherit it if you need to customize)
+app.json_encoder = LazyJSONEncoder
+
+
 template = dict(
     info={
         'title': LazyString(lambda: 'Lazy Title'),
