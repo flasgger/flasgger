@@ -470,14 +470,17 @@ def parse_docstring(obj, process_doc, endpoint=None, verb=None):
     swag_type = getattr(obj, 'swag_type', 'yml')
     swag_paths = getattr(obj, 'swag_paths', None)
     root_path = get_root_path(obj)
+    from_file = False
 
     if swag_path is not None:
         full_doc = load_from_file(swag_path, swag_type)
+        from_file = True
     elif swag_paths is not None:
         for key in ("{}_{}".format(endpoint, verb), endpoint, verb.lower()):
             if key in swag_paths:
                 full_doc = load_from_file(swag_paths[key], swag_type)
                 break
+        from_file = True
         # TODO: handle multiple root_paths
         # to support `import: ` from multiple places
     else:
@@ -491,22 +494,25 @@ def parse_docstring(obj, process_doc, endpoint=None, verb=None):
             swag_path, swag_type = get_path_from_doc(full_doc)
             doc_filepath = os.path.join(obj.root_path, swag_path)
             full_doc = load_from_file(doc_filepath, swag_type)
+            from_file = True
 
         full_doc = parse_imports(full_doc, root_path)
 
-        line_feed = full_doc.find('\n')
-        if line_feed != -1:
-            first_line = process_doc(full_doc[:line_feed])
-            yaml_sep = full_doc[line_feed + 1:].find('---')
-            if yaml_sep != -1:
+        yaml_sep = full_doc.find('---')
+
+        if yaml_sep != -1:
+            line_feed = full_doc.find('\n')
+            if line_feed != -1:
+                first_line = process_doc(full_doc[:line_feed])
                 other_lines = process_doc(
-                    full_doc[line_feed + 1: line_feed + yaml_sep]
+                    full_doc[line_feed + 1: yaml_sep]
                 )
-                swag = yaml.load(full_doc[line_feed + yaml_sep:])
-            else:
-                other_lines = process_doc(full_doc[line_feed + 1:])
+                swag = yaml.load(full_doc[yaml_sep + 4:])
         else:
-            first_line = full_doc
+            if from_file:
+                swag = yaml.load(full_doc)
+            else:
+                first_line = full_doc
 
     return first_line, other_lines, swag
 
