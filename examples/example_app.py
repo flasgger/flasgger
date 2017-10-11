@@ -162,6 +162,16 @@ app.add_url_rule(
 def fromfile_decorated(username):
     return jsonify({'username': username})
 
+@app.route('/v1/decorated_no_descr/<username>', endpoint='should_be_v1_only_username_no_descr')
+@swag_from('username_specs_no_descr.yml')
+def fromfile_decorated_no_descr(username):
+    return jsonify({'username': username})
+
+@app.route('/v1/decorated_no_sep/<username>', endpoint='should_be_v1_only_username_no_sep')
+@swag_from('username_specs_no_sep.yml')
+def fromfile_decorated_no_sep(username):
+    return jsonify({'username': username})
+
 
 # OR
 
@@ -170,6 +180,20 @@ def fromfile_decorated(username):
 def fromfile_indocstring(username):
     """
     file: username_specs.yml
+    """
+    return jsonify({'username': username})
+
+@app.route('/v1/fileindoc_no_descr/<username>', endpoint='should_be_v1_only_username_no_descr_1')
+def fromfile_indocstring_no_descr(username):
+    """
+    file: username_specs_no_descr.yml
+    """
+    return jsonify({'username': username})
+
+@app.route('/v1/fileindoc_no_sep/<username>', endpoint='should_be_v1_only_username_no_sep_1')
+def fromfile_indocstring_no_sep(username):
+    """
+    file: username_specs_no_sep.yml
     """
     return jsonify({'username': username})
 
