@@ -307,10 +307,11 @@ class Swagger(object):
         if app:
             self.init_app(app)
 
-    def init_app(self, app):
+    def init_app(self, app, decorators=None):
         """
         Initialize the app with Swagger plugin
         """
+        self.decorators = decorators or self.decorators
         self.app = app
 
         self.load_config(app)
