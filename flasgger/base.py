@@ -188,6 +188,7 @@ class APISpecsView(MethodView):
             self.get_url_mappings(self.spec.get('rule_filter')), ignore_verbs,
             optional_fields, self.process_doc)
 
+        http_methods = ['get', 'post', 'put', 'delete']
         for rule, verbs in specs:
             operations = dict()
             for verb, swag in verbs:
@@ -199,6 +200,11 @@ class APISpecsView(MethodView):
                 )
 
                 params = swag.get('parameters', [])
+                if verb in swag.keys():
+                    verb_swag = swag.get(verb)
+                    if len(params) == 0 and verb.lower() in http_methods:
+                        params = verb_swag.get('parameters', [])
+
                 defs += extract_definitions(params,
                                             endpoint=rule.endpoint,
                                             verb=verb,
