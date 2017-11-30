@@ -22,6 +22,23 @@ from .marshmallow_apispec import SwaggerView
 from .marshmallow_apispec import convert_schemas
 
 
+def merge_specs(target, source):
+    """
+    Update target dictionary with values from the source, recursively.
+    List items will be merged.
+    """
+
+    for key, value in source.items():
+        if isinstance(value, dict):
+            node = target.setdefault(key, {})
+            merge_specs(node, value)
+        elif isinstance(value, list):
+            node = target.setdefault(key, [])
+            node.extend(value)
+        else:
+            target[key] = value
+
+
 def get_schema_specs(schema_id, swagger):
     ignore_verbs = set(
         swagger.config.get('ignore_verbs', ("HEAD", "OPTIONS")))
@@ -87,6 +104,10 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
             swag = {}
             swagged = False
 
+            if getattr(method, 'specs_dict', None):
+                merge_specs(swag, deepcopy(method.specs_dict))
+                swagged = True
+
             view_class = getattr(endpoint, 'view_class', None)
             if view_class and issubclass(view_class, SwaggerView):
                 apispec_swag = {}
@@ -106,15 +127,11 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
 
                 swagged = True
 
-            if getattr(method, 'specs_dict', None):
-                swag.update(deepcopy(method.specs_dict))
-                swagged = True
-
             doc_summary, doc_description, doc_swag = parse_docstring(
                 method, sanitizer, endpoint=rule.endpoint, verb=verb)
 
             if doc_swag:
-                swag.update(doc_swag or {})
+                merge_specs(swag, doc_swag)
                 swagged = True
 
             if swagged:
