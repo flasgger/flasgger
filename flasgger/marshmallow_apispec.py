@@ -88,9 +88,9 @@ def convert_schemas(d, definitions=None):
 
     if definitions is None:
         definitions = {}
+    definitions.update(d.get('definitions', {}))
 
-    new = {}
-    new['definitions'] = definitions
+    new = {'definitions': definitions}
     for k, v in d.items():
         if isinstance(v, dict):
             v = convert_schemas(v, definitions)
@@ -115,6 +115,4 @@ def convert_schemas(d, definitions=None):
         else:
             new[k] = v
 
-        if k == 'definitions':
-            definitions.update(v)
     return new
