@@ -86,7 +86,11 @@ def convert_schemas(d, definitions=None):
     if Schema is None:
         raise RuntimeError('Please install marshmallow and apispec')
 
-    new = {}
+    if definitions is None:
+        definitions = {}
+    definitions.update(d.get('definitions', {}))
+
+    new = {'definitions': definitions}
     for k, v in d.items():
         if isinstance(v, dict):
             v = convert_schemas(v, definitions)
@@ -111,6 +115,4 @@ def convert_schemas(d, definitions=None):
         else:
             new[k] = v
 
-        if k == 'definitions':
-            new['definitions'] = definitions
     return new
