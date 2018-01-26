@@ -254,11 +254,12 @@ class APISpecsView(MethodView):
                 operations[verb] = operation
 
             if len(operations):
-                if self.template.get('swaggerUiPrefix'):
-                    srule = str('{0}{1}'.format(
-                        str(self.template['swaggerUiPrefix']), str(rule)))
-                else:
-                    srule = str(rule)
+                try:
+                    # Add reverse proxy prefix to route
+                    prefix = self.template['swaggerUiPrefix']
+                except (KeyError, TypeError):
+                    prefix = ''
+                srule = '{0}{1}'.format(prefix, rule)
                 # old regex '(<(.*?\:)?(.*?)>)'
                 for arg in re.findall('(<([^<>]*:)?([^<>]*)>)', srule):
                     srule = srule.replace(arg[0], '{%s}' % arg[2])
