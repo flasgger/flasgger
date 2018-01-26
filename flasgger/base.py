@@ -255,7 +255,8 @@ class APISpecsView(MethodView):
 
             if len(operations):
                 if self.template.get('swaggerUiPrefix'):
-                    srule = str('{0}{1}'.format(str(self.template['swaggerUiPrefix']), str(rule)))
+                    srule = str('{0}{1}'.format(
+                        str(self.template['swaggerUiPrefix']), str(rule)))
                 else:
                     srule = str(rule)
                 # old regex '(<(.*?\:)?(.*?)>)'
