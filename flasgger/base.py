@@ -254,7 +254,10 @@ class APISpecsView(MethodView):
                 operations[verb] = operation
 
             if len(operations):
-                srule = str(rule)
+                if self.template.get('swaggerUiPrefix'):
+                    srule = str('{0}{1}'.format(str(self.template['swaggerUiPrefix']), str(rule)))
+                else:
+                    srule = str(rule)
                 # old regex '(<(.*?\:)?(.*?)>)'
                 for arg in re.findall('(<([^<>]*:)?([^<>]*)>)', srule):
                     srule = srule.replace(arg[0], '{%s}' % arg[2])

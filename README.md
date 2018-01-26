@@ -685,6 +685,23 @@ Swagger(app, template=template)
 
 The `LazyString` values will be evaluated only when `jsonify` encodes the value at runtime, so you have access to Flask `request, session, g, etc..` and also may want to access a database.
 
+## Behind a reverse proxy
+
+Sometimes you're serving your swagger docs behind an reverse proxy (e.g. NGINX).  When following the [Flask guidance](http://flask.pocoo.org/snippets/35/),
+the swagger docs will load correctly, but the "Try it Out" button points to the wrong place.  This can be fixed with the following code:
+
+```python
+from flask import Flask, request
+from flask import Swagger, LazyString, LazyJSONEncoder
+
+app = Flask(__name__)
+app.json_encoder = LazyJSONEncoder
+
+template = dict(swaggerUiPrefix=LazyString(lambda : request.environ.get('HTTP_X_SCRIPT_NAME', '')))
+swagger = Swagger(app, template=template)
+
+``` 
+
 # Customize default configurations
 
 Custom configurations such as a different specs route or disabling Swagger UI can be provided to Flasgger:
