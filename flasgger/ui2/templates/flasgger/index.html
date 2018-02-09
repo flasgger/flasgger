@@ -74,6 +74,17 @@
           $('pre code').each(function(i, e) {
             hljs.highlightBlock(e)
           });
+
+          {% if config.JWT_AUTH_URL_RULE -%}
+            $(document).find('div.response_headers').bind('DOMSubtreeModified', function(event) {
+              var response = JSON.parse($(this).text());
+              var tokenField = 'jwt-token';
+              if (response.hasOwnProperty(tokenField)) {
+                var jwt_token = response[tokenField];
+                swaggerUi.api.clientAuthorizations.add("key", new SwaggerClient.ApiKeyAuthorization("Authorization", "JWT " + jwt_token, "header"));
+              }
+            });
+          {%- endif %}
         },
         onFailure: function(data) {
           log("Unable to Load SwaggerUI");
