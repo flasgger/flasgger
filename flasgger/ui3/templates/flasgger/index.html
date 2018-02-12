@@ -80,8 +80,14 @@
 
 <script src="{{url_for('flasgger.static', filename='swagger-ui-bundle.js')}}"> </script>
 <script src="{{url_for('flasgger.static', filename='swagger-ui-standalone-preset.js')}}"> </script>
+<script src='{{url_for('flasgger.static', filename='')}}lib/jquery.min.js' type='text/javascript'></script>
 <script>
 window.onload = function() {
+  {% if config.JWT_AUTH_URL_RULE -%}
+  // JWT token holder
+  var jwt_token;
+  {%- endif %}
+
   // Build a system
   const ui = SwaggerUIBundle({
     // http://petstore.swagger.io/v2/swagger.json
@@ -97,10 +103,29 @@ window.onload = function() {
     plugins: [
       SwaggerUIBundle.plugins.DownloadUrl
     ],
-    layout: "StandaloneLayout"
-  })
+    {% if config.JWT_AUTH_URL_RULE -%}
+    requestInterceptor: function(request) {
+      if (jwt_token) {
+        request.headers.Authorization = "JWT " + jwt_token;
+      }
 
-  window.ui = ui
+      return request;
+    },
+    responseInterceptor: function(response) {
+      var tokenField = 'jwt-token';
+      var headers = response.headers;
+
+      if (headers.hasOwnProperty(tokenField)) {
+        jwt_token = headers[tokenField];
+      }
+
+      return response;
+    },
+    {%- endif %}
+    layout: "StandaloneLayout"
+  });
+
+  window.ui = ui;
 }
 </script>
 </body>
