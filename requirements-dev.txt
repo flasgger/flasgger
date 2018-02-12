@@ -10,6 +10,7 @@ coveralls
 pytest-cov
 decorator
 wheel
+flask-jwt
 
 # install flasgger itself as editable
 -e .
