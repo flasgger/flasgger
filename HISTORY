@@ -3,6 +3,10 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.8.1
+-----
+JWT - Flask_jwt support added
+
 0.8.0
 -----
 - Reverted the automatic set of json_encoder and allowed user to import LAzyJSONEncoder  (tks @SBillion)
