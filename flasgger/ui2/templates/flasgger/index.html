@@ -81,7 +81,7 @@
               var tokenField = 'jwt-token';
               if (response.hasOwnProperty(tokenField)) {
                 var jwt_token = response[tokenField];
-                swaggerUi.api.clientAuthorizations.add("key", new SwaggerClient.ApiKeyAuthorization("Authorization", "JWT " + jwt_token, "header"));
+                swaggerUi.api.clientAuthorizations.add("key", new SwaggerClient.ApiKeyAuthorization("Authorization", "Bearer " + jwt_token, "header"));
               }
             });
           {%- endif %}
