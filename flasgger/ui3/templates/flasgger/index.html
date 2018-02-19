@@ -106,7 +106,7 @@ window.onload = function() {
     {% if config.JWT_AUTH_URL_RULE -%}
     requestInterceptor: function(request) {
       if (jwt_token) {
-        request.headers.Authorization = "JWT " + jwt_token;
+        request.headers.Authorization = "Bearer " + jwt_token;
       }
 
       return request;
