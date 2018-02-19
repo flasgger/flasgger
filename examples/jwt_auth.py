@@ -62,6 +62,7 @@ app.config["SWAGGER"] = {
     "title": "Swagger JWT Authentiation App",
     "uiversion": 3,
 }
+app.config['JWT_AUTH_URL_RULE'] ='/api/auth'
 
 swag = Swagger(app,
     template={
