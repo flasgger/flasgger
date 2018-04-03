@@ -187,7 +187,7 @@ specs_dict = {
         "rgb",
         "cmyk"
       ],
-      "required": true,
+      "required": "true",
       "default": "all"
     }
   ],
