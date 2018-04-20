@@ -522,7 +522,8 @@ class Swagger(object):
         schema_specs = get_schema_specs(schema_id, self)
 
         if schema_specs is None:
-            raise KeyError('Specified schema_id \'{0}\' not found')
+            raise KeyError(
+                'Specified schema_id \'{0}\' not found'.format(schema_id))
 
         for schema in (
                 parameter.get('schema') for parameter in
