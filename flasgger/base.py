@@ -118,9 +118,6 @@ class APISpecsView(MethodView):
         The Swagger view get method outputs to /apispecs_1.json
         """
         data = {
-            "swagger": self.config.get('swagger') or self.config.get(
-                'swagger_version', "2.0"
-            ),
             # try to get from config['SWAGGER']['info']
             # then config['SWAGGER']['specs'][x]
             # then config['SWAGGER']
@@ -144,6 +141,14 @@ class APISpecsView(MethodView):
             "paths": self.config.get('paths') or defaultdict(dict),
             "definitions": self.config.get('definitions') or defaultdict(dict)
         }
+
+        openapi_version = self.config.get('openapi')
+        if openapi_version:
+            data["openapi"] = openapi_version
+        else:
+            data["swagger"] = self.config.get('swagger') or self.config.get(
+                'swagger_version', "2.0"
+            )
 
         # Support extension properties in the top level config
         top_level_extension_options = get_vendor_extension_fields(self.config)
@@ -210,6 +215,16 @@ class APISpecsView(MethodView):
                                             verb=verb,
                                             prefix_ids=prefix_ids)
 
+                request_body = swag.get('requestBody')
+                if request_body:
+                    content = request_body.get("content", {})
+                    extract_definitions(
+                        list(content.values()),
+                        endpoint=rule.endpoint,
+                        verb=verb,
+                        prefix_ids=prefix_ids
+                    )
+
                 responses = None
                 if 'responses' in swag:
                     responses = swag.get('responses', {})
@@ -237,6 +252,8 @@ class APISpecsView(MethodView):
                     operation['summary'] = swag.get('summary')
                 if swag.get('description'):
                     operation['description'] = swag.get('description')
+                if request_body:
+                    operation['requestBody'] = request_body
                 if responses:
                     operation['responses'] = responses
                 # parameters - swagger ui dislikes empty parameter lists
