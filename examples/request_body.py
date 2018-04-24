@@ -30,7 +30,7 @@ class Pet(object):
         self.name = str(name)
 
     def dump(self):
-        return {**vars(self)}
+        return dict(vars(self).items())
 
 
 @app.route('/requestBody', methods=['POST'])
