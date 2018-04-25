@@ -16,6 +16,9 @@ from flasgger import fields
 from flasgger import swag_from
 from flasgger import validate
 
+# Examples include intentionally invalid defaults to demonstrate validation.
+_TEST_META_SKIP_FULL_VALIDATION = True
+
 app = Flask(__name__)
 swag = Swagger(app)
 
