@@ -1,5 +1,5 @@
 # coding: utf-8
-from flex.core import validate
+from flex import load as validate
 
 
 def test_validate_example_specs(test_data):
