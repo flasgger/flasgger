@@ -1,5 +1,6 @@
 # coding: utf-8
-from flex import load as validate
+from flex.core import validate
+from flex import load as validate_fully
 
 
 def test_validate_example_specs(test_data):
@@ -17,7 +18,14 @@ def test_validate_example_specs(test_data):
     """
     mod, client, specs_data = test_data
     for url, spec in specs_data.items():
-        validate(spec)  # validate using Flex
+        if 'openapi' not in spec:
+            # Flex can do a sophisticated and thorough validatation of
+            # Swagger 2.0 specs, before it was renamed to OpenAPI.
+            validate_fully(spec)
+        else:
+            # OpenAPI specs are not yet supported by flex, so we should fall
+            # back to a fairly simple structural validation.
+            validate(spec)
 
 
 def test_required_attributes(test_data):
