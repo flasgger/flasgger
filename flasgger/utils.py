@@ -124,6 +124,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
                 swag.update(
                     convert_schemas(apispec_swag, apispec_definitions)
                 )
+                swag['definitions'] = apispec_definitions
 
                 swagged = True
 

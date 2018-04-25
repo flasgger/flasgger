@@ -82,6 +82,9 @@ class SwaggerView(MethodView):
 def convert_schemas(d, definitions=None):
     """
     Convert Marshmallow schemas to dict definitions
+
+    Also updates the optional definitions argument with any definitions
+    entries contained within the schema.
     """
     if Schema is None:
         raise RuntimeError('Please install marshmallow and apispec')
@@ -115,7 +118,8 @@ def convert_schemas(d, definitions=None):
         else:
             new[k] = v
 
-    if len(definitions.keys()) > 0:
-        new['definitions'] = definitions
+    # This key is not permitted anywhere except the very top level.
+    if 'definitions' in new:
+        del new['definitions']
 
     return new
