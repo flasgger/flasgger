@@ -66,7 +66,7 @@ app.config['JWT_AUTH_URL_RULE'] ='/api/auth'
 
 swag = Swagger(app,
     template={
-        "swagger": "3.0",
+        "openapi": "3.0.0",
         "info": {
             "title": "Swagger Basic Auth App",
             "version": "1.0",

@@ -46,13 +46,30 @@ def get_specs_data(mod):
     return specs_data
 
 
+def get_test_metadata(mod):
+    """Create a dictionary of test metadata defined in an example
+
+    Every top-level constant prefixed with "_TEST_META_" is treated as
+    metadata which may control test behavior. The prefix is stripped and the
+    remaining text is lowercased to form the key in the metadata dictionary.
+
+    Example: '_TEST_META_SKIP_FULL_VALIDATION' -> 'skip_full_validation'
+    """
+
+    test_metadata_prefix = '_TEST_META_'
+    return {key[len(test_metadata_prefix):].lower(): getattr(mod, key)
+            for key in mod.__dict__
+            if key.startswith(test_metadata_prefix)}
+
+
 def pytest_generate_tests(metafunc):
     """
     parametrize tests using examples() function
     to generate one test for each examples/
     """
     test_data = [
-        (mod, mod.app.test_client(), get_specs_data(mod))
+        (mod, mod.app.test_client(),
+         get_specs_data(mod), get_test_metadata(mod))
         for mod in get_examples()
     ]
 

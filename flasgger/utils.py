@@ -405,7 +405,7 @@ def remove_suffix(fpath):  # pragma: no cover
 
 def is_python_file(fpath):  # pragma: no cover
     """Naive Python module filterer"""
-    return ".py" in fpath and "__" not in fpath
+    return fpath.endswith(".py") and "__" not in fpath
 
 
 def pathify(basenames, examples_dir="examples/"):  # pragma: no cover

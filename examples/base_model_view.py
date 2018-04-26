@@ -30,7 +30,7 @@ class PostAPIView(ModelAPIView):
             in: path
             description: ID of team (type any number)
             required: true
-            type: int32
+            type: integer
         definitions:
           User:
             type: object
@@ -38,7 +38,7 @@ class PostAPIView(ModelAPIView):
               name:
                 type: string
               team:
-                type: int32
+                type: integer
         responses:
           200:
             description: Returns a list of users
