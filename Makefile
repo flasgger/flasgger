@@ -16,7 +16,9 @@ test: pep8 flasgger_package
 
 .PHONY: sdist
 sdist: test
-	@python setup.py sdist bdist_wheel upload
+	@rm -rf dist/*
+	@python setup.py sdist bdist_wheel
+	@twine upload dist/*
 
 .PHONY: clean
 clean:

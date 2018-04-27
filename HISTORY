@@ -3,6 +3,11 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.8.3
+-----
+
+- Small update to release target (using twine)
+
 0.8.2
 -----
 
