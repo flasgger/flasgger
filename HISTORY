@@ -3,6 +3,33 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.8.2
+-----
+
+- Update index.html 
+- Update index.html 
+- Merge pull request #180 from anilpai/anilpai-patch-1 
+- Update jwt_auth.py 
+- Merge pull request #182 from anilpai/patch-1 
+- Avoid inclusion of empty definition dict 
+- Merge pull request #184 from mmichaels01/master 
+- Fix README.md error 
+- Merge pull request #186 from phylee/master 
+- Fix get_schema exception message 
+- Merge pull request #187 from boris-42/fix_get_schema_exc_message 
+- Fix erroneous extra definitions objects 
+- adding support for requestBody 
+- fixing python 2.7 incompliant syntax 
+- Merge pull request #191 from zrayn/add-requestBody-support 
+- Merge pull request #190 from abstiles/fix-extra-definitions 
+- Validate examples according to Swagger spec 
+- Correct example's declaration as OpenAPI 3.0 
+- Correct reference of invalid type int32 
+- Make example python filter more strict 
+- Fall back to simpler validation for OpenAPI 3 
+- Skip validation of intentionally invalid example 
+- Merge pull request #193 from abstiles/enhance-tests 
+
 0.8.1
 -----
 JWT - Flask_jwt support added

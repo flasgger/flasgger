@@ -32,6 +32,13 @@ There are some [example applications](examples/) and you can also play with exam
 
 > under your virtualenv do:
 
+Ensure you have latest setuptools
+```
+pip install -U setuptools
+```
+
+then
+
 ```
 pip install flasgger
 ```

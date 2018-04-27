@@ -40,6 +40,7 @@ setup(
     author_email=grep('__email__'),
     description='Extract swagger specs from your flask project',
     long_description=desc(),
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     include_package_data=True,
     zip_safe=False,
