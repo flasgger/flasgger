@@ -72,6 +72,8 @@ class APIDocsView(MethodView):
             # calling with ?json returns specs
             return jsonify(data)
         else:  # pragma: no cover
+            data['flasgger_config'] = self.config
+            data['json'] = json
             return render_template(
                 'flasgger/index.html',
                 **data
@@ -409,7 +411,7 @@ class Swagger(object):
             return view
 
         if self.config.get('swagger_ui', True):
-            uiversion = self.config.get('uiversion', 2)
+            uiversion = self.config.get('uiversion', 3)
             blueprint = Blueprint(
                 self.config.get('endpoint', 'flasgger'),
                 __name__,
