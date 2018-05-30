@@ -163,6 +163,8 @@ class APISpecsView(MethodView):
             data['host'] = self.config.get('host')
         if self.config.get("basePath"):
             data["basePath"] = self.config.get('basePath')
+        if self.config.get('schemes'):
+            data['schemes'] = self.config.get('schemes')
         if self.config.get("securityDefinitions"):
             data["securityDefinitions"] = self.config.get(
                 'securityDefinitions'
