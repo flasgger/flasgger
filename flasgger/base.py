@@ -34,6 +34,7 @@ from .utils import parse_definition_docstring
 from .utils import get_vendor_extension_fields
 from .utils import validate
 from .utils import LazyString
+from . import __version__
 
 NO_SANITIZER = lambda text: text  # noqa
 BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
@@ -74,6 +75,11 @@ class APIDocsView(MethodView):
         else:  # pragma: no cover
             data['flasgger_config'] = self.config
             data['json'] = json
+            data['flasgger_version'] = __version__
+            data['favicon'] = self.config.get(
+                'favicon',
+                url_for('flasgger.static', filename='favicon-32x32.png')
+            )
             return render_template(
                 'flasgger/index.html',
                 **data

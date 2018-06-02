@@ -2,34 +2,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <title>{{ title }}</title>
-    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,700|Source+Code+Pro:300,600|Titillium+Web:400,600,700" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" href="{{url_for('flasgger.static', filename='swagger-ui.css')}}" >
-    <link rel="icon" type="image/png" href="{{url_for('flasgger.static', filename='favicon-32x32.png')}}" sizes="32x32" />
-    <link rel="icon" type="image/png" href="{{url_for('flasgger.static', filename='favicon-16x16.png')}}" sizes="16x16" />
-    <style>
-      html
-      {
-        box-sizing: border-box;
-        overflow: -moz-scrollbars-vertical;
-        overflow-y: scroll;
-      }
-
-      *,
-      *:before,
-      *:after
-      {
-        box-sizing: inherit;
-      }
-
-      body
-      {
-        margin:0;
-        background: #fafafa;
-      }
-    </style>
     {% include 'flasgger/head.html' %}
+    <!-- To add custom code here override the template templates/flasgger/custom_head.html -->
+    {% include 'flasgger/custom_head.html' %}
   </head>
 
   <body>
@@ -53,71 +28,11 @@
     <script src="{{url_for('flasgger.static', filename='swagger-ui-bundle.js')}}"> </script>
     <script src="{{url_for('flasgger.static', filename='swagger-ui-standalone-preset.js')}}"> </script>
     <script src="{{url_for('flasgger.static', filename='lib/jquery.min.js')}}" type='text/javascript'></script>
-    <script>
-    window.onload = function() {
+    
+  <!-- To customize the script that loads swagger, override templates/flasgger/swagger.html -->
+  {% include 'flasgger/swagger.html' %}
 
-      {% if config.JWT_AUTH_URL_RULE -%}
-      // JWT token holder
-       var jwt_token;
-      {%- endif %}
-
-      // Build a system
-      const ui = SwaggerUIBundle(
-        Object.assign(
-        {
-
-        url: "{{ specs[0]['url'] }}",
-        dom_id: '#swagger-ui',
-        validatorUrl: null,
-        deepLinking: true,
-        jsonEditor: true,
-        {% if flasgger_config.doc_expansion -%}
-          docExpansion: "{{flasgger_config.doc_expansion | safe }}",
-        {%- endif %}
-        apisSorter: "alpha",
-        presets: [
-          SwaggerUIBundle.presets.apis,
-          SwaggerUIStandalonePreset
-        ],
-        plugins: [
-          SwaggerUIBundle.plugins.DownloadUrl
-        ],
-        {% if config.JWT_AUTH_URL_RULE -%}
-        requestInterceptor: function(request) {
-          if (jwt_token) {
-            request.headers.Authorization = "Bearer " + jwt_token;
-          }
-
-          return request;
-        },
-        responseInterceptor: function(response) {
-          var tokenField = 'jwt-token';
-          var headers = response.headers;
-
-          if (headers.hasOwnProperty(tokenField)) {
-            jwt_token = headers[tokenField];
-          }
-
-          return response;
-        },
-        {%- endif %}
-        {% if not flasgger_config.hide_top_bar -%}
-        layout: "StandaloneLayout",
-        {%- endif %}
-      
-      },
-      {{ json.dumps(flasgger_config.get('ui_params', {})) | safe }}
-      )
-      
-      )
-
-      window.ui = ui
-
-      {% if not flasgger_config.hide_top_bar -%}
-      $(".topbar-wrapper .link span").replaceWith("<span>{{title}}</span>");
-      {%- endif %}
-    }
-  </script>
+  <!-- To customize the footer and include custom script on templates/flasgger/footer.html -->
   {% include 'flasgger/footer.html' %}
   </body>
 </html>
