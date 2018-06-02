@@ -8,8 +8,7 @@ from flasgger import Swagger
 
 app = Flask(__name__)
 app.config['SWAGGER'] = {
-    'title': 'Colors API',
-    'uiversion': 2
+    'title': 'Colors API'
 }
 Swagger(app)
 
