@@ -1,5 +1,5 @@
 
-__version__ = '0.9.0'
+__version__ = '0.9.1.dev0'
 __author__ = 'Bruno Rocha'
 __email__ = 'rochacbruno@gmail.com'
 
