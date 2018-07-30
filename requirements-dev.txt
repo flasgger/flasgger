@@ -1,6 +1,6 @@
 # optional (for dev)
 marshmallow
-apispec
+apispec>=0.39.0
 flask-restful
 pep8==1.5.7
 flake8==2.4.1
