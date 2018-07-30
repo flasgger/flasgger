@@ -292,6 +292,8 @@ class APISpecsView(MethodView):
                     srule = srule.replace(arg[0], '{%s}' % arg[2])
 
                 for key, val in operations.items():
+                    if srule not in paths:
+                        paths[srule] = {}
                     if key in paths[srule]:
                         paths[srule][key].update(val)
                     else:
