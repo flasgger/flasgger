@@ -172,6 +172,20 @@ def fromfile_decorated_no_descr(username):
 def fromfile_decorated_no_sep(username):
     return jsonify({'username': username})
 
+@app.route('/v1/decorated_bom/<username>', endpoint='should_be_v1_only_username_bom')
+@swag_from('username_specs_bom.yml')
+def fromfile_decorated_bom(username):
+    return jsonify({'username': username})
+
+@app.route('/v1/decorated_utf16/<username>', endpoint='should_be_v1_only_username_utf16')
+@swag_from('username_specs_utf16.yml')
+def fromfile_decorated_utf16(username):
+    return jsonify({'username': username})
+
+@app.route('/v1/decorated_utf32/<username>', endpoint='should_be_v1_only_username_utf32')
+@swag_from('username_specs_utf32.yml')
+def fromfile_decorated_utf32(username):
+    return jsonify({'username': username})
 
 # OR
 
