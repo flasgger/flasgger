@@ -1,5 +1,6 @@
 # coding: utf-8
 
+import codecs
 import copy
 import imp
 import inspect
@@ -451,7 +452,8 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
         # TODO: support JSON
 
     try:
-        with open(swag_path) as yaml_file:
+        enc = detect_by_bom(swag_path)
+        with codecs.open(swag_path, encoding=enc) as yaml_file:
             return yaml_file.read()
     except IOError:
         # not in the same dir, add dirname
@@ -459,7 +461,8 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
             root_path or os.path.dirname(__file__), swag_path
         )
         try:
-            with open(swag_path) as yaml_file:
+            enc = detect_by_bom(swag_path)
+            with codecs.open(swag_path, encoding=enc) as yaml_file:
                 return yaml_file.read()
         except IOError:  # pragma: no cover
             # if package dir
@@ -475,6 +478,18 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
             swag_path = os.path.join(site_package, os.sep.join(path[1:]))
             with open(swag_path) as yaml_file:
                 return yaml_file.read()
+
+
+def detect_by_bom(path, default='utf-8'):
+    with open(path, 'rb') as f:
+        raw = f.read(4)  # will read less if the file is smaller
+    for enc, boms in \
+            ('utf-8-sig', (codecs.BOM_UTF8,)),\
+            ('utf-16', (codecs.BOM_UTF16_LE, codecs.BOM_UTF16_BE)),\
+            ('utf-32', (codecs.BOM_UTF32_LE, codecs.BOM_UTF32_BE)):
+        if any(raw.startswith(bom) for bom in boms):
+            return enc
+    return default
 
 
 def parse_docstring(obj, process_doc, endpoint=None, verb=None):

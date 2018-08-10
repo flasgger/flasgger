@@ -1,4 +1,4 @@
-This is the summary defined in yaml file
+﻿This is the summary defined in yaml file
 First line is the summary
 All following lines until the hyphens is added to description
 the format of the first lines until 3 hyphens will be not yaml compliant
