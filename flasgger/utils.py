@@ -88,11 +88,11 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer):
 
             klass = method.__dict__.get('view_class', None)
             if not is_mv and klass and hasattr(klass, 'verb'):
-                method = klass.__dict__.get('verb')
+                method = getattr(klass, 'verb', None)
             elif klass and hasattr(klass, 'dispatch_request'):
-                method = klass.__dict__.get('dispatch_request')
+                method = getattr(klass, 'dispatch_request', None)
             if method is None:  # for MethodView
-                method = klass.__dict__.get(verb)
+                method = getattr(klass, verb, None)
 
             if method is None:
                 if is_mv:  # #76 Empty MethodViews
