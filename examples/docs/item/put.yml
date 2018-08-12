@@ -1,0 +1,26 @@
+Update single item
+---
+tags:
+  - MethodView
+parameters:
+  - name: id
+    type: integer
+    in: path
+    required: True
+    minimum: 1
+  - name: Item
+    in: body
+    schema:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          maxLength: 31
+          description: global unique
+responses:
+  200:
+    description: OK
+    schema:
+      $ref: '#/definitions/Item'

@@ -1,0 +1,25 @@
+Get all items
+---
+tags:
+  - MethodView
+parameters:
+  - name: type
+    type: string
+    in: query
+    required: True
+    maxLength: 10
+responses:
+  200:
+    description: OK
+    schema:
+      $ref: '#/definitions/Items'
+  401:
+    description: Auth required
+definitions:
+  Items:
+    type: object
+    properties:
+      objects:
+        type: array
+        items:
+          $ref: "#/definitions/Item"

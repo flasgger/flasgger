@@ -1,0 +1,16 @@
+swagger: '2.0'
+info:
+  title: 'Flasgger Parsed Method/Function View Example'
+  description: 'Example of swagger document auto loading by endpoint name(view function/method name), parsed by flask_restful.reqparse.RequestParser and validated by jsonschema'
+  version: '0.1'
+
+definitions:
+  Item:
+    type: object
+    properties:
+      id:
+        type: integer
+      name:
+        type: string
+      type:
+        type: string
