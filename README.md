@@ -28,6 +28,16 @@ There are some [example applications](examples/) and you can also play with exam
 
 > NOTE: all the examples apps are also test cases and run automatically in Travis CI to ensure quality and coverage.
 
+## Docker
+
+The examples and demo app can also be built and run as a Docker image/container:
+
+```
+docker build -t flasgger .
+docker run -it --rm -p 5000:5000 --name flasgger flasgger
+```
+Then access the Flasgger demo app at http://localhost:5000 .
+
 # Installation
 
 > under your virtualenv do:
