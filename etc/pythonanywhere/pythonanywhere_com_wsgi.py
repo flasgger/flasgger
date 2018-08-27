@@ -30,10 +30,13 @@ To deploy:
 - If an error occurs, review the log files.
 """
 import os
+import subprocess
 import sys
 
 home = os.path.expanduser("~")
 path = os.environ.get('FLASGGER_HOME') or home + '/flasgger'
+
+subprocess.check_call(['git', 'pull', path])
 
 if path not in sys.path:
     sys.path.append(path)
