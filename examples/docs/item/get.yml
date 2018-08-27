@@ -1,0 +1,15 @@
+Get single item
+---
+tags:
+- MethodView
+parameters:
+  - name: id
+    type: integer
+    in: path
+    required: True
+    minimum: 1
+responses:
+  200:
+    description: OK
+    schema:
+      $ref: '#/definitions/Item'

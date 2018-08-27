@@ -14,7 +14,7 @@ try:
     import simplejson as json
 except ImportError:
     import json
-from functools import wraps
+from functools import wraps, partial
 from collections import defaultdict
 from flask import Blueprint
 from flask import Markup
@@ -23,8 +23,15 @@ from flask import jsonify
 from flask import redirect
 from flask import render_template
 from flask import request, url_for
+from flask import abort
+from flask import Response
 from flask.views import MethodView
 from flask.json import JSONEncoder
+try:
+    from flask_restful.reqparse import RequestParser
+except ImportError:
+    RequestParser = None
+import jsonschema
 from mistune import markdown
 from .constants import OPTIONAL_FIELDS
 from .utils import extract_definitions
@@ -91,13 +98,122 @@ class APISpecsView(MethodView):
     The /apispec_1.json and other specs
     """
     def __init__(self, *args, **kwargs):
-        view_args = kwargs.pop('view_args', {})
-        self.config = view_args.get('config')
-        self.spec = view_args.get('spec')
-        self.process_doc = view_args.get('sanitizer', BR_SANITIZER)
-        self.template = view_args.get('template')
-        self.definition_models = view_args.get('definition_models')
+        self.loader = kwargs.pop('loader')
         super(APISpecsView, self).__init__(*args, **kwargs)
+
+    def get(self):
+        """
+        The Swagger view get method outputs to /apispecs_1.json
+        """
+        return jsonify(self.loader())
+
+
+class SwaggerDefinition(object):
+    """
+    Class based definition
+    """
+    def __init__(self, name, obj, tags=None):
+        self.name = name
+        self.obj = obj
+        self.tags = tags or []
+
+
+class Swagger(object):
+
+    DEFAULT_CONFIG = {
+        "headers": [
+        ],
+        "specs": [
+            {
+                "endpoint": 'apispec_1',
+                "route": '/apispec_1.json',
+                "rule_filter": lambda rule: True,  # all in
+                "model_filter": lambda tag: True,  # all in
+            }
+        ],
+        "static_url_path": "/flasgger_static",
+        # "static_folder": "static",  # must be set by user
+        "swagger_ui": True,
+        "specs_route": "/apidocs/"
+    }
+
+    SCHEMA_TYPES = {'string': str, 'integer': int, 'number': int,
+                    'boolean': bool, 'object': dict}
+    SCHEMA_LOCATIONS = {'query': 'args', 'header': 'headers',
+                        'formData': 'form', 'body': 'json', 'path': 'path'}
+
+    def __init__(
+            self, app=None, config=None, sanitizer=None, template=None,
+            template_file=None, decorators=None, validation_function=None,
+            validation_error_handler=None, parse=False):
+        self._configured = False
+        self.endpoints = []
+        self.definition_models = []  # not in app, so track here
+        self.sanitizer = sanitizer or BR_SANITIZER
+        self.config = config or self.DEFAULT_CONFIG.copy()
+        self.template = template
+        self.template_file = template_file
+        self.decorators = decorators
+        self.validation_function = validation_function
+        self.validation_error_handler = validation_error_handler
+        self.apispecs = {}  # cached apispecs
+        self.parse = parse
+        if app:
+            self.init_app(app)
+
+    def init_app(self, app, decorators=None):
+        """
+        Initialize the app with Swagger plugin
+        """
+        self.decorators = decorators or self.decorators
+        self.app = app
+
+        self.load_config(app)
+        # self.load_apispec(app)
+        if self.template_file is not None:
+            self.template = self.load_swagger_file(self.template_file)
+        self.register_views(app)
+        self.add_headers(app)
+
+        if self.parse:
+            if RequestParser is None:
+                raise RuntimeError('Please install flask_restful')
+            self.parsers = {}
+            self.schemas = {}
+            self.format_checker = jsonschema.FormatChecker()
+            self.parse_request(app)
+
+        self._configured = True
+        app.swag = self
+
+    def load_swagger_file(self, filename):
+        if not filename.startswith('/'):
+            filename = os.path.join(
+                self.app.root_path,
+                filename
+            )
+
+        if filename.endswith('.json'):
+            loader = json.load
+        elif filename.endswith('.yml') or filename.endswith('.yaml'):
+            loader = yaml.load
+        else:
+            with codecs.open(filename, 'r', 'utf-8') as f:
+                contents = f.read()
+                contents = contents.strip()
+                if contents[0] in ['{', '[']:
+                    loader = json.load
+                else:
+                    loader = yaml.load
+        with codecs.open(filename, 'r', 'utf-8') as f:
+            return loader(f)
+
+    @property
+    def configured(self):
+        """
+        Return if `init_app` is configured
+        """
+        return self._configured
 
     def get_url_mappings(self, rule_filter=None):
         """
@@ -121,27 +237,37 @@ class APISpecsView(MethodView):
             if model_filter(definition)
         }
 
-    def get(self):
-        """
-        The Swagger view get method outputs to /apispecs_1.json
-        """
+    def get_apispecs(self, endpoint='apispec_1'):
+        if endpoint in self.apispecs:
+            return self.apispecs[endpoint]
+
+        spec = None
+        for _spec in self.config['specs']:
+            if _spec['endpoint'] == endpoint:
+                spec = _spec
+                break
+        if not spec:
+            raise RuntimeError(
+                'Can`t find specs by endpoint {:d},'
+                ' check your flasger`s config'.format(endpoint))
+
         data = {
             # try to get from config['SWAGGER']['info']
             # then config['SWAGGER']['specs'][x]
             # then config['SWAGGER']
             # then default
             "info": self.config.get('info') or {
-                "version": self.spec.get(
+                "version": spec.get(
                     'version', self.config.get('version', "0.0.1")
                 ),
-                "title": self.spec.get(
+                "title": spec.get(
                     'title', self.config.get('title', "A swagger API")
                 ),
-                "description": self.spec.get(
+                "description": spec.get(
                     'description', self.config.get('description',
                                                    "powered by Flasgger")
                 ),
-                "termsOfService": self.spec.get(
+                "termsOfService": spec.get(
                     'termsOfService', self.config.get('termsOfService',
                                                       "/tos")
                 ),
@@ -191,17 +317,18 @@ class APISpecsView(MethodView):
         optional_fields = self.config.get('optional_fields') or OPTIONAL_FIELDS
 
         for name, def_model in self.get_def_models(
-                self.spec.get('definition_filter')).items():
+                spec.get('definition_filter')).items():
             description, swag = parse_definition_docstring(
-                def_model, self.process_doc)
+                def_model, self.sanitizer)
             if name and swag:
                 if description:
                     swag.update({'description': description})
                 definitions[name].update(swag)
 
         specs = get_specs(
-            self.get_url_mappings(self.spec.get('rule_filter')), ignore_verbs,
-            optional_fields, self.process_doc)
+            self.get_url_mappings(spec.get('rule_filter')), ignore_verbs,
+            optional_fields, self.sanitizer,
+            doc_dir=self.config.get('doc_dir'))
 
         http_methods = ['get', 'post', 'put', 'delete']
         for rule, verbs in specs:
@@ -298,99 +425,8 @@ class APISpecsView(MethodView):
                         paths[srule][key].update(val)
                     else:
                         paths[srule][key] = val
-        return jsonify(data)
-
-
-class SwaggerDefinition(object):
-    """
-    Class based definition
-    """
-    def __init__(self, name, obj, tags=None):
-        self.name = name
-        self.obj = obj
-        self.tags = tags or []
-
-
-class Swagger(object):
-
-    DEFAULT_CONFIG = {
-        "headers": [
-        ],
-        "specs": [
-            {
-                "endpoint": 'apispec_1',
-                "route": '/apispec_1.json',
-                "rule_filter": lambda rule: True,  # all in
-                "model_filter": lambda tag: True,  # all in
-            }
-        ],
-        "static_url_path": "/flasgger_static",
-        # "static_folder": "static",  # must be set by user
-        "swagger_ui": True,
-        "specs_route": "/apidocs/"
-    }
-
-    def __init__(
-            self, app=None, config=None, sanitizer=None, template=None,
-            template_file=None, decorators=None, validation_function=None,
-            validation_error_handler=None):
-        self._configured = False
-        self.endpoints = []
-        self.definition_models = []  # not in app, so track here
-        self.sanitizer = sanitizer or BR_SANITIZER
-        self.config = config or self.DEFAULT_CONFIG.copy()
-        self.template = template
-        self.template_file = template_file
-        self.decorators = decorators
-        self.validation_function = validation_function
-        self.validation_error_handler = validation_error_handler
-        if app:
-            self.init_app(app)
-
-    def init_app(self, app, decorators=None):
-        """
-        Initialize the app with Swagger plugin
-        """
-        self.decorators = decorators or self.decorators
-        self.app = app
-
-        self.load_config(app)
-        # self.load_apispec(app)
-        if self.template_file is not None:
-            self.template = self.load_swagger_file(self.template_file)
-        self.register_views(app)
-        self.add_headers(app)
-        self._configured = True
-        app.swag = self
-
-    def load_swagger_file(self, filename):
-        if not filename.startswith('/'):
-            filename = os.path.join(
-                self.app.root_path,
-                filename
-            )
-
-        if filename.endswith('.json'):
-            loader = json.load
-        elif filename.endswith('.yml') or filename.endswith('.yaml'):
-            loader = yaml.load
-        else:
-            with codecs.open(filename, 'r', 'utf-8') as f:
-                contents = f.read()
-                contents = contents.strip()
-                if contents[0] in ['{', '[']:
-                    loader = json.load
-                else:
-                    loader = yaml.load
-        with codecs.open(filename, 'r', 'utf-8') as f:
-            return loader(f)
-
-    @property
-    def configured(self):
-        """
-        Return if `init_app` is configured
-        """
-        return self._configured
+        self.apispecs[endpoint] = data
+        return data
 
     def definition(self, name, tags=None):
         """
@@ -461,14 +497,10 @@ class Swagger(object):
             blueprint.add_url_rule(
                 spec['route'],
                 spec['endpoint'],
-                view_func=wrap_view(APISpecsView().as_view(
+                view_func=wrap_view(APISpecsView.as_view(
                     spec['endpoint'],
-                    view_args=dict(
-                        app=app, config=self.config,
-                        spec=spec, sanitizer=self.sanitizer,
-                        template=self.template,
-                        definition_models=self.definition_models
-                    )
+                    loader=partial(
+                        self.get_apispecs, endpoint=spec['endpoint'])
                 ))
             )
 
@@ -483,6 +515,90 @@ class Swagger(object):
             for header, value in self.config.get('headers'):
                 response.headers[header] = value
             return response
+
+    def parse_request(self, app):
+        @app.before_request
+        def before_request():  # noqa
+            # convert "/api/items/<int:id>/" to "/api/items/{id}/"
+            subs = []
+            for sub in str(request.url_rule).split('/'):
+                if '<' in sub:
+                    if ':' in sub:
+                        start = sub.index(':') + 1
+                    else:
+                        start = 1
+                    subs.append('{{{:s}}}'.format(sub[start:-1]))
+                else:
+                    subs.append(sub)
+            path = '/'.join(subs)
+            path_key = path + request.method.lower()
+
+            if path_key in self.parsers:
+                parsers = self.parsers[path_key]
+                schemas = self.schemas[path_key]
+            else:
+                doc = None
+                for spec in self.config['specs']:
+                    apispec = self.get_apispecs(endpoint=spec['endpoint'])
+                    if path in apispec['paths']:
+                        if request.method.lower() in apispec['paths'][path]:
+                            doc = apispec['paths'][path][
+                                request.method.lower()]
+                            break
+                if not doc:
+                    return
+
+                parsers = defaultdict(RequestParser)
+                schemas = defaultdict(
+                    lambda: {'type': 'object', 'properties': defaultdict(dict)}
+                )
+                for param in doc['parameters']:
+                    location = self.SCHEMA_LOCATIONS[param['in']]
+                    if location == 'json':
+                        schemas[location]['properties'].update(
+                            param['schema']['properties'])
+
+                        required_keys = param['schema'].get('required', [])
+                        keys = param['schema']['properties']
+                        for key in keys:
+                            parsers[location].add_argument(
+                                key,
+                                type=self.SCHEMA_TYPES[
+                                    keys[key]['type']],
+                                required=key in required_keys, location='json',
+                                store_missing=False)
+                    else:
+                        name = param['name']
+                        if location != 'path':
+                            parsers[location].add_argument(
+                                name,
+                                type=self.SCHEMA_TYPES[
+                                    param.get('type', None)],
+                                required=param.get('required', False),
+                                location=self.SCHEMA_LOCATIONS[
+                                    param['in']],
+                                store_missing=False)
+
+                        for k in param:
+                            if k != 'required':
+                                schemas[
+                                    location]['properties'][name][k] = param[k]
+
+                    self.schemas[path_key] = schemas
+                    self.parsers[path_key] = parsers
+
+            parsed_data = {'path': request.view_args}
+            for location in parsers.keys():
+                parsed_data[location] = parsers[location].parse_args()
+            for location, data in parsed_data.items():
+                try:
+                    jsonschema.validate(
+                        data, schemas[location],
+                        format_checker=self.format_checker)
+                except jsonschema.ValidationError as e:
+                    abort(Response(e.message, status=400))
+
+            setattr(request, 'parsed_data', parsed_data)
 
     def validate(
             self, schema_id, validation_function=None,

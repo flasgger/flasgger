@@ -1,0 +1,13 @@
+Get single user by id
+---
+tags:
+- FunctionView
+parameters:
+  - name: id
+    type: integer
+    in: query
+    required: True
+    minimum: 1
+responses:
+  200:
+    description: OK
