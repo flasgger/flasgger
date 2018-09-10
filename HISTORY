@@ -3,6 +3,25 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.9.0
+-----
+
+- Updated Swagger UI 3.x
+- uiversion now defaults to 3
+- 'hide_top_bar' config option to remove the green top bar
+- 'fotter_text' added to customize the footer text (allows html and <script>)
+- templates/flasgger/footer.html added and can be replaced to customization
+  this footer.html is the right place for custom <script>
+- 'top_text' added to customize the header text (allows html)
+- templates/flasgger/top.html added and can be replaced to customization
+- 'head_text' added to customize the <head> (allows html)
+- templates/flasgger/head.html added and can be replaced to customization
+- added 'doc_expansion' config to control the collapse
+- added 'ui_params' to allow override of any swagger.ui values
+- See examples/changelog_090.py
+- schemes are now pulled from config when present [#201](https://github.com/rochacbruno/flasgger/pull/201)
+- UI template refactoring/separation
+
 0.8.3
 -----
 
