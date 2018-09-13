@@ -11,6 +11,7 @@ pytest-cov
 decorator
 wheel
 flask-jwt
+twine
 
 # install flasgger itself as editable
 -e .
