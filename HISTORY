@@ -3,6 +3,19 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.9.1
+-----
+
+- Updated support for apispec >=0.39.0 [#205](https://github.com/rochacbruno/flasgger/pull/205)
+- Added install of etc/flasgger_package in requirements-dev.txt [#208](https://github.com/rochacbruno/flasgger/pull/208)
+- repaired key error thrown when a path is given instead of in the func [#210](https://github.com/rochacbruno/flasgger/pull/210)
+- fixed static file paths in demo app [#213](https://github.com/rochacbruno/flasgger/pull/213)
+- removed pre-compile/cache *.pyc files from dist [#137](https://github.com/rochacbruno/flasgger/issues/137)
+- auto-detect unicode charset-encoding in YAML files [#156](https://github.com/rochacbruno/flasgger/issues/156)
+- bug fix, use getattr instead of dict get [#226](https://github.com/rochacbruno/flasgger/pull/226)
+- added dev support for Docker (for demo app)
+- added support for parsed MethodView (flask_restful) [#222](https://github.com/rochacbruno/flasgger/pull/222)
+
 0.9.0
 -----
 
