@@ -41,7 +41,14 @@ setup(
     description='Extract swagger specs from your flask project',
     long_description=desc(),
     long_description_content_type="text/markdown",
-    packages=find_packages(),
+    packages=find_packages(
+        exclude=[
+            'tests', 'tests.*', 
+            'examples', 'examples.*', 
+            'demo_app', 'demo_app.*',
+            'etc', 'etc.*'
+        ]
+    ),
     include_package_data=True,
     zip_safe=False,
     platforms='any',
