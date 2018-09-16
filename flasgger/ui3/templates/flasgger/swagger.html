@@ -52,6 +52,9 @@ window.onload = function() {
     
     },
     {{ json.dumps(flasgger_config.get('ui_params', {})) | safe }}
+    {% if flasgger_config.ui_params_text -%}
+    , {{ flasgger_config.ui_params_text | safe }}
+    {%- endif %}
     )
     
     )
