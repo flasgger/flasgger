@@ -641,6 +641,21 @@ swagger = Swagger(app)
 
 ```
 
+## Externally loading Swagger UI and jQuery JS/CSS
+
+Starting with Flasgger 0.9.2 you can specify external URL locations for loading the JavaScript and CSS for the Swagger and jQuery libraries loaded in the Flasgger default templates.  If the configuration properties below are omitted, Flasgger will serve static versions it includes - these versions may be older than the current Swagger UI v2 or v3 releases.
+
+The following example loads Swagger UI and jQuery versions from unpkg.com:
+
+```
+swagger_config = Swagger.DEFAULT_CONFIG
+swagger_config['swagger_ui_bundle_js'] = '//unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js'
+swagger_config['swagger_ui_standalone_preset_js'] = '//unpkg.com/swagger-ui-dist@3/swagger-ui-standalone-preset.js'
+swagger_config['jquery_js'] = '//unpkg.com/jquery@2.2.4/dist/jquery.min.js'
+swagger_config['swagger_ui_css'] = '//unpkg.com/swagger-ui-dist@3/swagger-ui.css'
+Swagger(app, config=swagger_config)
+```
+
 # Initializing Flasgger with default data.
 
 You can start your Swagger spec with any default data providing a template:
