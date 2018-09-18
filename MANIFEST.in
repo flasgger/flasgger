@@ -1,4 +1,5 @@
 include *.md LICENSE
+
 recursive-include flasgger *
 recursive-include flasgger/ui2 *
 recursive-include flasgger/ui2/static *
@@ -18,5 +19,10 @@ recursive-include flasgger/ui3/static/lang *
 recursive-include flasgger/ui3/static/lib *
 recursive-include flasgger/ui3/templates *
 recursive-include flasgger/ui3/templates/flasgger *
+recursive-include demo_app *
+recursive-include etc *
+recursive-include examples *
+recursive-include tests *
+
 recursive-exclude flasgger __pycache__
 recursive-exclude flasgger *.py[co]
