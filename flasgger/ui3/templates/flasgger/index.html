@@ -22,13 +22,11 @@
           </div>
           </div>
       </div>
-    
+
     <div id="swagger-ui"></div>
 
-    <script src="{{url_for('flasgger.static', filename='swagger-ui-bundle.js')}}"> </script>
-    <script src="{{url_for('flasgger.static', filename='swagger-ui-standalone-preset.js')}}"> </script>
-    <script src="{{url_for('flasgger.static', filename='lib/jquery.min.js')}}" type='text/javascript'></script>
-    
+    {% include 'flasgger/body_scripts.html' %}
+
   <!-- To customize the script that loads swagger, override templates/flasgger/swagger.html -->
   {% include 'flasgger/swagger.html' %}
 

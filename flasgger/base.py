@@ -87,6 +87,23 @@ class APIDocsView(MethodView):
                 'favicon',
                 url_for('flasgger.static', filename='favicon-32x32.png')
             )
+            data['swagger_ui_bundle_js'] = self.config.get(
+                'swagger_ui_bundle_js',
+                url_for('flasgger.static', filename='swagger-ui-bundle.js')
+            )
+            data['swagger_ui_standalone_preset_js'] = self.config.get(
+                'swagger_ui_standalone_preset_js',
+                url_for('flasgger.static',
+                        filename='swagger-ui-standalone-preset.js')
+            )
+            data['jquery_js'] = self.config.get(
+                'jquery_js',
+                url_for('flasgger.static', filename='lib/jquery.min.js')
+            )
+            data['swagger_ui_css'] = self.config.get(
+                'swagger_ui_css',
+                url_for('flasgger.static', filename='swagger-ui.css')
+            )
             return render_template(
                 'flasgger/index.html',
                 **data
