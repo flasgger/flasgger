@@ -2,10 +2,7 @@
 import re
 import os
 
-try:
-    from setuptools import setup, find_packages
-except ImportError:
-    from distutils.core import setup, find_packages
+from setuptools import setup, find_packages
 
 
 def fpath(name):
@@ -43,8 +40,8 @@ setup(
     long_description_content_type="text/markdown",
     packages=find_packages(
         exclude=[
-            'tests', 'tests.*', 
-            'examples', 'examples.*', 
+            'tests', 'tests.*',
+            'examples', 'examples.*',
             'demo_app', 'demo_app.*',
             'etc', 'etc.*'
         ]
