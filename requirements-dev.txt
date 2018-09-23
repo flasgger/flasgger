@@ -11,7 +11,11 @@ pytest-cov
 decorator
 wheel
 flask-jwt
-twine
+twine>=1.11.0
+
+# for pypi markdown support
+readme_renderer
+setuptools>=40.4.2
 
 # install flasgger itself as editable
 -e .
