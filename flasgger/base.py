@@ -255,7 +255,7 @@ class Swagger(object):
         }
 
     def get_apispecs(self, endpoint='apispec_1'):
-        if endpoint in self.apispecs:
+        if not self.app.debug and endpoint in self.apispecs:
             return self.apispecs[endpoint]
 
         spec = None
@@ -550,7 +550,7 @@ class Swagger(object):
             path = '/'.join(subs)
             path_key = path + request.method.lower()
 
-            if path_key in self.parsers:
+            if not self.app.debug and path_key in self.parsers:
                 parsers = self.parsers[path_key]
                 schemas = self.schemas[path_key]
             else:
