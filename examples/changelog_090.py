@@ -51,7 +51,13 @@ app.config['SWAGGER'] = {
     'ui_params': {
         'apisSorter': 'alpha',
         'operationsSorter': 'alpha',
-    }
+    },
+
+    # Allows overriding any of the uiparams with Javascript expressions
+    # This is useful to override other stuff not provided by the above aliases which cannot be serialized to a JSON string
+    'ui_params_text': '''{
+    "operationsSorter" : (a, b) => a.get("path").localeCompare(b.get("path"))
+}'''
 }
 
 Swagger(app)
