@@ -2,6 +2,7 @@
 
 import codecs
 import copy
+import import_module
 import importlib
 import inspect
 import os
@@ -23,9 +24,8 @@ from .marshmallow_apispec import convert_schemas
 
 # if available, load python3 equivalent of imp.find_module
 try:
-    import importlib
     find_module = importlib.machinery.PathFinder().find_spec
-except ImportError:
+except AttributeError:
     import imp
     find_module = imp.find_module
 
