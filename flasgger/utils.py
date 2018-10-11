@@ -2,7 +2,8 @@
 
 import codecs
 import copy
-import imp
+import import_module
+from importlib import import_module
 import inspect
 import os
 import re
@@ -11,7 +12,6 @@ import yaml
 from six import string_types, text_type
 from copy import deepcopy
 from functools import wraps
-from importlib import import_module
 from collections import OrderedDict
 from flask import Response
 from flask import abort
@@ -21,6 +21,13 @@ from flask.views import MethodView
 from .constants import OPTIONAL_FIELDS
 from .marshmallow_apispec import SwaggerView
 from .marshmallow_apispec import convert_schemas
+
+# if available, load python3 equivalent of imp.find_module
+try:
+    find_module = importlib.machinery.PathFinder().find_spec
+except AttributeError:
+    import imp
+    find_module = imp.find_module
 
 
 def merge_specs(target, source):
@@ -487,7 +494,7 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
             path = swag_path.replace(
                 (root_path or os.path.dirname(__file__)), ''
             ).split(os.sep)[1:]
-            site_package = imp.find_module(path[0])[1]
+            site_package = find_module(path[0])[1]
             swag_path = os.path.join(site_package, os.sep.join(path[1:]))
             with open(swag_path) as yaml_file:
                 return yaml_file.read()
