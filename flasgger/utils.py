@@ -3,7 +3,7 @@
 import codecs
 import copy
 import import_module
-import importlib
+from importlib import import_module
 import inspect
 import os
 import re
