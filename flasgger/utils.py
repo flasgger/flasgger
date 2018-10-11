@@ -29,6 +29,7 @@ except ImportError:
     import imp
     find_module = imp.find_module
 
+
 def merge_specs(target, source):
     """
     Update target dictionary with values from the source, recursively.
@@ -135,7 +136,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
 
                 swagged = True
 
-            ?if doc_dir:
+            if doc_dir:
                 if view_class:
                     file_path = os.path.join(
                         doc_dir, endpoint.__name__, method.__name__ + '.yml')
