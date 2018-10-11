@@ -2,7 +2,7 @@
 
 import codecs
 import copy
-import imp
+import importlib
 import inspect
 import os
 import re
@@ -487,7 +487,7 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
             path = swag_path.replace(
                 (root_path or os.path.dirname(__file__)), ''
             ).split(os.sep)[1:]
-            site_package = imp.find_module(path[0])[1]
+            site_package = importlib.find_module(path[0])[1]
             swag_path = os.path.join(site_package, os.sep.join(path[1:]))
             with open(swag_path) as yaml_file:
                 return yaml_file.read()
