@@ -1,8 +1,21 @@
 language: python
 
-python:
-  - 2.7
-  - 3.6
+matrix:
+  include:
+    - python: 2.7
+      env: TOXENV=py27
+    - python: 3.6
+      env: TOXENV=py36
+    - python: 3.7
+      env: TOXENV=py37
+      dist: xenial
+      sudo: true
+    - python: 3.8-dev
+      env: TOXENV=py38-dev
+      dist: xenial
+      sudo: true
+  allow_failures:
+    - env: TOXENV=py38-dev
 
 before_install:
   - pip install -r requirements.txt
