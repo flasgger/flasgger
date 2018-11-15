@@ -3,6 +3,14 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.9.2
+-----
+
+- Fixed packaging issue caused by the inclusion of examples [#242](https://github.com/rochacbruno/flasgger/issues/242)
+- Enhancement allowing swagger-ui and static js to be loaded from external URLs [#245](https://github.com/rochacbruno/flasgger/pull/245)
+- Added ui_params_text to allow raw text to be added to ui_params [#244](https://github.com/rochacbruno/flasgger/pull/244)
+- Auto-disable Flasgger caching when running Flask in debug mode [#250](https://github.com/rochacbruno/flasgger/pull/250)
+
 0.9.1
 -----
 
