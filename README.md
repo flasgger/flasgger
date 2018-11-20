@@ -730,7 +730,7 @@ the swagger docs will load correctly, but the "Try it Out" button points to the 
 
 ```python
 from flask import Flask, request
-from flask import Swagger, LazyString, LazyJSONEncoder
+from flasgger import Swagger, LazyString, LazyJSONEncoder
 
 app = Flask(__name__)
 app.json_encoder = LazyJSONEncoder
