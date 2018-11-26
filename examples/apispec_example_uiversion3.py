@@ -6,14 +6,17 @@ and using the Swagger UI new style layout version 3
 from flask import Flask, jsonify
 
 from flasgger import APISpec, Schema, Swagger, fields
+from apispec.ext.marshmallow import MarshmallowPlugin
+from apispec_webframeworks.flask import FlaskPlugin
 
 # Create an APISpec
 spec = APISpec(
     title='Flasger Petstore',
     version='1.0.10',
+    openapi_version='2.0',
     plugins=[
-        'apispec.ext.flask',
-        'apispec.ext.marshmallow',
+        FlaskPlugin(),
+        MarshmallowPlugin(),
     ],
 )
 

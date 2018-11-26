@@ -388,10 +388,10 @@ def apispec_to_template(app, spec, definitions=None, paths=None):
                 schema = definition
                 name = schema.__name__.replace('Schema', '')
 
-            spec.definition(name, schema=schema)
+            spec.components.schema(name, schema=schema)
 
         for path in paths:
-            spec.add_path(view=path)
+            spec.path(view=path)
 
     ret = ordered_dict_to_dict(spec_dict)
     return ret
