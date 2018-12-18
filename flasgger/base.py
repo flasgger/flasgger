@@ -379,6 +379,19 @@ class Swagger(object):
                         prefix_ids=prefix_ids
                     )
 
+                callbacks = swag.get("callbacks", {})
+                if callbacks:
+                    callbacks = {
+                        str(key): value
+                        for key, value in callbacks.items()
+                    }
+                    extract_definitions(
+                        list(callbacks.values()),
+                        endpoint=rule.endpoint,
+                        verb=verb,
+                        prefix_ids=prefix_ids
+                    )
+
                 responses = None
                 if 'responses' in swag:
                     responses = swag.get('responses', {})
@@ -408,6 +421,8 @@ class Swagger(object):
                     operation['description'] = swag.get('description')
                 if request_body:
                     operation['requestBody'] = request_body
+                if callbacks:
+                    operation['callbacks'] = callbacks
                 if responses:
                     operation['responses'] = responses
                 # parameters - swagger ui dislikes empty parameter lists
