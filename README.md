@@ -647,7 +647,7 @@ swagger = Swagger(app)
 
 # OpenAPI 3.0 Support
 
-There is experimental support for OpenAPI 3.0 that should work when using SwaggerUI 3. To use OpenAPI 3.0 set `app.config['SWAGGER']['openapi']` to a version that the current SwaggerUI 3 supports such as `'3.0.2'`.
+There is experimental support for OpenAPI 3.0 that should work when using SwaggerUI 3. To use OpenAPI 3.0, set `app.config['SWAGGER']['openapi']` to a version that the current SwaggerUI 3 supports such as `'3.0.2'`.
 
 For an example of this that uses `callbacks` and `requestBody`, see the [callbacks example](examples/callbacks.py).
 
