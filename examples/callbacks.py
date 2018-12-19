@@ -8,15 +8,11 @@ from flasgger import Swagger
 
 app = Flask(__name__)
 app.config['SWAGGER'] = {
-    'title': 'OA3 Callbacks'
+    'title': 'OA3 Callbacks',
+    'openapi': '3.0.2'
 }
-swagger_config = Swagger.DEFAULT_CONFIG
-swagger_config['openapi'] = '3.0.2'
-swagger_config['swagger_ui_bundle_js'] = '//unpkg.com/swagger-ui-dist@3/swagger-ui-bundle.js'
-swagger_config['swagger_ui_standalone_preset_js'] = '//unpkg.com/swagger-ui-dist@3/swagger-ui-standalone-preset.js'
-swagger_config['jquery_js'] = '//unpkg.com/jquery@2.2.4/dist/jquery.min.js'
-swagger_config['swagger_ui_css'] = '//unpkg.com/swagger-ui-dist@3/swagger-ui.css'
-Swagger(app, config=swagger_config)
+Swagger(app)
+
 
 @app.route('/run_callback/',  methods=['POST'])
 def run_callback():
@@ -65,7 +61,8 @@ def test_swag(client, specs_data):
         assert spec['openapi'] == '3.0.2'
 
         assert 'callbacks' in spec['paths']['/run_callback/']['post']
-        assert 'onSomeEvent' in spec['paths']['/run_callback/']['post']['callbacks']
+        assert 'onSomeEvent' in \
+               spec['paths']['/run_callback/']['post']['callbacks']
 
 
 if __name__ == "__main__":
