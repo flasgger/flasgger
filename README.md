@@ -645,6 +645,12 @@ swagger = Swagger(app)
 
 ```
 
+# OpenAPI 3.0 Support
+
+There is experimental support for OpenAPI 3.0 that should work when using SwaggerUI 3. To use OpenAPI 3.0 set `app.config['SWAGGER']['openapi']` to a version that the current SwaggerUI 3 supports such as `'3.0.2'`.
+
+For an example of this that uses `callbacks` and `requestBody`, see the [callbacks example](examples/callbacks.py).
+
 ## Externally loading Swagger UI and jQuery JS/CSS
 
 Starting with Flasgger 0.9.2 you can specify external URL locations for loading the JavaScript and CSS for the Swagger and jQuery libraries loaded in the Flasgger default templates.  If the configuration properties below are omitted, Flasgger will serve static versions it includes - these versions may be older than the current Swagger UI v2 or v3 releases.
