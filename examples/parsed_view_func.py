@@ -38,8 +38,10 @@ class ItemsView(MethodView):
         "Swagger.SCHEMA_LOCATIONS" for more locations
         """
         return jsonify(
-            [{'name': 'test', 'id': 1, 'type': request.parsed_data['args']['type']},
-             {'name': 'test2', 'id': 2, 'type': request.parsed_data['args']['type']}])
+            [{'name': 'test', 'id': 1,
+              'type': request.parsed_data['args']['type']},
+             {'name': 'test2', 'id': 2,
+              'type': request.parsed_data['args']['type']}])
 
     def post(self):
         return jsonify(
@@ -53,7 +55,8 @@ class ItemMethodView(MethodView):
 
     def put(self, id):
         return jsonify(
-            {'name': request.parsed_data['json']['name'], 'id': 3, 'type': 'NORMAL'})
+            {'name': request.parsed_data['json']['name'],
+             'id': 3, 'type': 'NORMAL'})
 
 
 class EmptyView(MethodView):
