@@ -155,7 +155,7 @@ class Swagger(object):
     }
 
     SCHEMA_TYPES = {'string': str, 'integer': int, 'number': int,
-                    'boolean': bool, 'object': dict}
+                    'boolean': bool}
     SCHEMA_LOCATIONS = {'query': 'args', 'header': 'headers',
                         'formData': 'form', 'body': 'json', 'path': 'path'}
 
@@ -551,6 +551,10 @@ class Swagger(object):
     def parse_request(self, app):
         @app.before_request
         def before_request():  # noqa
+            """
+            Parse and validate request data(query, form, header and body),
+            set data to `request.parsed_data`
+            """
             # convert "/api/items/<int:id>/" to "/api/items/{id}/"
             subs = []
             for sub in str(request.url_rule).split('/'):
@@ -586,19 +590,8 @@ class Swagger(object):
                 )
                 for param in doc['parameters']:
                     location = self.SCHEMA_LOCATIONS[param['in']]
-                    if location == 'json':
-                        schemas[location]['properties'].update(
-                            param['schema']['properties'])
-
-                        required_keys = param['schema'].get('required', [])
-                        keys = param['schema']['properties']
-                        for key in keys:
-                            parsers[location].add_argument(
-                                key,
-                                type=self.SCHEMA_TYPES[
-                                    keys[key]['type']],
-                                required=key in required_keys, location='json',
-                                store_missing=False)
+                    if location == 'json':  # load data from 'request.json'
+                        schemas[location] = param['schema']
                     else:
                         name = param['name']
                         if location != 'path':
@@ -622,6 +615,8 @@ class Swagger(object):
             parsed_data = {'path': request.view_args}
             for location in parsers.keys():
                 parsed_data[location] = parsers[location].parse_args()
+            if 'json' in schemas:
+                parsed_data['json'] = request.json or {}
             for location, data in parsed_data.items():
                 try:
                     jsonschema.validate(

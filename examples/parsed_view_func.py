@@ -90,6 +90,11 @@ def users(group):
                   type: integer
                 name:
                   type: string
+          tags:
+            type: array
+            minItems: 1
+            items:
+              type: integer
     definitions:
       User:
         type: object
@@ -162,7 +167,11 @@ def test_swag(client, specs_data):
     assert res.status_code == 400
     res = client.post(
         '/api/users/1/',
-        json={'data': {'name': 'test', 'age': 20}})
+        json={'data': {'name': 'test', 'age': 20}, 'tags': ['error_tag']})
+    assert res.status_code == 400
+    res = client.post(
+        '/api/users/1/',
+        json={'data': {'name': 'test', 'age': 20}, 'tags': [1, 2]})
     assert res.status_code == 200
 
 
