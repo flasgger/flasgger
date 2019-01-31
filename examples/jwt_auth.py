@@ -17,11 +17,16 @@ token value).
 
 Benefit of this solution is that once token is obtained, there is no need to enter it manually while working.
 Consider a good practice to implement method to refresh token, in order to prevent token expiration.
+
+Note however that if you want to use JWT_AUTH_HEADER_NAME - you must provide your own JWT request handler. This is
+because flask-jwt is not actively maintained anymore, making it impossible to add JWT_AUTH_HEADER_NAME to it. In normal
+circumstances, you will not need to use this field, but if you want to protect your Flasgger page in order to prevent
+unauthorized access to it by using basic HTTP auth on some web-server you will have to.
 """
 
 
 from flask import Flask, jsonify, request
-from flask_jwt import JWT, jwt_required, current_identity
+from flask_jwt import JWT, jwt_required, current_identity, JWTError
 from werkzeug.security import safe_str_cmp
 from flasgger import Swagger
 
@@ -63,6 +68,7 @@ app.config["SWAGGER"] = {
     "uiversion": 3,
 }
 app.config['JWT_AUTH_URL_RULE'] ='/api/auth'
+app.config['JWT_AUTH_HEADER_NAME'] ='JWTAuthorization'
 
 swag = Swagger(app,
     template={
@@ -80,7 +86,28 @@ swag = Swagger(app,
     },
 )
 
+
+def jwt_request_handler():
+    auth_header_name = app.config['JWT_AUTH_HEADER_NAME']
+    auth_header_value = request.headers.get(auth_header_name, None)
+    auth_header_prefix = app.config['JWT_AUTH_HEADER_PREFIX']
+
+    if not auth_header_value:
+        return
+
+    parts = auth_header_value.split()
+
+    if parts[0].lower() != auth_header_prefix.lower():
+        raise JWTError('Invalid JWT header', 'Unsupported authorization type')
+    elif len(parts) == 1:
+        raise JWTError('Invalid JWT header', 'Token missing')
+    elif len(parts) > 2:
+        raise JWTError('Invalid JWT header', 'Token contains spaces')
+
+    return parts[1]
+
 jwt = JWT(app, authenticate, identity)
+jwt.request_handler(jwt_request_handler)
 
 
 @app.route("/login", methods=["POST"])

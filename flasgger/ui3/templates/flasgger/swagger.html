@@ -30,7 +30,12 @@ window.onload = function() {
     {% if config.JWT_AUTH_URL_RULE -%}
     requestInterceptor: function(request) {
         if (jwt_token) {
-        request.headers.Authorization = "Bearer " + jwt_token;
+            {% if config.JWT_AUTH_HEADER_NAME -%}
+                var jwtAuthHeaderName = "{{ config.JWT_AUTH_HEADER_NAME }}";
+            {%- else %}
+                var jwtAuthHeaderName = "Authorization";
+            {%- endif %}
+            request.headers[jwtAuthHeaderName] = "Bearer " + jwt_token;
         }
 
         return request;
