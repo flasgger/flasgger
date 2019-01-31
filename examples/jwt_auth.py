@@ -1,27 +1,34 @@
 """
-This example demonstrates usage of JWT token authentication with Flasgger-enabled application.
+This example demonstrates usage of JWT token authentication with
+Flasgger-enabled application.
 
-Swagger version used is 3, although 2 will also run just fine. For more details on how to use Flask-JWT in general,
-take a look at the: https://pythonhosted.org/Flask-JWT.
+Swagger version used is 3, although 2 will also run just fine. For more details
+on how to use Flask-JWT in general, take a look at the:
+https://pythonhosted.org/Flask-JWT.
 
 In this example the login credentials to call the protected API are as follows:
 
     Username: guest
     Password: secret
 
-In order to access protected API methods, user must first login with valid credentials. Successful login appends JWT
-token in login response header (name of the field is: jwt-token) - this is the field that Swagger-UI will search for
-when gets the response and if found - it will be automatically use its value when issuing next requests. These requests
-have Authorization HTTP header field with content set to: JWT token_value_goes_here (note the space between JWT and
-token value).
+In order to access protected API methods, user must first login with valid
+credentials. Successful login appends JWT token in login response header
+(name of the field is: jwt-token) - this is the field that Swagger-UI will
+search for when gets the response and if found - it will be automatically use
+its value when issuing next requests. These requests have Authorization HTTP
+header field with content set to: JWT token_value_goes_here (note the space
+between JWT and token value).
 
-Benefit of this solution is that once token is obtained, there is no need to enter it manually while working.
-Consider a good practice to implement method to refresh token, in order to prevent token expiration.
+Benefit of this solution is that once token is obtained, there is no need to
+enter it manually while working. Consider a good practice to implement method
+to refresh token, in order to prevent token expiration.
 
-Note however that if you want to use JWT_AUTH_HEADER_NAME - you must provide your own JWT request handler. This is
-because flask-jwt is not actively maintained anymore, making it impossible to add JWT_AUTH_HEADER_NAME to it. In normal
-circumstances, you will not need to use this field, but if you want to protect your Flasgger page in order to prevent
-unauthorized access to it by using basic HTTP auth on some web-server you will have to.
+Note however that if you want to use JWT_AUTH_HEADER_NAME - you must provide
+your own JWT request handler. This is because flask-jwt is not actively
+maintained anymore, making it impossible to add JWT_AUTH_HEADER_NAME to it. In
+normal circumstances, you will not need to use this field, but if you want to
+protect your Flasgger page in order to prevent unauthorized access to it by
+using basic HTTP auth on some web-server you will have to.
 """
 
 
@@ -32,8 +39,8 @@ from flasgger import Swagger
 
 
 class User(object):
-    def __init__(self, id, username, password):
-        self.id = id
+    def __init__(self, user_id, username, password):
+        self.id = user_id
         self.username = username
         self.password = password
 
@@ -67,8 +74,8 @@ app.config["SWAGGER"] = {
     "title": "Swagger JWT Authentiation App",
     "uiversion": 3,
 }
-app.config['JWT_AUTH_URL_RULE'] ='/api/auth'
-app.config['JWT_AUTH_HEADER_NAME'] ='JWTAuthorization'
+app.config['JWT_AUTH_URL_RULE'] = '/api/auth'
+app.config['JWT_AUTH_HEADER_NAME'] = 'JWTAuthorization'
 
 swag = Swagger(app,
     template={
@@ -105,6 +112,7 @@ def jwt_request_handler():
         raise JWTError('Invalid JWT header', 'Token contains spaces')
 
     return parts[1]
+
 
 jwt = JWT(app, authenticate, identity)
 jwt.request_handler(jwt_request_handler)
