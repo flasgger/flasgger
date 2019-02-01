@@ -569,7 +569,7 @@ class Swagger(object):
                 schemas = defaultdict(
                     lambda: {'type': 'object', 'properties': defaultdict(dict)}
                 )
-                for param in doc['parameters']:
+                for param in doc.get('parameters', []):
                     location = self.SCHEMA_LOCATIONS[param['in']]
                     if location == 'json':
                         schemas[location]['properties'].update(
