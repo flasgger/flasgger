@@ -314,7 +314,7 @@ def validate(
             final_filepath = filepath
         full_doc = load_from_file(final_filepath)
         yaml_start = full_doc.find('---')
-        swag = yaml.load(full_doc[yaml_start if yaml_start >= 0 else 0:])
+        swag = yaml.safe_load(full_doc[yaml_start if yaml_start >= 0 else 0:])
     else:
         swag = copy.deepcopy(specs)
 
@@ -553,10 +553,10 @@ def parse_docstring(obj, process_doc, endpoint=None, verb=None):
                 other_lines = process_doc(
                     full_doc[line_feed + 1: yaml_sep]
                 )
-                swag = yaml.load(full_doc[yaml_sep + 4:])
+                swag = yaml.safe_load(full_doc[yaml_sep + 4:])
         else:
             if from_file:
-                swag = yaml.load(full_doc)
+                swag = yaml.safe_load(full_doc)
             else:
                 first_line = full_doc
 
@@ -606,7 +606,7 @@ def parse_definition_docstring(obj, process_doc):
             doc_lines = process_doc(
                 full_doc[:yaml_sep - 1]
             )
-            swag = yaml.load(full_doc[yaml_sep:])
+            swag = yaml.safe_load(full_doc[yaml_sep:])
         else:
             doc_lines = process_doc(full_doc)
 
