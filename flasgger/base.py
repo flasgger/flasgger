@@ -213,7 +213,7 @@ class Swagger(object):
         if filename.endswith('.json'):
             loader = json.load
         elif filename.endswith('.yml') or filename.endswith('.yaml'):
-            loader = yaml.load
+            loader = yaml.safe_load
         else:
             with codecs.open(filename, 'r', 'utf-8') as f:
                 contents = f.read()
@@ -221,7 +221,7 @@ class Swagger(object):
                 if contents[0] in ['{', '[']:
                     loader = json.load
                 else:
-                    loader = yaml.load
+                    loader = yaml.safe_load
         with codecs.open(filename, 'r', 'utf-8') as f:
             return loader(f)
 
