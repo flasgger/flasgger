@@ -353,7 +353,8 @@ class Swagger(object):
             for verb, swag in verbs:
                 update_dict = swag.get('definitions', {})
                 if type(update_dict) == list and type(update_dict[0]) == dict:
-                        update_dict, = update_dict  # pop, assert single element
+                        # pop, assert single element
+                        update_dict, = update_dict
                 definitions.update(update_dict)
                 defs = []  # swag.get('definitions', [])
                 defs += extract_definitions(
