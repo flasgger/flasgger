@@ -43,9 +43,17 @@ from .utils import validate
 from .utils import LazyString
 from . import __version__
 
-NO_SANITIZER = lambda text: text  # noqa
-BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
-MK_SANITIZER = lambda text: Markup(markdown(text)) if text else text  # noqa
+
+def NO_SANITIZER(text):
+    return text
+
+
+def BR_SANITIZER(text):
+    return text.replace('\n', '<br/>') if text else text
+
+
+def MK_SANITIZER(text):
+    return Markup(markdown(text)) if text else text
 
 
 class APIDocsView(MethodView):
