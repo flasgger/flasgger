@@ -351,7 +351,10 @@ class Swagger(object):
         for rule, verbs in specs:
             operations = dict()
             for verb, swag in verbs:
-                definitions.update(swag.get('definitions', {}))
+                update_dict = swag.get('definitions', {})
+                if type(update_dict) == list and type(update_dict[0]) == dict:
+                        update_dict, = update_dict  # pop, assert single element
+                definitions.update(update_dict)
                 defs = []  # swag.get('definitions', [])
                 defs += extract_definitions(
                     defs, endpoint=rule.endpoint, verb=verb,
