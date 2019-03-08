@@ -154,7 +154,7 @@ class Swagger(object):
         "specs_route": "/apidocs/"
     }
 
-    SCHEMA_TYPES = {'string': str, 'integer': int, 'number': int,
+    SCHEMA_TYPES = {'string': str, 'integer': int, 'number': float,
                     'boolean': bool}
     SCHEMA_LOCATIONS = {'query': 'args', 'header': 'headers',
                         'formData': 'form', 'body': 'json', 'path': 'path'}
