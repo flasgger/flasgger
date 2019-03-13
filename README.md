@@ -22,6 +22,10 @@ Flasgger is compatible with `Flask-RESTful` so you can use `Resources` and `swag
 
 Flasgger also supports `Marshmallow APISpec` as base template for specification, if you are using APISPec from Marshmallow take a look at [apispec example.](examples/apispec_example.py)
 
+# Top Contributors
+
+[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/0)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/0)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/1)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/1)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/2)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/2)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/3)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/3)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/4)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/4)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/5)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/5)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/6)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/6)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/7)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/7)
+
 # Examples and demo app
 
 There are some [example applications](examples/) and you can also play with examples in [Flasgger demo app](http://flasgger.pythonanywhere.com/)
