@@ -89,7 +89,11 @@
         onFailure: function(data) {
           log("Unable to Load SwaggerUI");
         },
-        docExpansion: "none",
+        {% if flasgger_config.doc_expansion -%}
+            docExpansion: "{{flasgger_config.doc_expansion | safe }}",
+        {%- else %}
+           docExpansion: "none",
+        {%- endif %}
         jsonEditor: false,
         defaultModelRendering: 'schema',
         showRequestHeaders: false,
