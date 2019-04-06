@@ -10,7 +10,7 @@
 
 ![flasgger](docs/flasgger.png)
 
-Flasgger is a Flask extension to **extract [OpenAPI=Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operation-object)** from all Flask views registered in your API.
+Flasgger is a Flask extension to **extract [OpenAPI-Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operation-object)** from all Flask views registered in your API.
 
 Flasgger also comes with **[SwaggerUI](http://swagger.io/swagger-ui/) embedded** so you can access [http://localhost:5000/apidocs](localhost:5000/apidocs) and visualize and interact with your API resources.
 
