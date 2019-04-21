@@ -11,7 +11,9 @@ try:
     from apispec import APISpec as BaseAPISpec
 
     openapi_converter = openapi.OpenAPIConverter(
-        openapi_version='2.0', schema_name_resolver=None, spec=None
+        openapi_version='2.0',
+        schema_name_resolver=None,
+        spec=None
     )
     schema2jsonschema = openapi_converter.schema2jsonschema
     schema2parameters = openapi_converter.schema2parameters
