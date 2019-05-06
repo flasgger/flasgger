@@ -378,7 +378,6 @@ def apispec_to_template(app, spec, definitions=None, paths=None):
     """
     definitions = definitions or []
     paths = paths or []
-    spec_dict = spec.to_dict()
 
     with app.app_context():
         for definition in definitions:
@@ -393,6 +392,7 @@ def apispec_to_template(app, spec, definitions=None, paths=None):
         for path in paths:
             spec.path(view=path)
 
+    spec_dict = spec.to_dict()
     ret = ordered_dict_to_dict(spec_dict)
     return ret
 
