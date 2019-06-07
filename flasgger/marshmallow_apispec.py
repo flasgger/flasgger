@@ -7,12 +7,12 @@ import flasgger
 
 try:
     from marshmallow import Schema, fields
-    from apispec.ext.marshmallow import openapi
+    from apispec.ext.marshmallow import openapi, resolver
     from apispec import APISpec as BaseAPISpec
 
     openapi_converter = openapi.OpenAPIConverter(
         openapi_version='2.0',
-        schema_name_resolver=None,
+        schema_name_resolver=resolver,
         spec=None
     )
     schema2jsonschema = openapi_converter.schema2jsonschema
