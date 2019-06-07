@@ -12,7 +12,7 @@ try:
 
     openapi_converter = openapi.OpenAPIConverter(
         openapi_version='2.0',
-        schema_name_resolver=None,
+        schema_name_resolver=lambda schema: None,
         spec=None
     )
     schema2jsonschema = openapi_converter.schema2jsonschema
