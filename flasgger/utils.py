@@ -358,6 +358,15 @@ def validate(
 
     if validation_function is None:
         validation_function = jsonschema.validate
+    
+    if '$ref' in main_def:
+        file_ref_path = os.path.dirname(sys.argv[0])+main_def['$ref']
+        with open(file_ref_path) as file:
+            file_content = file.read()
+            comment_index = file_content.index('---')+3
+            main_def = yaml.safe_load(
+                (file_content[comment_index:]).replace('\n', '\n  '))
+            main_def['definitions'] = definitions
 
     try:
         validation_function(data, main_def)
