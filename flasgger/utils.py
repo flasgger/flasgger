@@ -366,6 +366,8 @@ def validate(
             comment_index = file_content.rfind('---')
             if comment_index > 0:
                 comment_index = comment_index + 3
+            else:
+                comment_index = 0
             main_def = yaml.safe_load(
                 (file_content[comment_index:]).replace('\n', '\n  '))
             main_def['definitions'] = definitions
