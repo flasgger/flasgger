@@ -358,7 +358,7 @@ def validate(
 
     if validation_function is None:
         validation_function = jsonschema.validate
-    
+
     if '$ref' in main_def:
         file_ref_path = os.path.dirname(sys.argv[0])+main_def['$ref']
         with open(file_ref_path) as file:
