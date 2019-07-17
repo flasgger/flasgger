@@ -12,7 +12,7 @@ from six import string_types, text_type
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-from collections import OrderedDict
+from collections import Mapping, OrderedDict
 from flask import Response
 from flask import abort
 from flask import current_app
@@ -839,4 +839,63 @@ class CachedLazyString(LazyString):
         """
         if not self._cache:
             self._cache = self.text_type(self._func())
+        return self._cache
+
+
+class LazyDict(Mapping):
+    """
+    A lazy dict *without* caching. The resulting string is regenerated for
+    every request.
+    """
+
+    def __init__(self, func):
+        """
+        Creates a `LazyDict` object using `func` as the delayed closure.
+        `func` must return a dict.
+        """
+        self._func = func
+
+    def __getitem__(self, key):
+
+        return self._get_dict().get(key)
+
+    def __iter__(self):
+
+        return iter(self._get_dict())
+
+    def __len__(self):
+        return len(self._get_dict())
+
+    def __repr__(self):
+        return self._get_dict().__repr__()
+
+    def _get_dict(self):
+        """
+        Lazily retrieve dictionary. Default will be an empty dictionary if
+        function returns anything other than a dictionary.
+        """
+        loaded_dict = self._func()
+        return loaded_dict if isinstance(loaded_dict, dict) else {}
+
+
+class CachedLazyDict(LazyDict):
+    """
+    A lazy dict with caching.
+    """
+
+    def __init__(self, func):
+        """
+        Uses `__init__()` from the parent and initializes a cache.
+        """
+        super(CachedLazyDict, self).__init__(func)
+        self._cache = None
+
+    def _get_dict(self):
+        """
+        Lazily retrieve dictionary. Default will be an empty dictionary if
+        function returns anything other than a dictionary.
+        """
+        if not self._cache:
+            loaded_dict = self._func()
+            self._cache = loaded_dict if isinstance(loaded_dict, dict) else {}
         return self._cache
