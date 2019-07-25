@@ -10,6 +10,10 @@ try:
     from apispec.ext.marshmallow import openapi
     from apispec import APISpec as BaseAPISpec
 
+    # Note that openapi_converter is initialized with trivial
+    #   schema_name_resolver. Resolving circular reference is not
+    #   supported for now. See issue #314 .
+    # Also see: https://github.com/marshmallow-code/apispec/pull/447
     openapi_converter = openapi.OpenAPIConverter(
         openapi_version='2.0',
         schema_name_resolver=lambda schema: None,
