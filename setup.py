@@ -56,5 +56,12 @@ setup(
         'jsonschema<3.0.0',
         'mistune',
         'six>=1.10.0'
+    ],
+    classifiers=[
+        'Intended Audience :: Developers',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
     ]
 )
