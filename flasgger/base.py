@@ -328,6 +328,19 @@ class Swagger(object):
             data["securityDefinitions"] = self.config.get(
                 'securityDefinitions'
             )
+
+        def is_openapi3():
+            """
+            Returns True if openapi_version is 3
+            """
+            return openapi_version and openapi_version.split('.')[0] == '3'
+
+        # enable 'components' when openapi_version is 3.*.*
+        if is_openapi3() and self.config.get("components"):
+            data["components"] = self.config.get(
+                'components'
+            )
+
         # set defaults from template
         if self.template is not None:
             data.update(self.template)
