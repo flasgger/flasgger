@@ -80,7 +80,8 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
             elif getattr(endpoint, 'methods', None) is not None:
                 if verb in endpoint.methods:
                     verb = verb.lower()
-                    methods[verb] = getattr(endpoint.view_class, verb)
+                    if hasattr(endpoint.view_class, verb):
+                        methods[verb] = getattr(endpoint.view_class, verb)
             else:
                 methods[verb.lower()] = endpoint
 
