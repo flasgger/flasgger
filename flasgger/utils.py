@@ -6,6 +6,7 @@ import imp
 import inspect
 import os
 import re
+import sys
 import jsonschema
 import yaml
 from six import string_types, text_type
@@ -251,6 +252,40 @@ def swag_from(
     return decorator
 
 
+def __replace_ref(schema: dict, relative_path: str):
+    """ TODO: add dev docs
+
+    :param schema:
+    :param relative_path:
+    :return:
+    """
+    absolute_path = os.path.dirname(sys.argv[0])
+    new_value = {}
+    for key, value in schema.items():
+        if isinstance(value, dict):
+            new_value[key] = __replace_ref(value, relative_path)
+        elif key == '$ref':
+            if len(value) > 0 and value[0] == '/':
+                file_ref_path = absolute_path + value
+            else:
+                file_ref_path = relative_path + '/' + value
+            relative_path = os.path.dirname(file_ref_path)
+            with open(file_ref_path) as file:
+                file_content = file.read()
+                comment_index = file_content.rfind('---')
+                if comment_index > 0:
+                    comment_index = comment_index + 3
+                else:
+                    comment_index = 0
+                content = yaml.safe_load((file_content[comment_index:]))
+                new_value = content
+                if isinstance(content, dict):
+                    new_value = __replace_ref(content, relative_path)
+        else:
+            new_value[key] = value
+    return new_value
+
+
 def validate(
         data=None, schema_id=None, filepath=None, root=None, definition=None,
         specs=None, validation_function=None, validation_error_handler=None):
@@ -358,6 +393,13 @@ def validate(
 
     if validation_function is None:
         validation_function = jsonschema.validate
+
+    absolute_path = os.path.dirname(sys.argv[0])
+    if filepath is None:
+        relative_path = absolute_path
+    else:
+        relative_path = os.path.dirname(filepath)
+    main_def = __replace_ref(main_def, relative_path)
 
     try:
         validation_function(data, main_def)
@@ -808,6 +850,7 @@ class LazyString(StringLike):
     A lazy string *without* caching. The resulting string is regenerated for
     every request.
     """
+
     def __init__(self, func):
         """
         Creates a `LazyString` object using `func` as the delayed closure.
@@ -826,6 +869,7 @@ class CachedLazyString(LazyString):
     """
     A lazy string with caching.
     """
+
     def __init__(self, func):
         """
         Uses `__init__()` from the parent and initializes a cache.
