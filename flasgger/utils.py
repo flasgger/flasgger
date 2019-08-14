@@ -252,7 +252,7 @@ def swag_from(
     return decorator
 
 
-def __replace_ref(schema: dict, relative_path: str):
+def __replace_ref(schema, relative_path):
     """ TODO: add dev docs
 
     :param schema:
