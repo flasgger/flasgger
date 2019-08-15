@@ -6,6 +6,7 @@ flask-restful
 pep8==1.5.7
 flake8==2.4.1
 pytest>3.6
+pytest-mock
 flex
 coveralls
 pytest-cov
