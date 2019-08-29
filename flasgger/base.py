@@ -586,12 +586,14 @@ class Swagger(object):
                 schemas = self.schemas[path_key]
             else:
                 doc = None
+                definitions = None
                 for spec in self.config['specs']:
                     apispec = self.get_apispecs(endpoint=spec['endpoint'])
                     if path in apispec['paths']:
                         if request.method.lower() in apispec['paths'][path]:
                             doc = apispec['paths'][path][
                                 request.method.lower()]
+                            definitions = apispec.get('definitions', {})
                             break
                 if not doc:
                     return
@@ -604,6 +606,7 @@ class Swagger(object):
                     location = self.SCHEMA_LOCATIONS[param['in']]
                     if location == 'json':  # load data from 'request.json'
                         schemas[location] = param['schema']
+                        schemas[location]['definitions'] = dict(definitions)  # don't want defaultdict for definitions
                     else:
                         name = param['name']
                         if location != 'path':
