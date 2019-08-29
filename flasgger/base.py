@@ -24,7 +24,6 @@ from flask import redirect
 from flask import render_template
 from flask import request, url_for
 from flask import abort
-from flask import Response
 from flask.views import MethodView
 from flask.json import JSONEncoder
 try:
