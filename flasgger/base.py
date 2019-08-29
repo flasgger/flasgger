@@ -638,7 +638,7 @@ class Swagger(object):
                         data, schemas[location],
                         format_checker=self.format_checker)
                 except jsonschema.ValidationError as e:
-                    abort(Response(e.message, status=400))
+                    abort(400, e.message)
 
             setattr(request, 'parsed_data', parsed_data)
 
