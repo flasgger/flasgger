@@ -606,7 +606,7 @@ class Swagger(object):
                     location = self.SCHEMA_LOCATIONS[param['in']]
                     if location == 'json':  # load data from 'request.json'
                         schemas[location] = param['schema']
-                        schemas[location]['definitions'] = dict(definitions)  # don't want defaultdict for definitions
+                        schemas[location]['definitions'] = dict(definitions)
                     else:
                         name = param['name']
                         if location != 'path':
