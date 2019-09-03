@@ -1,7 +1,7 @@
 # Flasgger
 ## Easy Swagger UI for your Flask API
 
-[![Build Status](https://travis-ci.org/rochacbruno/flasgger.svg?branch=master)](https://travis-ci.org/rochacbruno/flasgger)
+[![Build Status](https://travis-ci.com/flasgger/flasgger.svg?branch=master)](https://travis-ci.com/flasgger/flasgger)
 [![Code Health](https://landscape.io/github/rochacbruno/flasgger/master/landscape.svg?style=flat)](https://landscape.io/github/rochacbruno/flasgger/master)
 [![Coverage Status](https://coveralls.io/repos/github/rochacbruno/flasgger/badge.svg?branch=master)](https://coveralls.io/github/rochacbruno/flasgger?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/flasgger.svg)](https://pypi.python.org/pypi/flasgger)
