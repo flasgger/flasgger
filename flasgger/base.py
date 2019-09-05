@@ -37,6 +37,7 @@ from .constants import OPTIONAL_FIELDS
 from .utils import extract_definitions
 from .utils import get_specs
 from .utils import get_schema_specs
+from .utils import parse_imports
 from .utils import parse_definition_docstring
 from .utils import get_vendor_extension_fields
 from .utils import validate
@@ -221,7 +222,7 @@ class Swagger(object):
         if filename.endswith('.json'):
             loader = json.load
         elif filename.endswith('.yml') or filename.endswith('.yaml'):
-            loader = yaml.safe_load
+            loader = lambda stream: yaml.safe_load(parse_imports(stream.read(), filename))
         else:
             with codecs.open(filename, 'r', 'utf-8') as f:
                 contents = f.read()
@@ -229,7 +230,7 @@ class Swagger(object):
                 if contents[0] in ['{', '[']:
                     loader = json.load
                 else:
-                    loader = yaml.safe_load
+                    loader = lambda stream: yaml.safe_load(parse_imports(stream.read(), filename))
         with codecs.open(filename, 'r', 'utf-8') as f:
             return loader(f)
 
