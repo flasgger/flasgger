@@ -288,8 +288,9 @@ def __replace_ref(schema, relative_path):
 
 
 def validate(
-        data=None, schema_id=None, filepath=None, root=None, definition=None,
-        specs=None, validation_function=None, validation_error_handler=None):
+        data=None, require_data=True, schema_id=None, filepath=None,
+        root=None, definition=None, specs=None, validation_function=None,
+        validation_error_handler=None):
     """
     This method is available to use YAML swagger definitions file
     or specs (dict or object) to validate data against its jsonschema.
@@ -298,7 +299,8 @@ def validate(
         validate({"item": 1}, 'item_schema', 'defs.yml', root=__file__)
         validate(request.json, 'User', specs={'definitions': {'User': ...}})
 
-    :param data: data to validate, by defaull is request.json
+    :param data: data to validate, by default is request.json
+    :param require_data: is the data param required?
     :param schema_id: The definition id to use to validate (from specs)
     :param filepath: definition filepath to load specs
     :param root: root folder (inferred if not provided), unused if path
@@ -327,7 +329,7 @@ def validate(
         # data=lambda: request.json
         data = data()
 
-    if not data:
+    if not data and require_data:
         abort(Response('No data to validate', status=500))
 
     # not used anymore but kept to reuse with marshmallow
