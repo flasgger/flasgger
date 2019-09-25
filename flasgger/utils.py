@@ -108,7 +108,10 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
             swagged = False
 
             if getattr(method, 'specs_dict', None):
-                merge_specs(swag, deepcopy(method.specs_dict))
+                merge_specs(
+                    swag,
+                    convert_schemas(deepcopy(method.specs_dict))
+                )
                 swagged = True
 
             view_class = getattr(endpoint, 'view_class', None)
