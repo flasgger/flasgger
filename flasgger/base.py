@@ -24,7 +24,6 @@ from flask import redirect
 from flask import render_template
 from flask import request, url_for
 from flask import abort
-from flask import Response
 from flask.views import MethodView
 from flask.json import JSONEncoder
 try:
@@ -586,12 +585,14 @@ class Swagger(object):
                 schemas = self.schemas[path_key]
             else:
                 doc = None
+                definitions = None
                 for spec in self.config['specs']:
                     apispec = self.get_apispecs(endpoint=spec['endpoint'])
                     if path in apispec['paths']:
                         if request.method.lower() in apispec['paths'][path]:
                             doc = apispec['paths'][path][
                                 request.method.lower()]
+                            definitions = apispec.get('definitions', {})
                             break
                 if not doc:
                     return
@@ -604,6 +605,7 @@ class Swagger(object):
                     location = self.SCHEMA_LOCATIONS[param['in']]
                     if location == 'json':  # load data from 'request.json'
                         schemas[location] = param['schema']
+                        schemas[location]['definitions'] = dict(definitions)
                     else:
                         name = param['name']
                         if location != 'path':
@@ -635,7 +637,7 @@ class Swagger(object):
                         data, schemas[location],
                         format_checker=self.format_checker)
                 except jsonschema.ValidationError as e:
-                    abort(Response(e.message, status=400))
+                    abort(400, e.message)
 
             setattr(request, 'parsed_data', parsed_data)
 
