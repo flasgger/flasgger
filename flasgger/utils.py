@@ -81,7 +81,8 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
             elif getattr(endpoint, 'methods', None) is not None:
                 if verb in endpoint.methods:
                     verb = verb.lower()
-                    methods[verb] = getattr(endpoint.view_class, verb)
+                    if hasattr(endpoint.view_class, verb):
+                        methods[verb] = getattr(endpoint.view_class, verb)
             else:
                 methods[verb.lower()] = endpoint
 
@@ -107,7 +108,12 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
             swagged = False
 
             if getattr(method, 'specs_dict', None):
-                merge_specs(swag, deepcopy(method.specs_dict))
+                definition = {}
+                merge_specs(
+                    swag,
+                    convert_schemas(deepcopy(method.specs_dict), definition)
+                )
+                swag['definitions'] = definition
                 swagged = True
 
             view_class = getattr(endpoint, 'view_class', None)
@@ -288,7 +294,8 @@ def __replace_ref(schema, relative_path):
 
 def validate(
         data=None, schema_id=None, filepath=None, root=None, definition=None,
-        specs=None, validation_function=None, validation_error_handler=None):
+        specs=None, validation_function=None, validation_error_handler=None,
+        require_data=True):
     """
     This method is available to use YAML swagger definitions file
     or specs (dict or object) to validate data against its jsonschema.
@@ -297,7 +304,7 @@ def validate(
         validate({"item": 1}, 'item_schema', 'defs.yml', root=__file__)
         validate(request.json, 'User', specs={'definitions': {'User': ...}})
 
-    :param data: data to validate, by defaull is request.json
+    :param data: data to validate, by default is request.json
     :param schema_id: The definition id to use to validate (from specs)
     :param filepath: definition filepath to load specs
     :param root: root folder (inferred if not provided), unused if path
@@ -313,6 +320,7 @@ def validate(
         exceptions thrown when validating which takes the exception
         thrown as the first, the data being validated as the second and
         the schema being used to validate as the third argument
+    :param require_data: is the data param required?
     """
     schema_id = schema_id or definition
 
@@ -326,7 +334,7 @@ def validate(
         # data=lambda: request.json
         data = data()
 
-    if not data:
+    if not data and require_data:
         abort(Response('No data to validate', status=400))
 
     # not used anymore but kept to reuse with marshmallow
