@@ -169,7 +169,7 @@ class Swagger(object):
     def __init__(
             self, app=None, config=None, sanitizer=None, template=None,
             template_file=None, decorators=None, validation_function=None,
-            validation_error_handler=None, parse=False):
+            validation_error_handler=None, format_checker=None, parse=False):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
@@ -178,8 +178,21 @@ class Swagger(object):
         self.template = template
         self.template_file = template_file
         self.decorators = decorators
-        self.validation_function = validation_function
-        self.validation_error_handler = validation_error_handler
+        self.format_checker = format_checker or jsonschema.FormatChecker()
+
+        def default_validation_function(data, schema):
+            return jsonschema.validate(
+                data, schema, format_checker=self.format_checker,
+            )
+
+        def default_error_handler(e, _, __):
+            return abort(400, e.message)
+
+        self.validation_function = validation_function\
+            or default_validation_function
+
+        self.validation_error_handler = validation_error_handler\
+            or default_error_handler
         self.apispecs = {}  # cached apispecs
         self.parse = parse
         if app:
@@ -204,7 +217,6 @@ class Swagger(object):
                 raise RuntimeError('Please install flask_restful')
             self.parsers = {}
             self.schemas = {}
-            self.format_checker = jsonschema.FormatChecker()
             self.parse_request(app)
 
         self._configured = True
@@ -633,11 +645,9 @@ class Swagger(object):
                 parsed_data['json'] = request.json or {}
             for location, data in parsed_data.items():
                 try:
-                    jsonschema.validate(
-                        data, schemas[location],
-                        format_checker=self.format_checker)
+                    self.validation_function(data, schemas[location])
                 except jsonschema.ValidationError as e:
-                    abort(400, e.message)
+                    self.validation_error_handler(e, data, schemas[location])
 
             setattr(request, 'parsed_data', parsed_data)
 
