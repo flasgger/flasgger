@@ -18,6 +18,12 @@ from flask import abort
 from flask import current_app
 from flask import request
 from flask.views import MethodView
+
+try:
+    from flask_mongorest import methods as fmr_methods
+except ImportError:
+    fmr_methods = None
+
 from .constants import OPTIONAL_FIELDS
 from .marshmallow_apispec import SwaggerView
 from .marshmallow_apispec import convert_schemas
@@ -78,9 +84,17 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                 if verb in endpoint.methods:
                     methods[verb.lower()] = endpoint
             elif getattr(endpoint, 'methods', None) is not None:
-                if verb in endpoint.methods:
-                    verb = verb.lower()
-                    methods[verb] = getattr(endpoint.view_class, verb)
+                if isinstance(endpoint.methods, set):
+                    if verb in endpoint.methods:
+                        verb = verb.lower()
+                        methods[verb] = getattr(endpoint.view_class, verb)
+                elif fmr_methods is not None:  # flask-mongorest
+                    endpoint_methods = set(m.method for m in endpoint.methods)
+                    if verb in endpoint_methods:
+                        print(rule, rule.endpoint, endpoint)
+                        proxy_verb = rule.endpoint.replace(endpoint.__name__, '')
+                        proxy_verb = proxy_verb if proxy_verb else 'Fetch'  # TODO CreateBulkUpdate
+                        methods[verb.lower()] = getattr(fmr_methods, proxy_verb)
             else:
                 methods[verb.lower()] = endpoint
 
