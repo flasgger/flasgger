@@ -91,10 +91,18 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                 elif fmr_methods is not None:  # flask-mongorest
                     endpoint_methods = set(m.method for m in endpoint.methods)
                     if verb in endpoint_methods:
-                        print(rule, rule.endpoint, endpoint)
-                        proxy_verb = rule.endpoint.replace(endpoint.__name__, '')
-                        proxy_verb = proxy_verb if proxy_verb else 'Fetch'  # TODO CreateBulkUpdate
-                        methods[verb.lower()] = getattr(fmr_methods, proxy_verb)
+                        suffix = rule.endpoint.replace(endpoint.__name__, '')
+                        proxy_verb = None
+                        if verb == 'GET':
+                            proxy_verb = 'List' if suffix else 'Fetch'
+                        elif verb == 'PUT':
+                            proxy_verb = 'BulkUpdate' if suffix else 'Update'
+                        elif verb == 'POST' and suffix:
+                            proxy_verb = 'Create'
+                        elif verb == 'DELETE':
+                            proxy_verb = 'Delete'
+                        if proxy_verb:
+                            methods[verb.lower()] = getattr(fmr_methods, proxy_verb)
             else:
                 methods[verb.lower()] = endpoint
 
