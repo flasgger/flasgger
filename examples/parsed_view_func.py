@@ -38,8 +38,10 @@ class ItemsView(MethodView):
         "Swagger.SCHEMA_LOCATIONS" for more locations
         """
         return jsonify(
-            [{'name': 'test', 'id': 1, 'type': request.parsed_data['args']['type']},
-             {'name': 'test2', 'id': 2, 'type': request.parsed_data['args']['type']}])
+            [{'name': 'test', 'id': 1,
+              'type': request.parsed_data['args']['type']},
+             {'name': 'test2', 'id': 2,
+              'type': request.parsed_data['args']['type']}])
 
     def post(self):
         return jsonify(
@@ -53,7 +55,8 @@ class ItemMethodView(MethodView):
 
     def put(self, id):
         return jsonify(
-            {'name': request.parsed_data['json']['name'], 'id': 3, 'type': 'NORMAL'})
+            {'name': request.parsed_data['json']['name'],
+             'id': 3, 'type': 'NORMAL'})
 
 
 class EmptyView(MethodView):
@@ -90,6 +93,11 @@ def users(group):
                   type: integer
                 name:
                   type: string
+          tags:
+            type: array
+            minItems: 1
+            items:
+              type: integer
     definitions:
       User:
         type: object
@@ -162,7 +170,11 @@ def test_swag(client, specs_data):
     assert res.status_code == 400
     res = client.post(
         '/api/users/1/',
-        json={'data': {'name': 'test', 'age': 20}})
+        json={'data': {'name': 'test', 'age': 20}, 'tags': ['error_tag']})
+    assert res.status_code == 400
+    res = client.post(
+        '/api/users/1/',
+        json={'data': {'name': 'test', 'age': 20}, 'tags': [1, 2]})
     assert res.status_code == 200
 
 

@@ -1,7 +1,7 @@
 # Flasgger
 ## Easy Swagger UI for your Flask API
 
-[![Build Status](https://travis-ci.org/rochacbruno/flasgger.svg?branch=master)](https://travis-ci.org/rochacbruno/flasgger)
+[![Build Status](https://travis-ci.com/flasgger/flasgger.svg?branch=master)](https://travis-ci.com/flasgger/flasgger)
 [![Code Health](https://landscape.io/github/rochacbruno/flasgger/master/landscape.svg?style=flat)](https://landscape.io/github/rochacbruno/flasgger/master)
 [![Coverage Status](https://coveralls.io/repos/github/rochacbruno/flasgger/badge.svg?branch=master)](https://coveralls.io/github/rochacbruno/flasgger?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/flasgger.svg)](https://pypi.python.org/pypi/flasgger)
@@ -10,7 +10,7 @@
 
 ![flasgger](docs/flasgger.png)
 
-Flasgger is a Flask extension to **extract [OpenAPI=Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operation-object)** from all Flask views registered in your API.
+Flasgger is a Flask extension to **extract [OpenAPI-Specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operation-object)** from all Flask views registered in your API.
 
 Flasgger also comes with **[SwaggerUI](http://swagger.io/swagger-ui/) embedded** so you can access [http://localhost:5000/apidocs](localhost:5000/apidocs) and visualize and interact with your API resources.
 
@@ -21,6 +21,10 @@ Flasgger can work with simple function views or MethodViews using docstring as s
 Flasgger is compatible with `Flask-RESTful` so you can use `Resources` and `swag` specifications together, take a look at [restful example.](examples/restful.py)
 
 Flasgger also supports `Marshmallow APISpec` as base template for specification, if you are using APISPec from Marshmallow take a look at [apispec example.](examples/apispec_example.py)
+
+# Top Contributors
+
+[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/0)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/0)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/1)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/1)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/2)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/2)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/3)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/3)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/4)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/4)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/5)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/5)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/6)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/6)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/7)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/7)
 
 # Examples and demo app
 
@@ -369,7 +373,7 @@ app.run(debug=True)
 
 ## Auto-parsing external YAML docs and `MethodView`s
 
-Flasgger can be configured to auto-parse external YAM API docs.  [Set a `doc_dir`](https://github.com/rochacbruno/flasgger/blob/aaef05c17cc559d01b7436211093463642eb6ae2/examples/parsed_view_func.py#L16) in your `app.config['SWAGGER']` and Swagger will load API docs by looking in `doc_dir` for YAML files stored by endpoint-name and method-name.  For example, `'doc_dir': './examples/docs/'` and a file `./examples/docs/items/get.yml` will provide a Swagger doc for `ItemsView` method `get`.
+Flasgger can be configured to auto-parse external YAML API docs.  [Set a `doc_dir`](https://github.com/rochacbruno/flasgger/blob/aaef05c17cc559d01b7436211093463642eb6ae2/examples/parsed_view_func.py#L16) in your `app.config['SWAGGER']` and Swagger will load API docs by looking in `doc_dir` for YAML files stored by endpoint-name and method-name.  For example, `'doc_dir': './examples/docs/'` and a file `./examples/docs/items/get.yml` will provide a Swagger doc for `ItemsView` method `get`.
 
 Additionally, when using **Flask RESTful** per above, by passing `parse=True` when constructing `Swagger`, Flasgger will use  `flask_restful.reqparse.RequestParser`, locate all `MethodView`s and parsed and validated data will be stored in `flask.request.parsed_data`.
 
@@ -640,6 +644,12 @@ app.config['SWAGGER'] = {
 swagger = Swagger(app)
 
 ```
+
+# OpenAPI 3.0 Support
+
+There is experimental support for OpenAPI 3.0 that should work when using SwaggerUI 3. To use OpenAPI 3.0, set `app.config['SWAGGER']['openapi']` to a version that the current SwaggerUI 3 supports such as `'3.0.2'`.
+
+For an example of this that uses `callbacks` and `requestBody`, see the [callbacks example](examples/callbacks.py).
 
 ## Externally loading Swagger UI and jQuery JS/CSS
 

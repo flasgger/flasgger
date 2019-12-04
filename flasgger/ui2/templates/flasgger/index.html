@@ -81,7 +81,12 @@
               var tokenField = 'jwt-token';
               if (response.hasOwnProperty(tokenField)) {
                 var jwt_token = response[tokenField];
-                swaggerUi.api.clientAuthorizations.add("key", new SwaggerClient.ApiKeyAuthorization("Authorization", "Bearer " + jwt_token, "header"));
+                {% if config.JWT_AUTH_HEADER_NAME -%}
+                  var jwtAuthHeaderName = "{{ config.JWT_AUTH_HEADER_NAME }}";
+                {%- else %}
+                  var jwtAuthHeaderName = "Authorization";
+                {%- endif %}
+                swaggerUi.api.clientAuthorizations.add("key", new SwaggerClient.ApiKeyAuthorization(jwtAuthHeaderName, "Bearer " + jwt_token, "header"));
               }
             });
           {%- endif %}
@@ -89,7 +94,11 @@
         onFailure: function(data) {
           log("Unable to Load SwaggerUI");
         },
-        docExpansion: "none",
+        {% if flasgger_config.doc_expansion -%}
+            docExpansion: "{{flasgger_config.doc_expansion | safe }}",
+        {%- else %}
+           docExpansion: "none",
+        {%- endif %}
         jsonEditor: false,
         defaultModelRendering: 'schema',
         showRequestHeaders: false,

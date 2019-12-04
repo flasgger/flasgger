@@ -24,7 +24,6 @@ from flask import redirect
 from flask import render_template
 from flask import request, url_for
 from flask import abort
-from flask import Response
 from flask.views import MethodView
 from flask.json import JSONEncoder
 try:
@@ -43,9 +42,17 @@ from .utils import validate
 from .utils import LazyString
 from . import __version__
 
-NO_SANITIZER = lambda text: text  # noqa
-BR_SANITIZER = lambda text: text.replace('\n', '<br/>') if text else text  # noqa
-MK_SANITIZER = lambda text: Markup(markdown(text)) if text else text  # noqa
+
+def NO_SANITIZER(text):
+    return text
+
+
+def BR_SANITIZER(text):
+    return text.replace('\n', '<br/>') if text else text
+
+
+def MK_SANITIZER(text):
+    return Markup(markdown(text)) if text else text
 
 
 class APIDocsView(MethodView):
@@ -154,8 +161,8 @@ class Swagger(object):
         "specs_route": "/apidocs/"
     }
 
-    SCHEMA_TYPES = {'string': str, 'integer': int, 'number': int,
-                    'boolean': bool, 'object': dict}
+    SCHEMA_TYPES = {'string': str, 'integer': int, 'number': float,
+                    'boolean': bool}
     SCHEMA_LOCATIONS = {'query': 'args', 'header': 'headers',
                         'formData': 'form', 'body': 'json', 'path': 'path'}
 
@@ -213,7 +220,7 @@ class Swagger(object):
         if filename.endswith('.json'):
             loader = json.load
         elif filename.endswith('.yml') or filename.endswith('.yaml'):
-            loader = yaml.load
+            loader = yaml.safe_load
         else:
             with codecs.open(filename, 'r', 'utf-8') as f:
                 contents = f.read()
@@ -221,7 +228,7 @@ class Swagger(object):
                 if contents[0] in ['{', '[']:
                     loader = json.load
                 else:
-                    loader = yaml.load
+                    loader = yaml.safe_load
         with codecs.open(filename, 'r', 'utf-8') as f:
             return loader(f)
 
@@ -351,7 +358,11 @@ class Swagger(object):
         for rule, verbs in specs:
             operations = dict()
             for verb, swag in verbs:
-                definitions.update(swag.get('definitions', {}))
+                update_dict = swag.get('definitions', {})
+                if type(update_dict) == list and type(update_dict[0]) == dict:
+                    # pop, assert single element
+                    update_dict, = update_dict
+                definitions.update(update_dict)
                 defs = []  # swag.get('definitions', [])
                 defs += extract_definitions(
                     defs, endpoint=rule.endpoint, verb=verb,
@@ -374,6 +385,19 @@ class Swagger(object):
                     content = request_body.get("content", {})
                     extract_definitions(
                         list(content.values()),
+                        endpoint=rule.endpoint,
+                        verb=verb,
+                        prefix_ids=prefix_ids
+                    )
+
+                callbacks = swag.get("callbacks", {})
+                if callbacks:
+                    callbacks = {
+                        str(key): value
+                        for key, value in callbacks.items()
+                    }
+                    extract_definitions(
+                        list(callbacks.values()),
                         endpoint=rule.endpoint,
                         verb=verb,
                         prefix_ids=prefix_ids
@@ -408,6 +432,8 @@ class Swagger(object):
                     operation['description'] = swag.get('description')
                 if request_body:
                     operation['requestBody'] = request_body
+                if callbacks:
+                    operation['callbacks'] = callbacks
                 if responses:
                     operation['responses'] = responses
                 # parameters - swagger ui dislikes empty parameter lists
@@ -536,6 +562,10 @@ class Swagger(object):
     def parse_request(self, app):
         @app.before_request
         def before_request():  # noqa
+            """
+            Parse and validate request data(query, form, header and body),
+            set data to `request.parsed_data`
+            """
             # convert "/api/items/<int:id>/" to "/api/items/{id}/"
             subs = []
             for sub in str(request.url_rule).split('/'):
@@ -555,12 +585,14 @@ class Swagger(object):
                 schemas = self.schemas[path_key]
             else:
                 doc = None
+                definitions = None
                 for spec in self.config['specs']:
                     apispec = self.get_apispecs(endpoint=spec['endpoint'])
                     if path in apispec['paths']:
                         if request.method.lower() in apispec['paths'][path]:
                             doc = apispec['paths'][path][
                                 request.method.lower()]
+                            definitions = apispec.get('definitions', {})
                             break
                 if not doc:
                     return
@@ -569,21 +601,11 @@ class Swagger(object):
                 schemas = defaultdict(
                     lambda: {'type': 'object', 'properties': defaultdict(dict)}
                 )
-                for param in doc['parameters']:
+                for param in doc.get('parameters', []):
                     location = self.SCHEMA_LOCATIONS[param['in']]
-                    if location == 'json':
-                        schemas[location]['properties'].update(
-                            param['schema']['properties'])
-
-                        required_keys = param['schema'].get('required', [])
-                        keys = param['schema']['properties']
-                        for key in keys:
-                            parsers[location].add_argument(
-                                key,
-                                type=self.SCHEMA_TYPES[
-                                    keys[key]['type']],
-                                required=key in required_keys, location='json',
-                                store_missing=False)
+                    if location == 'json':  # load data from 'request.json'
+                        schemas[location] = param['schema']
+                        schemas[location]['definitions'] = dict(definitions)
                     else:
                         name = param['name']
                         if location != 'path':
@@ -607,13 +629,15 @@ class Swagger(object):
             parsed_data = {'path': request.view_args}
             for location in parsers.keys():
                 parsed_data[location] = parsers[location].parse_args()
+            if 'json' in schemas:
+                parsed_data['json'] = request.json or {}
             for location, data in parsed_data.items():
                 try:
                     jsonschema.validate(
                         data, schemas[location],
                         format_checker=self.format_checker)
                 except jsonschema.ValidationError as e:
-                    abort(Response(e.message, status=400))
+                    abort(400, e.message)
 
             setattr(request, 'parsed_data', parsed_data)
 

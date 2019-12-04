@@ -31,7 +31,7 @@ def grep(attrname):
 setup(
     name='flasgger',
     version=grep('__version__'),
-    url='https://github.com/rochacbruno/flasgger/',
+    url='https://github.com/flasgger/flasgger/',
     license='MIT',
     author=grep('__author__'),
     author_email=grep('__email__'),
@@ -52,8 +52,15 @@ setup(
     install_requires=[
         'Flask>=0.10',
         'PyYAML>=3.0',
-        'jsonschema>=2.5.1',
+        'jsonschema>=3.0.1',
         'mistune',
         'six>=1.10.0'
+    ],
+    classifiers=[
+        'Intended Audience :: Developers',
+        'Programming Language :: Python :: 2',
+        'Programming Language :: Python :: 2.7',
+        'Programming Language :: Python :: 3',
+        'Programming Language :: Python :: 3.6',
     ]
 )

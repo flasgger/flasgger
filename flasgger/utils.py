@@ -6,6 +6,7 @@ import imp
 import inspect
 import os
 import re
+import sys
 import jsonschema
 import yaml
 from six import string_types, text_type
@@ -128,7 +129,12 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
             swagged = False
 
             if getattr(method, 'specs_dict', None):
-                merge_specs(swag, deepcopy(method.specs_dict))
+                definition = {}
+                merge_specs(
+                    swag,
+                    convert_schemas(deepcopy(method.specs_dict), definition)
+                )
+                swag['definitions'] = definition
                 swagged = True
 
             view_class = getattr(endpoint, 'view_class', None)
@@ -273,9 +279,44 @@ def swag_from(
     return decorator
 
 
+def __replace_ref(schema, relative_path):
+    """ TODO: add dev docs
+
+    :param schema:
+    :param relative_path:
+    :return:
+    """
+    absolute_path = os.path.dirname(sys.argv[0])
+    new_value = {}
+    for key, value in schema.items():
+        if isinstance(value, dict):
+            new_value[key] = __replace_ref(value, relative_path)
+        elif key == '$ref':
+            if len(value) > 0 and value[0] == '/':
+                file_ref_path = absolute_path + value
+            else:
+                file_ref_path = relative_path + '/' + value
+            relative_path = os.path.dirname(file_ref_path)
+            with open(file_ref_path) as file:
+                file_content = file.read()
+                comment_index = file_content.rfind('---')
+                if comment_index > 0:
+                    comment_index = comment_index + 3
+                else:
+                    comment_index = 0
+                content = yaml.safe_load((file_content[comment_index:]))
+                new_value = content
+                if isinstance(content, dict):
+                    new_value = __replace_ref(content, relative_path)
+        else:
+            new_value[key] = value
+    return new_value
+
+
 def validate(
         data=None, schema_id=None, filepath=None, root=None, definition=None,
-        specs=None, validation_function=None, validation_error_handler=None):
+        specs=None, validation_function=None, validation_error_handler=None,
+        require_data=True):
     """
     This method is available to use YAML swagger definitions file
     or specs (dict or object) to validate data against its jsonschema.
@@ -284,7 +325,7 @@ def validate(
         validate({"item": 1}, 'item_schema', 'defs.yml', root=__file__)
         validate(request.json, 'User', specs={'definitions': {'User': ...}})
 
-    :param data: data to validate, by defaull is request.json
+    :param data: data to validate, by default is request.json
     :param schema_id: The definition id to use to validate (from specs)
     :param filepath: definition filepath to load specs
     :param root: root folder (inferred if not provided), unused if path
@@ -300,6 +341,7 @@ def validate(
         exceptions thrown when validating which takes the exception
         thrown as the first, the data being validated as the second and
         the schema being used to validate as the third argument
+    :param require_data: is the data param required?
     """
     schema_id = schema_id or definition
 
@@ -313,8 +355,8 @@ def validate(
         # data=lambda: request.json
         data = data()
 
-    if not data:
-        abort(Response('No data to validate', status=500))
+    if not data and require_data:
+        abort(Response('No data to validate', status=400))
 
     # not used anymore but kept to reuse with marshmallow
     endpoint = request.endpoint.lower().replace('.', '_')
@@ -336,7 +378,7 @@ def validate(
             final_filepath = filepath
         full_doc = load_from_file(final_filepath)
         yaml_start = full_doc.find('---')
-        swag = yaml.load(full_doc[yaml_start if yaml_start >= 0 else 0:])
+        swag = yaml.safe_load(full_doc[yaml_start if yaml_start >= 0 else 0:])
     else:
         swag = copy.deepcopy(specs)
 
@@ -381,6 +423,13 @@ def validate(
     if validation_function is None:
         validation_function = jsonschema.validate
 
+    absolute_path = os.path.dirname(sys.argv[0])
+    if filepath is None:
+        relative_path = absolute_path
+    else:
+        relative_path = os.path.dirname(filepath)
+    main_def = __replace_ref(main_def, relative_path)
+
     try:
         validation_function(data, main_def)
     except Exception as err:
@@ -400,7 +449,6 @@ def apispec_to_template(app, spec, definitions=None, paths=None):
     """
     definitions = definitions or []
     paths = paths or []
-    spec_dict = spec.to_dict()
 
     with app.app_context():
         for definition in definitions:
@@ -415,6 +463,7 @@ def apispec_to_template(app, spec, definitions=None, paths=None):
         for path in paths:
             spec.path(view=path)
 
+    spec_dict = spec.to_dict()
     ret = ordered_dict_to_dict(spec_dict)
     return ret
 
@@ -575,10 +624,10 @@ def parse_docstring(obj, process_doc, endpoint=None, verb=None):
                 other_lines = process_doc(
                     full_doc[line_feed + 1: yaml_sep]
                 )
-                swag = yaml.load(full_doc[yaml_sep + 4:])
+                swag = yaml.safe_load(full_doc[yaml_sep + 4:])
         else:
             if from_file:
-                swag = yaml.load(full_doc)
+                swag = yaml.safe_load(full_doc)
             else:
                 first_line = full_doc
 
@@ -628,7 +677,7 @@ def parse_definition_docstring(obj, process_doc):
             doc_lines = process_doc(
                 full_doc[:yaml_sep - 1]
             )
-            swag = yaml.load(full_doc[yaml_sep:])
+            swag = yaml.safe_load(full_doc[yaml_sep:])
         else:
             doc_lines = process_doc(full_doc)
 
@@ -830,6 +879,7 @@ class LazyString(StringLike):
     A lazy string *without* caching. The resulting string is regenerated for
     every request.
     """
+
     def __init__(self, func):
         """
         Creates a `LazyString` object using `func` as the delayed closure.
@@ -848,6 +898,7 @@ class CachedLazyString(LazyString):
     """
     A lazy string with caching.
     """
+
     def __init__(self, func):
         """
         Uses `__init__()` from the parent and initializes a cache.

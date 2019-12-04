@@ -3,19 +3,37 @@ language: python
 matrix:
   include:
     - python: 2.7
-      env: TOXENV=py27
+      env: TOXENV=py27-flask010
+    - python: 2.7
+      env: TOXENV=py27-flask10
+    - python: 2.7
+      env: TOXENV=py27-flask104
     - python: 3.6
-      env: TOXENV=py36
+      env: TOXENV=py36-flask010
+    - python: 3.6
+      env: TOXENV=py36-flask10
+    - python: 3.6
+      env: TOXENV=py36-flask104
     - python: 3.7
-      env: TOXENV=py37
+      env: TOXENV=py37-flask010
       dist: xenial
       sudo: true
+    - python: 3.7
+      env: TOXENV=py37-flask10
+      dist: xenial
+      sudo: true
+    - python: 3.7
+      env: TOXENV=py37-flask104
+      dist: xenial
+      sudo: true
+    - python: 3.7
+      env: TOXENV=py37-marshmallow-apispec
     - python: 3.8-dev
-      env: TOXENV=py38-dev
+      env: TOXENV=py38-dev-flasklatest
       dist: xenial
       sudo: true
   allow_failures:
-    - env: TOXENV=py38-dev
+    - env: TOXENV=py38-dev-flasklatest
 
 before_install:
   - pip install -r requirements.txt

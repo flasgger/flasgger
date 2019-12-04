@@ -10,7 +10,15 @@ try:
     from apispec.ext.marshmallow import openapi
     from apispec import APISpec as BaseAPISpec
 
-    openapi_converter = openapi.OpenAPIConverter(openapi_version='2.0')
+    # Note that openapi_converter is initialized with trivial
+    #   schema_name_resolver. Resolving circular reference is not
+    #   supported for now. See issue #314 .
+    # Also see: https://github.com/marshmallow-code/apispec/pull/447
+    openapi_converter = openapi.OpenAPIConverter(
+        openapi_version='2.0',
+        schema_name_resolver=lambda schema: None,
+        spec=None
+    )
     schema2jsonschema = openapi_converter.schema2jsonschema
     schema2parameters = openapi_converter.schema2parameters
 except ImportError:
