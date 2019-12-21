@@ -112,6 +112,39 @@ def collect_endpoint_methods(target_verbs, rule):
     return endpoint, methods
 
 
+def attach_autoparsing_yml(doc_dir, endpoint, method, view_class):
+    """
+    For auto-parsing external YAML docs.
+    Set a doc_dir in your app.config['SWAGGER'] and Swagger will load API docs
+    by looking in doc_dir for YAML files stored by endpoint-name and
+    method-name. For example, 'doc_dir': './examples/docs/' and a file
+    ./examples/docs/items/get.yml will provide a Swagger doc for ItemsView
+    method get.
+
+    Sets 'swag_type' and 'swag_path' for the method object if a yaml doc is
+        defined for the method.
+
+    :param doc_dir: (eg. Swagger will load API docs by looking in doc_dir
+        for YAML files)
+    :param endpoint: url endpoint of the method
+    :param method: the method to find external yml for
+    :param view_class: the view class that contains the method; if applicable
+    :return:
+    """
+    if doc_dir:
+        if view_class:
+            file_path = os.path.join(
+                doc_dir, endpoint.__name__, method.__name__ + '.yml')
+        else:
+            file_path = os.path.join(
+                doc_dir, endpoint.__name__ + '.yml')
+        if os.path.isfile(file_path):
+            func = method.__func__ \
+                if hasattr(method, '__func__') else method
+            setattr(func, 'swag_type', 'yml')
+            setattr(func, 'swag_path', file_path)
+
+
 def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
     """ Generates a list of specs from a collection of url rules.
 
@@ -138,6 +171,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
             swag = {}
             swagged = False
 
+            # Parse specs_dict specified with view function
             if getattr(method, 'specs_dict', None):
                 definition = {}
                 merge_specs(
@@ -167,18 +201,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
 
                 swagged = True
 
-            if doc_dir:
-                if view_class:
-                    file_path = os.path.join(
-                        doc_dir, endpoint.__name__, method.__name__ + '.yml')
-                else:
-                    file_path = os.path.join(
-                        doc_dir, endpoint.__name__ + '.yml')
-                if os.path.isfile(file_path):
-                    func = method.__func__ \
-                        if hasattr(method, '__func__') else method
-                    setattr(func, 'swag_type', 'yml')
-                    setattr(func, 'swag_path', file_path)
+            attach_autoparsing_yml(doc_dir, endpoint, method, view_class)
 
             doc_summary, doc_description, doc_swag = parse_docstring(
                 method, sanitizer, endpoint=rule.endpoint, verb=verb)
