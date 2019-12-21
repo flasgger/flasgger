@@ -65,44 +65,75 @@ def get_schema_specs(schema_id, swagger):
                 return swag
 
 
-def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
+def collect_endpoint_methods(target_verbs, rule):
+    """ Collect "endpoint" value from rule and a list of methods
+            under this endpoint to get specs for.
 
-    specs = []
-    for rule in rules:
-        endpoint = current_app.view_functions[rule.endpoint]
-        methods = dict()
-        is_mv = is_valid_method_view(endpoint)
-
-        for verb in rule.methods.difference(ignore_verbs):
-            if not is_mv and has_valid_dispatch_view_docs(endpoint):
-                endpoint.methods = endpoint.methods or ['GET']
-                if verb in endpoint.methods:
-                    methods[verb.lower()] = endpoint
-            elif getattr(endpoint, 'methods', None) is not None:
-                if verb in endpoint.methods:
-                    verb = verb.lower()
-                    if hasattr(endpoint.view_class, verb):
-                        methods[verb] = getattr(endpoint.view_class, verb)
-            else:
+    :param target_verbs: verbs to consider
+    :param rule: rule object
+    :return: a tuple of endpoint and methods
+    """
+    endpoint = current_app.view_functions[rule.endpoint]
+    methods = dict()
+    is_mv = is_valid_method_view(endpoint)
+    for verb in target_verbs:
+        if not is_mv and has_valid_dispatch_view_docs(endpoint):
+            endpoint.methods = endpoint.methods or ['GET']
+            if verb in endpoint.methods:
                 methods[verb.lower()] = endpoint
+        elif getattr(endpoint, 'methods', None) is not None:
+            if verb in endpoint.methods:
+                verb = verb.lower()
+                if hasattr(endpoint.view_class, verb):
+                    methods[verb] = getattr(endpoint.view_class, verb)
+        else:
+            methods[verb.lower()] = endpoint
+
+    for verb in methods.keys():
+        _method = methods[verb]
+
+        klass = _method.__dict__.get('view_class', None)
+
+        if not is_mv and klass and hasattr(klass, 'verb'):
+            methods[verb] = getattr(klass, 'verb', None)
+        elif klass and hasattr(klass, 'dispatch_request'):
+            methods[verb] = getattr(klass, 'dispatch_request', None)
+
+        if methods[verb] is None:  # for MethodView
+            methods[verb] = getattr(klass, verb, None)
+
+        if methods[verb] is None:
+            if is_mv:  # #76 Empty MethodViews
+                continue
+            raise RuntimeError(
+                'Cannot detect view_func for rule {0}'.format(rule)
+            )
+
+    return endpoint, methods
+
+
+def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
+    """ Generates a list of specs from a collection of url rules.
+
+    :param rules: a collection of Flask Rule objects
+    :param ignore_verbs: verbs to ignore (eg. "HEAD", "OPTIONS")
+    :param optional_fields: technically only responses is non-optional
+    :param sanitizer: (eg. a function to replace '\n' with '<br/>')
+    :param doc_dir: (eg. Swagger will load API docs by looking in doc_dir
+        for YAML files)
+    :return: a list of specs
+    """
+    specs = []
+
+    for rule in rules:
+
+        # Only consider verbs that are not ignored
+        target_verbs = rule.methods.difference(ignore_verbs)
+        # Collect valid methods under the endpoint
+        endpoint, methods = collect_endpoint_methods(target_verbs, rule)
 
         verbs = []
         for verb, method in methods.items():
-
-            klass = method.__dict__.get('view_class', None)
-            if not is_mv and klass and hasattr(klass, 'verb'):
-                method = getattr(klass, 'verb', None)
-            elif klass and hasattr(klass, 'dispatch_request'):
-                method = getattr(klass, 'dispatch_request', None)
-            if method is None:  # for MethodView
-                method = getattr(klass, verb, None)
-
-            if method is None:
-                if is_mv:  # #76 Empty MethodViews
-                    continue
-                raise RuntimeError(
-                    'Cannot detect view_func for rule {0}'.format(rule)
-                )
 
             swag = {}
             swagged = False
