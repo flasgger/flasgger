@@ -37,6 +37,7 @@ from .utils import extract_definitions
 from .utils import get_specs
 from .utils import get_schema_specs
 from .utils import parse_definition_docstring
+from .utils import parse_imports
 from .utils import get_vendor_extension_fields
 from .utils import validate
 from .utils import LazyString
@@ -220,7 +221,8 @@ class Swagger(object):
         if filename.endswith('.json'):
             loader = json.load
         elif filename.endswith('.yml') or filename.endswith('.yaml'):
-            loader = yaml.safe_load
+            loader = lambda stream: \
+                yaml.safe_load(parse_imports(stream.read(), filename))
         else:
             with codecs.open(filename, 'r', 'utf-8') as f:
                 contents = f.read()
@@ -228,7 +230,8 @@ class Swagger(object):
                 if contents[0] in ['{', '[']:
                     loader = json.load
                 else:
-                    loader = yaml.safe_load
+                    loader = lambda stream: \
+                        yaml.safe_load(parse_imports(stream.read(), filename))
         with codecs.open(filename, 'r', 'utf-8') as f:
             return loader(f)
 
@@ -327,6 +330,19 @@ class Swagger(object):
             data["securityDefinitions"] = self.config.get(
                 'securityDefinitions'
             )
+
+        def is_openapi3():
+            """
+            Returns True if openapi_version is 3
+            """
+            return openapi_version and openapi_version.split('.')[0] == '3'
+
+        # enable 'components' when openapi_version is 3.*.*
+        if is_openapi3() and self.config.get("components"):
+            data["components"] = self.config.get(
+                'components'
+            )
+
         # set defaults from template
         if self.template is not None:
             data.update(self.template)
