@@ -3,6 +3,27 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.9.4
+-----
+- Changed apispec version supported to 2.0.2
+- Added support for OpenAPI3 callback field
+- Changed jsonschema version supported to jsonschema>=3.0.1
+- Changed json data to be parsed from request directly
+- Changed swagger-ui 3 version to 3.23.1
+- Added support for JWT_AUTH_HEADER_NAME
+- Changed to yaml.safe_load
+- Added support for docExpansion in swagger-ui 2
+- Fixed bug for apispec_to_template definition [#301](https://github.com/flasgger/flasgger/commit/0ee67a755121000dad5b4405f2dd2bcb50c8ad51)
+- Added support for using external yml file to specify parameter [commit by @isaacfi](https://github.com/flasgger/flasgger/commit/5ee9586febd931cbdce54527f40c53def4d747d1)
+- Changed flask-restful abort call to abort(code, e.message)
+- Added definitions to parsed_data validation [#330] (https://github.com/flasgger/flasgger/commit/8310196821ed61374581bb99d2be7739661b3afa)
+- Added support for Marshmallow Schema in Function Based View [#341] (https://github.com/flasgger/flasgger/commit/fbaa7a12859823137c485f9f6fb5591325dc90da)
+- Changed status code for no data to validate from 500 to 400
+- Added require_data kwarg to validate() to make data optional [#340](https://github.com/flasgger/flasgger/commit/b8e6b4fc7390d4f8f7ddcd113d70a54acd54da1d)
+- Added support for importing OpenAPI3 spec components from config
+- Enable "import:" syntax in template.yml
+- Forward validation_error_handler in Marshmallow APIspec [#352](https://github.com/flasgger/flasgger/commit/c5b36a7eee8958a77cbc4b3b4629416b5d9a987e)
+
 0.9.2
 -----
 
