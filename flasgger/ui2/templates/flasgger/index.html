@@ -78,7 +78,12 @@
           {% if config.JWT_AUTH_URL_RULE -%}
             $(document).find('div.response_headers').bind('DOMSubtreeModified', function(event) {
               var response = JSON.parse($(this).text());
-              var tokenField = 'jwt-token';
+              {% if config.JWT_AUTH_HEADER_TOKEN -%}
+                var jwtAuthHeaderToken = "{{ config.JWT_AUTH_HEADER_TOKEN }}";
+              {%- else %}
+                var jwtAuthHeaderToken = "jwt-token";
+              {%- endif %}
+              var tokenField = jwtAuthHeaderToken;
               if (response.hasOwnProperty(tokenField)) {
                 var jwt_token = response[tokenField];
                 {% if config.JWT_AUTH_HEADER_NAME -%}
@@ -86,7 +91,12 @@
                 {%- else %}
                   var jwtAuthHeaderName = "Authorization";
                 {%- endif %}
-                swaggerUi.api.clientAuthorizations.add("key", new SwaggerClient.ApiKeyAuthorization(jwtAuthHeaderName, "Bearer " + jwt_token, "header"));
+                {% if config.JWT_AUTH_HEADER_TYPE -%}
+                  var jwtAuthHeaderType = "{{ config.JWT_AUTH_HEADER_TYPE }}";
+                {%- else %}
+                  var jwtAuthHeaderType = "Bearer";
+                {%- endif %}
+                swaggerUi.api.clientAuthorizations.add("key", new SwaggerClient.ApiKeyAuthorization(jwtAuthHeaderName, jwtAuthHeaderType + " " + jwt_token, "header"));
               }
             });
           {%- endif %}
