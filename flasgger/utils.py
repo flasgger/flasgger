@@ -95,7 +95,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                         suffix = rule.endpoint.replace(endpoint.__name__, '')
                         proxy_verb = None
                         if verb == 'GET':
-                            proxy_verb = 'List' if suffix else 'Fetch'
+                            proxy_verb = suffix if suffix else 'Fetch'
                         elif verb == 'PUT':
                             proxy_verb = 'BulkUpdate' if suffix else 'Update'
                         elif verb == 'POST' and suffix:
