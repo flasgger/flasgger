@@ -32,7 +32,7 @@ except ImportError:
     RequestParser = None
 import jsonschema
 from mistune import markdown
-from .constants import OPTIONAL_FIELDS
+from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
 from .utils import extract_definitions
 from .utils import get_specs
 from .utils import get_schema_specs
@@ -337,11 +337,12 @@ class Swagger(object):
             """
             return openapi_version and openapi_version.split('.')[0] == '3'
 
-        # enable 'components' when openapi_version is 3.*.*
-        if is_openapi3() and self.config.get("components"):
-            data["components"] = self.config.get(
-                'components'
-            )
+        # enable oas3 fields when openapi_version is 3.*.*
+        optional_oas3_fields = self.config.get('optional_oas3_fields') or \
+            OPTIONAL_OAS3_FIELDS
+        for key in optional_oas3_fields:
+            if is_openapi3() and self.config.get(key):
+                data[key] = self.config.get(key)
 
         # set defaults from template
         if self.template is not None:
