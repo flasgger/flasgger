@@ -21,6 +21,16 @@ swagger_config = {
             }
         },
     },
+    "servers": [
+        {
+            "url": "https://api.example.com/v1",
+            "description": "Production server (uses live data)"
+        },
+        {
+            "url": "https://sandbox-api.example.com:8443/v1",
+            "description": "Sandbox server (uses test data)"
+        }
+    ],
     "specs": [
         {
             "endpoint": "swagger",
@@ -130,6 +140,8 @@ def test_swag(client, specs_data):
         assert 'components' in spec
         assert 'securitySchemes' in spec['components']
         assert 'oAuthSample' in spec['components']['securitySchemes']
+
+        assert 'servers' in spec  # See issue #366
 
 
 if __name__ == '__main__':
