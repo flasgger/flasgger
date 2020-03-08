@@ -473,6 +473,22 @@ class Swagger(object):
                 except (KeyError, TypeError):
                     prefix = ''
                 srule = '{0}{1}'.format(prefix, rule)
+
+                try:
+                    # handle basePath
+                    base_path = self.template['basePath']
+
+                    if base_path:
+                        if base_path.endswith('/'):
+                            base_path = base_path[:-1]
+                        if base_path:
+                            # suppress base_path from srule if needed.
+                            # Otherwise we will get definitions twice...
+                            if srule.startswith(base_path):
+                                srule = srule[len(base_path):]
+                except (KeyError, TypeError):
+                    pass
+
                 # old regex '(<(.*?\:)?(.*?)>)'
                 for arg in re.findall('(<([^<>]*:)?([^<>]*)>)', srule):
                     srule = srule.replace(arg[0], '{%s}' % arg[2])
