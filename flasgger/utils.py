@@ -272,7 +272,8 @@ def __replace_ref(schema, relative_path, swag):
         if isinstance(value, dict):
             new_value[key] = __replace_ref(value, relative_path, swag)
         elif key == '$ref':
-            # see: https://swagger.io/docs/specification/describing-request-body/
+            # see:
+            # https://swagger.io/docs/specification/describing-request-body/
             if len(value) > 2 and value.startswith('#/'):  # $ref is local
                 content = swag
                 for id in value.split('/')[1:]:
