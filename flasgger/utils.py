@@ -258,19 +258,29 @@ def swag_from(
     return decorator
 
 
-def __replace_ref(schema, relative_path):
+def __replace_ref(schema, relative_path, swag):
     """ TODO: add dev docs
 
     :param schema:
     :param relative_path:
+    :param swag:
     :return:
     """
     absolute_path = os.path.dirname(sys.argv[0])
     new_value = {}
     for key, value in schema.items():
         if isinstance(value, dict):
-            new_value[key] = __replace_ref(value, relative_path)
+            new_value[key] = __replace_ref(value, relative_path, swag)
         elif key == '$ref':
+            # see:
+            # https://swagger.io/docs/specification/describing-request-body/
+            if len(value) > 2 and value.startswith('#/'):  # $ref is local
+                content = swag
+                for id in value.split('/')[1:]:
+                    content = content[id]
+                return __replace_ref(content, relative_path, swag) \
+                    if isinstance(content, dict) else content
+
             if len(value) > 0 and value[0] == '/':
                 file_ref_path = absolute_path + value
             else:
@@ -286,7 +296,7 @@ def __replace_ref(schema, relative_path):
                 content = yaml.safe_load((file_content[comment_index:]))
                 new_value = content
                 if isinstance(content, dict):
-                    new_value = __replace_ref(content, relative_path)
+                    new_value = __replace_ref(content, relative_path, swag)
         else:
             new_value[key] = value
     return new_value
@@ -407,7 +417,7 @@ def validate(
         relative_path = absolute_path
     else:
         relative_path = os.path.dirname(filepath)
-    main_def = __replace_ref(main_def, relative_path)
+    main_def = __replace_ref(main_def, relative_path, swag)
 
     try:
         validation_function(data, main_def)
