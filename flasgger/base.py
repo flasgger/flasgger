@@ -118,6 +118,15 @@ class APIDocsView(MethodView):
             )
 
 
+class OAuthRedirect(MethodView):
+    """
+    The OAuth2 redirect HTML for Swagger UI standard/implicit flow
+    """
+    def get(self):
+        return render_template(
+            ['flasgger/oauth2-redirect.html', 'flasgger/o2c.html'],
+        )
+
 class APISpecsView(MethodView):
     """
     The /apispec_1.json and other specs
@@ -549,12 +558,22 @@ class Swagger(object):
                 static_url_path=self.config.get('static_url_path', None)
             )
 
+            specs_route = self.config.get('specs_route', '/apidocs/')
             blueprint.add_url_rule(
-                self.config.get('specs_route', '/apidocs/'),
+                specs_route,
                 'apidocs',
                 view_func=wrap_view(APIDocsView().as_view(
                     'apidocs',
                     view_args=dict(config=self.config)
+                ))
+            )
+
+            redirect_default = specs_route + '/o2c.html' if uiversion < 3 else "/oauth2-redirect.html"
+            blueprint.add_url_rule(
+                self.config.get('oauth_redirect', redirect_default),
+                'oauth_redirect',
+                view_func=wrap_view(OAuthRedirect().as_view(
+                    'oauth_redirect'
                 ))
             )
 
