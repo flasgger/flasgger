@@ -64,6 +64,10 @@ window.onload = function() {
     
     )
 
+    let auth_config = {{ flasgger_config.get("auth") | safe }};
+
+    ui.initOAuth(auth_config);
+
     window.ui = ui
 
     {% if not flasgger_config.hide_top_bar -%}
