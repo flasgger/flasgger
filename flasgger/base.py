@@ -127,6 +127,7 @@ class OAuthRedirect(MethodView):
             ['flasgger/oauth2-redirect.html', 'flasgger/o2c.html'],
         )
 
+
 class APISpecsView(MethodView):
     """
     The /apispec_1.json and other specs
@@ -568,7 +569,11 @@ class Swagger(object):
                 ))
             )
 
-            redirect_default = specs_route + '/o2c.html' if uiversion < 3 else "/oauth2-redirect.html"
+            if uiversion < 3:
+                redirect_default = specs_route + '/o2c.html'
+            else:
+                redirect_default = "/oauth2-redirect.html"
+
             blueprint.add_url_rule(
                 self.config.get('oauth_redirect', redirect_default),
                 'oauth_redirect',
