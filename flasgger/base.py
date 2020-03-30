@@ -170,7 +170,7 @@ class Swagger(object):
     def __init__(
             self, app=None, config=None, sanitizer=None, template=None,
             template_file=None, decorators=None, validation_function=None,
-            validation_error_handler=None, parse=False):
+            validation_error_handler=None, parse=False, format_checker=None):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
