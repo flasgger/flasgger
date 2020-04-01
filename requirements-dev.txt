@@ -3,7 +3,7 @@ marshmallow
 apispec>=1.0.0b5
 apispec-webframeworks
 flask-restful
-pep8==1.5.7
+pep8==1.7.1
 flake8==3.7.9
 pytest>3.6
 flex
