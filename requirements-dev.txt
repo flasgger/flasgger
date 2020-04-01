@@ -4,7 +4,7 @@ apispec>=1.0.0b5
 apispec-webframeworks
 flask-restful
 pep8==1.5.7
-flake8==2.4.1
+flake8==3.7.9
 pytest>3.6
 flex
 coveralls
