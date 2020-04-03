@@ -48,6 +48,17 @@ def usernames2(username):
     return jsonify({'username': username})
 
 
+@example_blueprint.route('/users', endpoint='user-without-id', methods=['GET'])
+@example_blueprint.route('/users/<user_id>', endpoint='user-with-id', methods=['GET'])
+@swag_from('user_with_id_specs.yml', endpoint='example_blueprint.user-with-id', methods=['GET'])
+@swag_from('user_without_id_specs.yml', endpoint='example_blueprint.user-without-id', methods=['GET'])
+def usernames(user_id=None):
+    if user_id:
+        return jsonify({'user_id': user_id})
+    else:
+        return jsonify([])
+
+
 app.register_blueprint(example_blueprint)
 
 swag = Swagger(app)

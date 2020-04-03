@@ -32,7 +32,7 @@ except ImportError:
     RequestParser = None
 import jsonschema
 from mistune import markdown
-from .constants import OPTIONAL_FIELDS
+from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
 from .utils import extract_definitions
 from .utils import get_specs
 from .utils import get_schema_specs
@@ -170,7 +170,7 @@ class Swagger(object):
     def __init__(
             self, app=None, config=None, sanitizer=None, template=None,
             template_file=None, decorators=None, validation_function=None,
-            validation_error_handler=None, parse=False):
+            validation_error_handler=None, parse=False, format_checker=None):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
@@ -179,8 +179,21 @@ class Swagger(object):
         self.template = template
         self.template_file = template_file
         self.decorators = decorators
-        self.validation_function = validation_function
-        self.validation_error_handler = validation_error_handler
+        self.format_checker = format_checker or jsonschema.FormatChecker()
+
+        def default_validation_function(data, schema):
+            return jsonschema.validate(
+                data, schema, format_checker=self.format_checker,
+            )
+
+        def default_error_handler(e, _, __):
+            return abort(400, e.message)
+
+        self.validation_function = validation_function\
+            or default_validation_function
+
+        self.validation_error_handler = validation_error_handler\
+            or default_error_handler
         self.apispecs = {}  # cached apispecs
         self.parse = parse
         if app:
@@ -205,7 +218,6 @@ class Swagger(object):
                 raise RuntimeError('Please install flask_restful')
             self.parsers = {}
             self.schemas = {}
-            self.format_checker = jsonschema.FormatChecker()
             self.parse_request(app)
 
         self._configured = True
@@ -337,11 +349,13 @@ class Swagger(object):
             """
             return openapi_version and openapi_version.split('.')[0] == '3'
 
-        # enable 'components' when openapi_version is 3.*.*
-        if is_openapi3() and self.config.get("components"):
-            data["components"] = self.config.get(
-                'components'
-            )
+        if is_openapi3():
+            # enable oas3 fields when openapi_version is 3.*.*
+            optional_oas3_fields = self.config.get(
+                'optional_oas3_fields') or OPTIONAL_OAS3_FIELDS
+            for key in optional_oas3_fields:
+                if self.config.get(key):
+                    data[key] = self.config.get(key)
 
         # set defaults from template
         if self.template is not None:
@@ -473,6 +487,22 @@ class Swagger(object):
                 except (KeyError, TypeError):
                     prefix = ''
                 srule = '{0}{1}'.format(prefix, rule)
+
+                try:
+                    # handle basePath
+                    base_path = self.template['basePath']
+
+                    if base_path:
+                        if base_path.endswith('/'):
+                            base_path = base_path[:-1]
+                        if base_path:
+                            # suppress base_path from srule if needed.
+                            # Otherwise we will get definitions twice...
+                            if srule.startswith(base_path):
+                                srule = srule[len(base_path):]
+                except (KeyError, TypeError):
+                    pass
+
                 # old regex '(<(.*?\:)?(.*?)>)'
                 for arg in re.findall('(<([^<>]*:)?([^<>]*)>)', srule):
                     srule = srule.replace(arg[0], '{%s}' % arg[2])
@@ -649,11 +679,9 @@ class Swagger(object):
                 parsed_data['json'] = request.json or {}
             for location, data in parsed_data.items():
                 try:
-                    jsonschema.validate(
-                        data, schemas[location],
-                        format_checker=self.format_checker)
+                    self.validation_function(data, schemas[location])
                 except jsonschema.ValidationError as e:
-                    abort(400, e.message)
+                    self.validation_error_handler(e, data, schemas[location])
 
             setattr(request, 'parsed_data', parsed_data)
 
