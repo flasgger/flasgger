@@ -168,14 +168,14 @@ class Swagger(object):
                         'formData': 'form', 'body': 'json', 'path': 'path'}
 
     def __init__(
-            self, app=None, config=None, sanitizer=None, template=None,
+            self, app=None, config={}, sanitizer=None, template=None,
             template_file=None, decorators=None, validation_function=None,
             validation_error_handler=None, parse=False):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
         self.sanitizer = sanitizer or BR_SANITIZER
-        self.config = config or self.DEFAULT_CONFIG.copy()
+        self.config = dict(self.DEFAULT_CONFIG.copy(), **config)
         self.template = template
         self.template_file = template_file
         self.decorators = decorators
