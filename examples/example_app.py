@@ -6,6 +6,11 @@ from flask.views import MethodView
 
 from flasgger import Swagger
 from flasgger.utils import swag_from
+try:
+    from pathlib import Path
+    PY3 = True
+except ImportError:
+    PY3 = False
 
 app = Flask(__name__)
 
@@ -186,6 +191,13 @@ def fromfile_decorated_utf16(username):
 @swag_from('username_specs_utf32.yml')
 def fromfile_decorated_utf32(username):
     return jsonify({'username': username})
+
+
+if PY3:
+    @app.route('/v1/decorated_path_obj/<username>', endpoint='should_be_v1_only_username Path obj')
+    @swag_from(Path('path1/username_specs.yml'))
+    def fromfile_decorated(username):
+        return jsonify({'username': username})
 
 # OR
 

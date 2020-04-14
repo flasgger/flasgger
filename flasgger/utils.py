@@ -19,6 +19,11 @@ from flask import abort
 from flask import current_app
 from flask import request
 from flask.views import MethodView
+try:
+    from pathlib import Path
+    PY3 = True
+except ImportError:
+    PY3 = False
 from .constants import OPTIONAL_FIELDS
 from .marshmallow_apispec import SwaggerView
 from .marshmallow_apispec import convert_schemas
@@ -197,6 +202,8 @@ def swag_from(
     """
 
     def resolve_path(function, filepath):
+        if PY3 and isinstance(filepath, Path):
+            filepath = str(filepath)
         if not filepath.startswith('/'):
             if not hasattr(function, 'root_path'):
                 function.root_path = get_root_path(function)
@@ -206,7 +213,7 @@ def swag_from(
 
     def set_from_filepath(function):
         final_filepath = resolve_path(function, specs)
-        function.swag_type = filetype or specs.split('.')[-1]
+        function.swag_type = filetype or final_filepath.split('.')[-1]
 
         if endpoint or methods:
             if not hasattr(function, 'swag_paths'):
@@ -229,7 +236,8 @@ def swag_from(
 
     def decorator(function):
 
-        if isinstance(specs, string_types):
+        if isinstance(specs, string_types) or \
+                (PY3 and isinstance(specs, Path)):
             set_from_filepath(function)
             # function must have or a single swag_path or a list of them
             swag_path = getattr(function, 'swag_path', None)
