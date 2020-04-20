@@ -99,9 +99,6 @@ def convert_schemas(d, definitions=None):
     Also updates the optional definitions argument with any definitions
     entries contained within the schema.
     """
-    if Schema is None:
-        raise RuntimeError('Please install marshmallow and apispec')
-
     if definitions is None:
         definitions = {}
     definitions.update(d.get('definitions', {}))
@@ -119,6 +116,10 @@ def convert_schemas(d, definitions=None):
                     new_v.append(item)
             v = new_v
         if inspect.isclass(v) and issubclass(v, Schema):
+
+            if Schema is None:
+                raise RuntimeError('Please install marshmallow and apispec')
+
             definitions[v.__name__] = schema2jsonschema(v)
             ref = {
                 "$ref": "#/definitions/{0}".format(v.__name__)
