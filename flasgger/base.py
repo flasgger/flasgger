@@ -658,7 +658,8 @@ class Swagger(object):
                             parsers[location].add_argument(
                                 name,
                                 type=self.SCHEMA_TYPES[
-                                    param.get('type', None)],
+                                    param['schema'].get('type', None)
+                                    if 'schema' in param else param.get('type', None)],
                                 required=param.get('required', False),
                                 location=self.SCHEMA_LOCATIONS[
                                     param['in']],
