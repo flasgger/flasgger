@@ -4,7 +4,7 @@ from collections import OrderedDict
 
 from flask import Flask, render_template
 from werkzeug.serving import run_simple
-from werkzeug.wsgi import DispatcherMiddleware
+from werkzeug.middleware.dispatcher import DispatcherMiddleware
 
 from flasgger import __version__
 from flasgger.utils import get_examples
