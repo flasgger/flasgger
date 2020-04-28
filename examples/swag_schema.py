@@ -20,9 +20,9 @@ class Query(Schema):
     swag_in = "query"
 
 
-@app.route("/color/<id>", methods=["POST"], **swag)
-def index(body: Body, query: Query, id: int):
-    return {"body": Body, "query": query}
+@app.route("/color/<id>/<name>", methods=["POST"], **swag)
+def index(body: Body, query: Query, id: int, name: str):
+    return {"body": Body, "query": query, "id": id, "name": name}
 
 
 if __name__ == "__main__":
