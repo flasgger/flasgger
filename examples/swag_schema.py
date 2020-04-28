@@ -22,7 +22,25 @@ class Query(Schema):
 
 @app.route("/color/<id>/<name>", methods=["POST"], **swag)
 def index(body: Body, query: Query, id: int, name: str):
-    return {"body": Body, "query": query, "id": id, "name": name}
+    return {"body": body, "query": query, "id": id, "name": name}
+
+
+def test_swag(client, specs_data):
+    """
+    This test is runs automatically in Travis CI
+
+    :param client: Flask app test client
+    :param specs_data: {'url': {swag_specs}} for every spec in app
+    """
+    payload = {"color": ["white", "blue", "red"]}
+
+    test_case = [
+        {"url": '/color/100/putin?color=white', "status_code": 200},
+        {"url": '/color/100/putin?color=black', "status_code": 400}
+    ]
+    for case in test_case:
+        response = client.post(case["url"], json=payload)
+        assert response.status_code == case["status_code"]
 
 
 if __name__ == "__main__":
