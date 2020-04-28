@@ -6,3 +6,9 @@ OPTIONAL_FIELDS = [
 OPTIONAL_OAS3_FIELDS = [
     'components', 'servers'
 ]
+
+DEFAULT_FIELDS = {"tags": [], "consumes": ['application/json'],
+                  "produces": ['application/json'], "schemes": [],
+                  "security": [], "deprecated": False, "operationId": "",
+                  "definitions": {}, "responses": {}, "summary": None,
+                  "description": None, "parameters": []}

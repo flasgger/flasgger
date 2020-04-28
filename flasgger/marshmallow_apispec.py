@@ -6,7 +6,8 @@ from flask.views import MethodView
 import flasgger
 
 try:
-    from marshmallow import Schema, fields
+    import marshmallow
+    from marshmallow import fields
     from apispec.ext.marshmallow import openapi
     from apispec import APISpec as BaseAPISpec
 
@@ -21,6 +22,18 @@ try:
     )
     schema2jsonschema = openapi_converter.schema2jsonschema
     schema2parameters = openapi_converter.schema2parameters
+
+    class Schema(marshmallow.Schema):
+        swag_in = "body"
+        swag_validate = True
+
+        def to_specs_dict(self):
+            specs = {'parameters': self.__class__}
+            definitions = {}
+            specs.update(convert_schemas(specs, definitions))
+            specs['definitions'] = definitions
+            return specs
+
 except ImportError:
     Schema = None
     fields = None
@@ -33,6 +46,7 @@ class APISpec(BaseAPISpec):
     """
     Wrapper around APISpec to add `to_flasgger` method
     """
+
     def to_flasgger(self, app=None, definitions=None, paths=None):
         """
         Converts APISpec dict to flasgger suitable dict
@@ -125,7 +139,10 @@ def convert_schemas(d, definitions=None):
                 "$ref": "#/definitions/{0}".format(v.__name__)
             }
             if k == 'parameters':
-                new[k] = schema2parameters(v)
+                if v.swag_in == "query":
+                    new[k] = schema2parameters(v, default_in="query")
+                else:
+                    new[k] = schema2parameters(v)
                 new[k][0]['schema'] = ref
             else:
                 new[k] = ref

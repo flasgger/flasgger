@@ -262,6 +262,8 @@ def colors(palette):
 
 > FIRST: `pip install marshmallow apispec`
 
+> USAGE #1: `SwaggerView`
+
 ```python
 from flask import Flask, jsonify
 from flasgger import Swagger, SwaggerView, Schema, fields
@@ -319,6 +321,45 @@ app.add_url_rule(
 app.run(debug=True)
 
 ```
+
+> USAGE #2: `Custom Schema from flasgger`
+
+- `Body` - support all fields in marshmallow
+- `Query` - support simple fields in marshmallow (Int, String and etc)
+- `Path` - support only int and str
+
+```python
+from flask import Flask
+from flasgger import Swagger, Schema, fields
+from marshmallow.validate import Length, OneOf
+
+app = Flask(__name__)
+Swagger(app)
+
+swag = {"swag": True,
+        "tags": ["demo"],
+        "responses": {200: {"description": "Success request"},
+                      400: {"description": "Validation error"}}}
+
+
+class Body(Schema):
+    color = fields.List(fields.String(), required=True, validate=Length(max=5), example=["white", "blue", "red"])
+
+
+class Query(Schema):
+    color = fields.String(required=True, validate=OneOf(["white", "blue", "red"]))
+    swag_in = "query"
+
+
+@app.route("/color/<int:id>", methods=["POST"], **swag)
+def index(body: Body, query: Query, id: int):
+    return {"body": body, "query": query, "id": id}
+
+
+if __name__ == "__main__":
+    app.run()
+```
+
 
 > NOTE: take a look at `examples/validation.py` for a more complete example.
 

@@ -41,6 +41,7 @@ from .utils import parse_imports
 from .utils import get_vendor_extension_fields
 from .utils import validate
 from .utils import LazyString
+from .utils import swag_schema
 from . import __version__
 
 
@@ -60,6 +61,7 @@ class APIDocsView(MethodView):
     """
     The /apidocs
     """
+
     def __init__(self, *args, **kwargs):
         view_args = kwargs.pop('view_args', {})
         self.config = view_args.get('config')
@@ -122,6 +124,7 @@ class APISpecsView(MethodView):
     """
     The /apispec_1.json and other specs
     """
+
     def __init__(self, *args, **kwargs):
         self.loader = kwargs.pop('loader')
         super(APISpecsView, self).__init__(*args, **kwargs)
@@ -137,6 +140,7 @@ class SwaggerDefinition(object):
     """
     Class based definition
     """
+
     def __init__(self, name, obj, tags=None):
         self.name = name
         self.obj = obj
@@ -205,6 +209,7 @@ class Swagger(object):
         """
         self.decorators = decorators or self.decorators
         self.app = app
+        self.app.add_url_rule = swag_schema(self.app.add_url_rule)
 
         self.load_config(app)
         # self.load_apispec(app)
