@@ -26,6 +26,9 @@ try:
     class Schema(marshmallow.Schema):
         swag_in = "body"
         swag_validate = True
+        swag_validation_function = None
+        swag_validation_error_handler = None
+        swag_require_data = True
 
         def to_specs_dict(self):
             specs = {'parameters': self.__class__}

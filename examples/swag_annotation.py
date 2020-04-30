@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, abort
 from flasgger import Swagger, Schema, fields
 from marshmallow.validate import Length, OneOf
 
@@ -14,9 +14,22 @@ swag = {"swag": True,
 class Body(Schema):
     color = fields.List(fields.String(), required=True, validate=Length(max=5), example=["white", "blue", "red"])
 
+    def swag_validation_function(self, data, main_def):
+        self.load(data)
+
+    def swag_validation_error_handler(self, err, data, main_def):
+        abort(400, err)
+
 
 class Query(Schema):
     color = fields.String(required=True, validate=OneOf(["white", "blue", "red"]))
+
+    def swag_validation_function(self, data, main_def):
+        self.load(data)
+
+    def swag_validation_error_handler(self, err, data, main_def):
+        abort(400, err)
+
     swag_in = "query"
 
 

@@ -923,7 +923,7 @@ class CachedLazyString(LazyString):
         return self._cache
 
 
-def swag_schema(f):
+def swag_annotation(f):
     @wraps(f)
     def wrapper(*args, **kwargs):
 
@@ -946,7 +946,7 @@ def swag_schema(f):
                     specs["parameters"].append(row)
                 specs["definitions"].update(data["definitions"])
 
-                function = validate_schema(annotation, variable)(function)
+                function = validate_annotation(annotation, variable)(function)
 
             elif issubclass(annotation, int):
                 specs["parameters"].append({"name": variable,
@@ -969,25 +969,29 @@ def swag_schema(f):
     return wrapper
 
 
-def validate_schema(schema, key):
+def validate_annotation(an, var):
     def decorator(f):
         @wraps(f)
         def wrapper(*args, **kwargs):
 
-            payload = None
+            if an.swag_validate:
 
-            if schema.swag_in == "query":
-                payload = dict(request.args)
+                payload = None
 
-            elif schema.swag_in == "body" and request.is_json:
-                payload = request.json
+                if an.swag_in == "query":
+                    payload = dict(request.args)
 
-            if schema.swag_validate:
-                try:
-                    payload = schema.load(payload)
-                except Exception as err:
-                    abort(400, err)
+                elif an.swag_in == "body" and request.is_json:
+                    payload = request.json
 
-            return f(*args, **kwargs, **{key: payload})
+                validate(
+                    payload,
+                    specs=an.to_specs_dict(),
+                    validation_function=an.swag_validation_function,
+                    validation_error_handler=an.swag_validation_error_handler,
+                    require_data=an.swag_require_data
+                )
+
+            return f(*args, **kwargs, **{var: payload})
         return wrapper
     return decorator

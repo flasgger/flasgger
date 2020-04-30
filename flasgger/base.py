@@ -41,7 +41,7 @@ from .utils import parse_imports
 from .utils import get_vendor_extension_fields
 from .utils import validate
 from .utils import LazyString
-from .utils import swag_schema
+from .utils import swag_annotation
 from . import __version__
 
 
@@ -209,7 +209,7 @@ class Swagger(object):
         """
         self.decorators = decorators or self.decorators
         self.app = app
-        self.app.add_url_rule = swag_schema(self.app.add_url_rule)
+        self.app.add_url_rule = swag_annotation(self.app.add_url_rule)
 
         self.load_config(app)
         # self.load_apispec(app)
