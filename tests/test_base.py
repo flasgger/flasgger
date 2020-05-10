@@ -41,3 +41,17 @@ def test_init_config():
     empty_dict = dict()
     Swagger._init_config(self=t, config=empty_dict, merge=True)
     assert t.config == Swagger.DEFAULT_CONFIG
+
+    # keys in DEFAULT_CONFIG will be overridden
+    t = T()
+    d = {"specs": [
+        {
+            "endpoint": "swagger",
+            "route": "/characteristics/swagger.json",
+            "rule_filter": lambda rule: True,  # all in
+            "model_filter": lambda tag: True,  # all in
+        }
+    ],}
+    Swagger._init_config(self=t, config=d, merge=True)
+    assert t.config.items() > d.items()
+    assert t.config["specs"] == d["specs"]
