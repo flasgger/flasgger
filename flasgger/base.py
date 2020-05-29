@@ -167,15 +167,32 @@ class Swagger(object):
     SCHEMA_LOCATIONS = {'query': 'args', 'header': 'headers',
                         'formData': 'form', 'body': 'json', 'path': 'path'}
 
+    def _init_config(self, config, merge):
+        """ Initializes self.config. If merge is set to true, then
+        self.config will be set to with config + DEFAULT_CONFIG.
+        """
+        if config and merge:
+            self.config = dict(self.DEFAULT_CONFIG.copy(), **config)
+        elif config and not merge:
+            self.config = config
+        elif not config:
+            self.config = self.DEFAULT_CONFIG.copy()
+        else:  # The above branches must be exhaustive
+            raise ValueError
+
     def __init__(
             self, app=None, config=None, sanitizer=None, template=None,
             template_file=None, decorators=None, validation_function=None,
-            validation_error_handler=None, parse=False, format_checker=None):
+            validation_error_handler=None, parse=False, format_checker=None,
+            merge=False
+    ):
         self._configured = False
         self.endpoints = []
         self.definition_models = []  # not in app, so track here
         self.sanitizer = sanitizer or BR_SANITIZER
-        self.config = config or self.DEFAULT_CONFIG.copy()
+
+        self._init_config(config, merge)
+
         self.template = template
         self.template_file = template_file
         self.decorators = decorators
