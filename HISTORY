@@ -3,6 +3,10 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.9.5
+-----
+- 'swag_from' supports 'pathlib.Path'
+
 0.9.4
 -----
 - Changed apispec version supported to 2.0.2

@@ -67,14 +67,16 @@ def pytest_generate_tests(metafunc):
     parametrize tests using examples() function
     to generate one test for each examples/
     """
-    test_data = [
-        (mod, mod.app.test_client(),
-         get_specs_data(mod), get_test_metadata(mod))
-        for mod in get_examples()
-    ]
 
-    metafunc.parametrize(
-        'test_data',
-        test_data,
-        ids=lambda x: x[0].__name__
-    )
+    if 'test_data' in metafunc.fixturenames:
+        test_data = [
+            (mod, mod.app.test_client(),
+             get_specs_data(mod), get_test_metadata(mod))
+            for mod in get_examples()
+        ]
+
+        metafunc.parametrize(
+            'test_data',
+            test_data,
+            ids=lambda x: x[0].__name__
+        )
