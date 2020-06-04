@@ -683,7 +683,7 @@ def parse_definition_docstring(obj, process_doc):
         if yaml_sep != -1:
             doc_lines = process_doc(
                 full_doc[:yaml_sep - 1]
-            )
+            ) if yaml_sep else None
             swag = yaml.safe_load(full_doc[yaml_sep:])
         else:
             doc_lines = process_doc(full_doc)
