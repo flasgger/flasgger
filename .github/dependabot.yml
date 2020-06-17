@@ -1,0 +1,10 @@
+version: 2
+updates:
+- package-ecosystem: pip
+  directory: "/"
+  schedule:
+    interval: monthly
+    time: '08:00'
+    timezone: US/Pacific
+  open-pull-requests-limit: 10
+  target-branch: flask_mongorest
