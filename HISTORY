@@ -6,6 +6,7 @@ These are all the changes in Flasgger since the 0.6.0 release
 0.9.5
 -----
 - 'swag_from' supports 'pathlib.Path'
+- Added support for OpenAPI3 parameter schema parsing [#390](https://github.com/flasgger/flasgger/pull/390)
 
 0.9.4
 -----
