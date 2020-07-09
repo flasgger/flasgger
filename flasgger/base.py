@@ -134,7 +134,9 @@ class APISpecsView(MethodView):
         try:
             return jsonify(self.loader())
         except Exception as e:
-            return Response(json.dumps(self.loader), mimetype='application/json')
+            print(e)
+            return Response(json.dumps(self.loader),
+                            mimetype='application/json')
 
 
 class SwaggerDefinition(object):
