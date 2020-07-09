@@ -136,6 +136,7 @@ class APISpecsView(MethodView):
         except Exception as e:
             print(e)
             return Response(json.dumps(self.loader),
+            
                             mimetype='application/json')
 
 
