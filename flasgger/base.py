@@ -24,6 +24,7 @@ from flask import redirect
 from flask import render_template
 from flask import request, url_for
 from flask import abort
+from flask import Response
 from flask.views import MethodView
 from flask.json import JSONEncoder
 try:
@@ -130,7 +131,11 @@ class APISpecsView(MethodView):
         """
         The Swagger view get method outputs to /apispecs_1.json
         """
-        return jsonify(self.loader())
+        try:
+            return jsonify(self.loader())
+        except Exception:
+            return Response(json.dumps(self.loader),
+                            mimetype='application/json')
 
 
 class SwaggerDefinition(object):
