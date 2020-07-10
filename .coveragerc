@@ -13,3 +13,4 @@ exclude_lines =
     def main()
     if __name__ == .__main__.:
     except ImportError.*
+    except Exception.*
