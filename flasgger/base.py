@@ -4,7 +4,6 @@ What's the big idea?
 An endpoint that traverses all restful endpoints producing a swagger 2.0 schema
 If a swagger yaml description is found in the docstrings for an endpoint
 we add the endpoint to swagger specification output
-
 """
 import re
 import os
@@ -19,7 +18,7 @@ from collections import defaultdict
 from flask import Blueprint
 from flask import Markup
 from flask import current_app
-from flask import jsonify
+from flask import jsonify, Response
 from flask import redirect
 from flask import render_template
 from flask import request, url_for
@@ -130,7 +129,11 @@ class APISpecsView(MethodView):
         """
         The Swagger view get method outputs to /apispecs_1.json
         """
-        return jsonify(self.loader())
+        try:
+            return jsonify(self.loader())
+        except Exception:
+            return Response(json.dumps(self.loader),
+                            mimetype='application/json')
 
 
 class SwaggerDefinition(object):
