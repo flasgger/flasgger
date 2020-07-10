@@ -1,0 +1,15 @@
+[run]
+include =
+  flasgger/*.py
+
+[report]
+exclude_lines =
+    pragma: no cover
+    raise NotImplementedError.*
+    raise RuntimeError.*
+    warnings\.warn.*
+    def __repr__
+    def __str__
+    def main()
+    if __name__ == .__main__.:
+    except ImportError.*
