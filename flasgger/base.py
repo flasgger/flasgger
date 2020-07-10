@@ -3,7 +3,8 @@ What's the big idea?
 
 An endpoint that traverses all restful endpoints producing a swagger 2.0 schema
 If a swagger yaml description is found in the docstrings for an endpoint
-we add the endpoint to swagger specification output.
+we add the endpoint to swagger specification output
+
 """
 import re
 import os
@@ -131,7 +132,8 @@ class APISpecsView(MethodView):
         """
         try:
             return jsonify(self.loader())
-        except Exception:
+        except Exception as e:
+            print(e)
             return Response(json.dumps(self.loader()),
                             mimetype='application/json')
 
