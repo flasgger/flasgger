@@ -132,8 +132,7 @@ class APISpecsView(MethodView):
         """
         try:
             return jsonify(self.loader())
-        except Exception as e:
-            print(e)
+        except Exception:
             return Response(json.dumps(self.loader()),
                             mimetype='application/json')
 
