@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import pytest
 import sys
-sys.path.insert(0, '..')
 import flasgger
 import flask
+import json
 from collections import defaultdict
 
 def test_client():
@@ -19,3 +19,4 @@ def test_client():
     with app.app_context():
         specs = flasgger.base.APISpecsView(loader=lambda: {'test': 'test'})
         assert specs.get() != None
+    flask.json._json = json
