@@ -133,8 +133,8 @@ class APISpecsView(MethodView):
         try:
             return jsonify(self.loader())
         except Exception:
-            return Response(json.dumps(self.loader()), \
-                            mimetype='application/json')
+            specs = json.dumps(self.loader())
+            return Response(specs, mimetype='application/json')
 
 
 class SwaggerDefinition(object):
@@ -613,7 +613,6 @@ class Swagger(object):
                         self.get_apispecs, endpoint=spec['endpoint'])
                 ))
             )
-
         app.register_blueprint(blueprint)
 
     def add_headers(self, app):
