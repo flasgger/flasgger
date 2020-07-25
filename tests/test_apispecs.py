@@ -1,13 +1,9 @@
 #!/usr/bin/python3
 import pytest
-import os
 import sys
 sys.path.insert(0, '..')
 import flasgger
-import json
 import flask
-import tempfile
-from flask_testing import TestCase
 from collections import defaultdict
 
 def test_client():
