@@ -1,7 +1,9 @@
 
-__version__ = '0.9.4'
-__author__ = 'Bruno Rocha'
-__email__ = 'rochacbruno@gmail.com'
+__version__ = '0.9.5'
+__author__ = 'Zixuan Rao'
+__email__ = 'billrao@me.com'
+
+# Based on works of Bruno Rocha and the Flasgger open source community
 
 
 from jsonschema import ValidationError  # noqa

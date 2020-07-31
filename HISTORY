@@ -7,6 +7,14 @@ These are all the changes in Flasgger since the 0.6.0 release
 -----
 - 'swag_from' supports 'pathlib.Path'
 - Added support for OpenAPI3 parameter schema parsing [#390](https://github.com/flasgger/flasgger/pull/390)
+- Enable optional OpenAPI3 fields [#366](https://github.com/flasgger/flasgger/issues/366)
+- Fix access to local $ref definition #367
+- Add support for custom validation_function and error_handler
+- Accept pathlib.Path objects as path specification for swag_from
+- Delay RuntimeError for not installing apispec marshmallow in Schema #384
+- Ensure downward compatibility for werkzeug #391
+- Support default configuration merging #383
+- Update `swagger-ui` to `3.28.0` (improves safety)
 
 0.9.4
 -----
