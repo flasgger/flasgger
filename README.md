@@ -831,3 +831,8 @@ app.run(debug=True)
 In this example you do not have to pass `definitions` but need to add `id` to
 your schemas.
 
+## Python2 Compatibility
+
+Version `0.9.5.*` will be the last verison that supports Python2. 
+Please direct discussions to [#399](https://github.com/flasgger/flasgger/issues/399). 
+
