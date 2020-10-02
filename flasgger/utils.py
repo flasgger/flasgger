@@ -2,7 +2,6 @@
 
 import codecs
 import copy
-import imp
 import inspect
 import os
 import re
@@ -23,6 +22,11 @@ from flask.views import MethodView
 from .constants import OPTIONAL_FIELDS
 from .marshmallow_apispec import SwaggerView
 from .marshmallow_apispec import convert_schemas
+
+if sys.version_info.major < 3:
+    import imp
+else:
+    import importlib
 
 
 def merge_specs(target, source):
@@ -565,7 +569,12 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
             path = swag_path.replace(
                 (root_path or os.path.dirname(__file__)), ''
             ).split(os.sep)[1:]
-            site_package = imp.find_module(path[0])[1]
+            if sys.version_info.major < 3:
+                site_package = imp.find_module(path[0])[1]
+            else:
+                site_package = importlib.util.find_spec(
+                    path[0]
+                ).submodule_search_locations[0]
             swag_path = os.path.join(site_package, os.sep.join(path[1:]))
             with open(swag_path) as yaml_file:
                 return yaml_file.read()
