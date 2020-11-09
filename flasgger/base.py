@@ -532,6 +532,8 @@ class Swagger(object):
                     else:
                         paths[srule][key] = val
         self.apispecs[endpoint] = data
+        if is_openapi3():
+            del data['definitions']
         return data
 
     def definition(self, name, tags=None):
