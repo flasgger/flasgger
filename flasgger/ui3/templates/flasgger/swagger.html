@@ -14,6 +14,7 @@ window.onload = function() {
     url: "{{ specs[0]['url'] }}",
     dom_id: '#swagger-ui',
     validatorUrl: null,
+    displayOperationId: true,
     deepLinking: true,
     jsonEditor: true,
     {% if flasgger_config.doc_expansion -%}
