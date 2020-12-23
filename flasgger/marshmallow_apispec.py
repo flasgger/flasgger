@@ -25,7 +25,7 @@ except ImportError:
     Schema = None
     fields = None
     schema2jsonschema = lambda schema: {}  # noqa
-    schema2parameters = lambda schema: []  # noqa
+    schema2parameters = lambda schema, location: []  # noqa
     BaseAPISpec = object
 
 
@@ -125,7 +125,7 @@ def convert_schemas(d, definitions=None):
                 "$ref": "#/definitions/{0}".format(v.__name__)
             }
             if k == 'parameters':
-                new[k] = schema2parameters(v)
+                new[k] = schema2parameters(v, location="body")
                 new[k][0]['schema'] = ref
             else:
                 new[k] = ref
