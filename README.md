@@ -22,6 +22,38 @@ Flasgger is compatible with `Flask-RESTful` so you can use `Resources` and `swag
 
 Flasgger also supports `Marshmallow APISpec` as base template for specification, if you are using APISPec from Marshmallow take a look at [apispec example.](examples/apispec_example.py)
 
+Table of Contents
+=================
+
+* [Top Contributors](#top-contributors)
+* [Examples and demo app](#examples-and-demo-app)
+  * [Docker](#docker)
+* [Installation](#installation)
+* [Getting started](#getting-started)
+  * [Using docstrings as specification](#using-docstrings-as-specification)
+  * [Using external YAML files](#using-external-yaml-files)
+  * [Using dictionaries as raw specs](#using-dictionaries-as-raw-specs)
+  * [Using Marshmallow Schemas](#using-marshmallow-schemas)
+  * [Using <strong>Flask RESTful</strong> Resources](#using-flask-restful-resources)
+  * [Auto-parsing external YAML docs and MethodViews](#auto-parsing-external-yaml-docs-and-methodviews)
+  * [Handling multiple http methods and routes for a single function](#handling-multiple-http-methods-and-routes-for-a-single-function)
+* [Use the same data to validate your API POST body.](#use-the-same-data-to-validate-your-api-post-body)
+     * [Custom validation](#custom-validation)
+     * [Validation Error handling](#validation-error-handling)
+* [Get defined schemas as python dictionaries](#get-defined-schemas-as-python-dictionaries)
+* [HTML sanitizer](#html-sanitizer)
+* [Swagger UI and templates](#swagger-ui-and-templates)
+* [OpenAPI 3.0 Support](#openapi-30-support)
+  * [Externally loading Swagger UI and jQuery JS/CSS](#externally-loading-swagger-ui-and-jquery-jscss)
+* [Initializing Flasgger with default data.](#initializing-flasgger-with-default-data)
+  * [Getting default data at runtime](#getting-default-data-at-runtime)
+  * [Behind a reverse proxy](#behind-a-reverse-proxy)
+* [Customize default configurations](#customize-default-configurations)
+  * [Extracting Definitions](#extracting-definitions)
+  * [Python2 Compatibility](#python2-compatibility)
+
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
 # Top Contributors
 
 [![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/0)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/0)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/1)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/1)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/2)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/2)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/3)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/3)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/4)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/4)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/5)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/5)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/6)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/6)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/7)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/7)
