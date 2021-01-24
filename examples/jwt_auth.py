@@ -75,11 +75,12 @@ app.config["SWAGGER"] = {
     "uiversion": 3,
 }
 app.config['JWT_AUTH_URL_RULE'] = '/api/auth'
-app.config['JWT_AUTH_HEADER_NAME'] = 'JWTAuthorization'
+app.config['JWT_AUTH_HEADER_NAME'] = 'Jwtauthorization'
+app.config['JWT_AUTH_HEADER_PREFIX'] = 'Bearer'
 
 swag = Swagger(app,
     template={
-        "openapi": "3.0.0",
+        "swagger": "2.0.0",
         "info": {
             "title": "Swagger Basic Auth App",
             "version": "1.0",
