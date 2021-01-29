@@ -918,6 +918,6 @@ your schemas.
 
 ## Python2 Compatibility
 
-Version `0.9.5.*` will be the last verison that supports Python2. 
+Version `0.9.5.*` will be the last version that supports Python2. 
 Please direct discussions to [#399](https://github.com/flasgger/flasgger/issues/399). 
 
