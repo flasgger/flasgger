@@ -267,7 +267,9 @@ class Swagger(object):
                     loader = json.load
                 else:
                     def loader(stream):
-                        return yaml.safe_load(parse_imports(stream.read(), filename))
+                        return yaml.safe_load(
+                            parse_imports(stream.read(), filename)
+                        )
         with codecs.open(filename, 'r', 'utf-8') as f:
             return loader(f)
 
