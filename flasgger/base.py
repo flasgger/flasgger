@@ -33,15 +33,16 @@ except ImportError:
 import jsonschema
 from mistune import markdown
 from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
+from .utils import LazyString
 from .utils import extract_definitions
-from .utils import get_specs
 from .utils import get_schema_specs
+from .utils import get_specs
+from .utils import get_vendor_extension_fields
+from .utils import is_openapi3
 from .utils import parse_definition_docstring
 from .utils import parse_imports
-from .utils import get_vendor_extension_fields
-from .utils import validate
-from .utils import LazyString
 from .utils import swag_annotation
+from .utils import validate
 from . import __version__
 
 
@@ -365,13 +366,7 @@ class Swagger(object):
                 'securityDefinitions'
             )
 
-        def is_openapi3():
-            """
-            Returns True if openapi_version is 3
-            """
-            return openapi_version and openapi_version.split('.')[0] == '3'
-
-        if is_openapi3():
+        if is_openapi3(openapi_version):
             # enable oas3 fields when openapi_version is 3.*.*
             optional_oas3_fields = self.config.get(
                 'optional_oas3_fields') or OPTIONAL_OAS3_FIELDS
