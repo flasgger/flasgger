@@ -150,13 +150,14 @@ class SwaggerDefinition(object):
 
 class Swagger(object):
 
+    DEFAULT_ENDPOINT = 'apispec_1'
     DEFAULT_CONFIG = {
         "headers": [
         ],
         "specs": [
             {
-                "endpoint": 'apispec_1',
-                "route": '/apispec_1.json',
+                "endpoint": DEFAULT_ENDPOINT,
+                "route": '/{}.json'.format(DEFAULT_ENDPOINT),
                 "rule_filter": lambda rule: True,  # all in
                 "model_filter": lambda tag: True,  # all in
             }
@@ -310,7 +311,7 @@ class Swagger(object):
                 break
         if not spec:
             raise RuntimeError(
-                'Can`t find specs by endpoint {:d},'
+                'Can`t find specs by endpoint {},'
                 ' check your flasger`s config'.format(endpoint))
 
         data = {
