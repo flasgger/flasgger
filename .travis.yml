@@ -2,12 +2,6 @@ language: python
 
 matrix:
   include:
-    - python: 2.7
-      env: TOXENV=py27-flask010
-    - python: 2.7
-      env: TOXENV=py27-flask10
-    - python: 2.7
-      env: TOXENV=py27-flask104
     - python: 3.6
       env: TOXENV=py36-flask010
     - python: 3.6
@@ -34,9 +28,6 @@ matrix:
       sudo: true
   allow_failures:
     - env: TOXENV=py38-dev-flasklatest
-    - env: TOXENV=py27-flask010
-    - env: TOXENV=py27-flask10
-    - env: TOXENV=py27-flask104
 
 before_install:
   - pip install -r requirements.txt
