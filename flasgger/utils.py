@@ -2,7 +2,7 @@
 
 import codecs
 import copy
-import imp
+import importlib
 import inspect
 import os
 import re
@@ -583,7 +583,13 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
             path = swag_path.replace(
                 (root_path or os.path.dirname(__file__)), ''
             ).split(os.sep)[1:]
-            site_package = imp.find_module(path[0])[1]
+            package_spec = importlib.util.find_spec(path[0])
+            if package_spec.has_location:
+                # Improvement idea: Use package_spec.submodule_search_locations
+                # if we're sure there's only going to be one search location.
+                site_package = package_spec.origin.replace('/__init__.py', '')
+            else:
+                raise RuntimeError("Package does not have origin")
             swag_path = os.path.join(site_package, os.sep.join(path[1:]))
             with open(swag_path) as yaml_file:
                 return yaml_file.read()
