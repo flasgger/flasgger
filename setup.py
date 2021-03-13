@@ -60,5 +60,10 @@ setup(
         'Intended Audience :: Developers',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
-    ]
+    ],
+    entry_points={
+        'flask.commands': [
+            'generate-api-schema=flasgger.commands:generate_api_schema',
+        ],
+    },
 )
