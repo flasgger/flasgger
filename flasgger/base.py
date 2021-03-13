@@ -266,8 +266,7 @@ class Swagger(object):
                 else:
                     def loader(stream):
                         return yaml.safe_load(
-                            parse_imports(stream.read(), filename)
-                        )
+                            parse_imports(stream.read(), filename))
         with codecs.open(filename, 'r', 'utf-8') as f:
             return loader(f)
 
