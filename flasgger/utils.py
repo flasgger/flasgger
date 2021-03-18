@@ -155,18 +155,19 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
 
                 swagged = True
 
-            if doc_dir:
-                if view_class:
-                    file_path = os.path.join(
-                        doc_dir, endpoint.__name__, method.__name__ + '.yml')
-                else:
-                    file_path = os.path.join(
-                        doc_dir, endpoint.__name__ + '.yml')
-                if os.path.isfile(file_path):
-                    func = method.__func__ \
-                        if hasattr(method, '__func__') else method
-                    setattr(func, 'swag_type', 'yml')
-                    setattr(func, 'swag_path', file_path)
+            if doc_dir and isinstance(doc_dir, tuple):
+                for _dir in doc_dir:
+                    if view_class:
+                        file_path = os.path.join(
+                            _dir, endpoint.__name__, method.__name__ + '.yml')
+                    else:
+                        file_path = os.path.join(
+                            _dir, endpoint.__name__ + '.yml')
+                    if os.path.isfile(file_path):
+                        func = method.__func__ \
+                            if hasattr(method, '__func__') else method
+                        setattr(func, 'swag_type', 'yml')
+                        setattr(func, 'swag_path', file_path)
 
             doc_summary, doc_description, doc_swag = parse_docstring(
                 method, sanitizer, endpoint=rule.endpoint, verb=verb)
