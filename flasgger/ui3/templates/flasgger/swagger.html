@@ -65,6 +65,10 @@ window.onload = function() {
     
     )
 
+    {% if flasgger_config.oauth %}
+    ui.initOAuth({{ json.dumps(flasgger_config['oauth']) | safe }})
+    {%- endif %}
+    
     window.ui = ui
 
     {% if not flasgger_config.hide_top_bar -%}
