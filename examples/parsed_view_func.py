@@ -13,7 +13,7 @@ from flasgger import Swagger
 app = Flask(__name__)
 app.config['SWAGGER'] = {
     'title': 'Flasgger Parsed Method/Function View Example',
-    'doc_dir': './examples/docs/'
+    'doc_dir': ('./examples/docs/', )
 }
 swag = Swagger(
     app,
