@@ -13,7 +13,7 @@ from six import string_types, text_type
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-from collections import OrderedDict
+from collections import OrderedDict, Iterable
 from flask import Response
 from flask import abort
 from flask import current_app
@@ -155,7 +155,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
 
                 swagged = True
 
-            if doc_dir and isinstance(doc_dir, tuple):
+            if doc_dir and isinstance(doc_dir, Iterable):
                 for _dir in doc_dir:
                     if view_class:
                         file_path = os.path.join(
