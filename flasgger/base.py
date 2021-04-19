@@ -33,15 +33,16 @@ except ImportError:
 import jsonschema
 from mistune import markdown
 from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
+from .utils import LazyString
 from .utils import extract_definitions
-from .utils import get_specs
 from .utils import get_schema_specs
+from .utils import get_specs
+from .utils import get_vendor_extension_fields
+from .utils import is_openapi3
 from .utils import parse_definition_docstring
 from .utils import parse_imports
-from .utils import get_vendor_extension_fields
-from .utils import validate
-from .utils import LazyString
 from .utils import swag_annotation
+from .utils import validate
 from . import __version__
 
 
@@ -149,13 +150,14 @@ class SwaggerDefinition(object):
 
 class Swagger(object):
 
+    DEFAULT_ENDPOINT = 'apispec_1'
     DEFAULT_CONFIG = {
         "headers": [
         ],
         "specs": [
             {
-                "endpoint": 'apispec_1',
-                "route": '/apispec_1.json',
+                "endpoint": DEFAULT_ENDPOINT,
+                "route": '/{}.json'.format(DEFAULT_ENDPOINT),
                 "rule_filter": lambda rule: True,  # all in
                 "model_filter": lambda tag: True,  # all in
             }
@@ -266,8 +268,7 @@ class Swagger(object):
                 else:
                     def loader(stream):
                         return yaml.safe_load(
-                            parse_imports(stream.read(), filename)
-                        )
+                            parse_imports(stream.read(), filename))
         with codecs.open(filename, 'r', 'utf-8') as f:
             return loader(f)
 
@@ -311,7 +312,7 @@ class Swagger(object):
                 break
         if not spec:
             raise RuntimeError(
-                'Can`t find specs by endpoint {:d},'
+                'Can`t find specs by endpoint {},'
                 ' check your flasger`s config'.format(endpoint))
 
         data = {
@@ -367,13 +368,7 @@ class Swagger(object):
                 'securityDefinitions'
             )
 
-        def is_openapi3():
-            """
-            Returns True if openapi_version is 3
-            """
-            return openapi_version and openapi_version.split('.')[0] == '3'
-
-        if is_openapi3():
+        if is_openapi3(openapi_version):
             # enable oas3 fields when openapi_version is 3.*.*
             optional_oas3_fields = self.config.get(
                 'optional_oas3_fields') or OPTIONAL_OAS3_FIELDS

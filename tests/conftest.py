@@ -1,8 +1,11 @@
 import json
 import random
 
+import pytest
 from flasgger import Swagger
 from flasgger.utils import get_examples
+
+from flask import Flask
 
 
 def get_specs_data(mod):
@@ -80,3 +83,13 @@ def pytest_generate_tests(metafunc):
             test_data,
             ids=lambda x: x[0].__name__
         )
+
+
+@pytest.fixture(scope="function")
+def app():
+    yield Flask(__name__)
+
+
+@pytest.fixture(scope="function")
+def cli_runner(app):
+    yield app.test_cli_runner(mix_stderr=False)
