@@ -49,11 +49,32 @@ def random_pet():
     pet = {'category': [{'id': 1, 'name': 'rodent'}], 'name': 'Mickey'}
     return jsonify(PetSchema().dump(pet).data)
 
+@app.route("/add", methods=["POST"])
+def create_pet(body: PetSchema) :
+    """Create a cute furry animal endpoint.
+    ---
+    post:
+      description: Create a random pet
+      parameters: 
+        - in: body
+          schema: PetSchema
+      security:
+        - ApiKeyAuth: []
+      responses:
+        200:
+          content:
+            application/json:
+              schema: PetSchema
+    """
+    return jsonify(
+        {"data": body, "status": "New user created"}
+    ), 201
+
 
 template = spec.to_flasgger(
     app,
     definitions=[CategorySchema, PetSchema],
-    paths=[random_pet]
+    paths=[random_pet, create_pet]
 )
 
 """
