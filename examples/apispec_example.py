@@ -57,14 +57,18 @@ def create_pet(body: PetSchema) :
       description: Create a random pet
       parameters: 
         - in: body
-          schema: PetSchema
+          name: body
+          required: True
+          schema:
+                $ref: '#/definitions/Pet'
       security:
         - ApiKeyAuth: []
       responses:
-        200:
+        201:
+          description: If pet is created
           content:
             application/json:
-              schema: PetSchema
+              status: string
     """
     return jsonify(
         {"status": "New user created"}
@@ -86,7 +90,7 @@ template = apispec_to_template(
     app=app,
     spec=spec,
     definitions=[CategorySchema, PetSchema],
-    paths=[random_pet]
+    paths=[random_pet, create_pet]
 )
 
 """
