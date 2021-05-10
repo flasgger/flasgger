@@ -67,7 +67,7 @@ def create_pet(body: PetSchema) :
               schema: PetSchema
     """
     return jsonify(
-        {"data": body, "status": "New user created"}
+        {"status": "New user created"}
     ), 201
 
 
