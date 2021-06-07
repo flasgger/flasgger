@@ -981,7 +981,7 @@ def swag_annotation(f):
                     specs["parameters"].append({"name": variable,
                                                 "in": "path",
                                                 "type": "integer",
-                                                "minimum": "0",
+                                                "minimum": 0,
                                                 "required": True})
 
             elif issubclass(annotation, str):
