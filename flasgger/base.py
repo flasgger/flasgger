@@ -19,7 +19,7 @@ from collections import defaultdict
 from flask import Blueprint
 from flask import Markup
 from flask import current_app
-from flask import jsonify
+from flask import jsonify, Response
 from flask import redirect
 from flask import render_template
 from flask import request, url_for
@@ -144,7 +144,11 @@ class APISpecsView(MethodView):
         """
         The Swagger view get method outputs to /apispecs_1.json
         """
-        return jsonify(self.loader())
+        try:
+            return jsonify(self.loader())
+        except Exception:
+            specs = json.dumps(self.loader())
+            return Response(specs, mimetype='application/json')
 
 
 class SwaggerDefinition(object):
@@ -635,7 +639,6 @@ class Swagger(object):
                         self.get_apispecs, endpoint=spec['endpoint'])
                 ))
             )
-
         app.register_blueprint(blueprint)
 
     def add_headers(self, app):
