@@ -36,13 +36,23 @@ window.onload = function() {
             {%- else %}
                 var jwtAuthHeaderName = "Authorization";
             {%- endif %}
-            request.headers[jwtAuthHeaderName] = "Bearer " + jwt_token;
+            {% if config.JWT_AUTH_HEADER_TYPE -%}
+                var jwtAuthHeaderType = "{{ config.JWT_AUTH_HEADER_TYPE }}";
+            {%- else %}
+                var jwtAuthHeaderType = "Bearer";
+            {%- endif %}
+            request.headers[jwtAuthHeaderName] = jwtAuthHeaderType + " " + jwt_token;
         }
 
         return request;
     },
     responseInterceptor: function(response) {
-        var tokenField = 'jwt-token';
+        {% if config.JWT_AUTH_HEADER_TOKEN -%}
+            var jwtAuthHeaderToken = "{{ config.JWT_AUTH_HEADER_TOKEN }}";
+        {%- else %}
+            var jwtAuthHeaderToken = "jwt-token";
+        {%- endif %}
+        var tokenField = jwtAuthHeaderToken;
         var headers = response.headers;
 
         if (headers.hasOwnProperty(tokenField)) {
