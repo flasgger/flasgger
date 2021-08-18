@@ -2,7 +2,7 @@
 
 import codecs
 import copy
-import imp
+import importlib
 import inspect
 import os
 import re
@@ -583,7 +583,13 @@ def load_from_file(swag_path, swag_type='yml', root_path=None):
             path = swag_path.replace(
                 (root_path or os.path.dirname(__file__)), ''
             ).split(os.sep)[1:]
-            site_package = imp.find_module(path[0])[1]
+            package_spec = importlib.util.find_spec(path[0])
+            if package_spec.has_location:
+                # Improvement idea: Use package_spec.submodule_search_locations
+                # if we're sure there's only going to be one search location.
+                site_package = package_spec.origin.replace('/__init__.py', '')
+            else:
+                raise RuntimeError("Package does not have origin")
             swag_path = os.path.join(site_package, os.sep.join(path[1:]))
             with open(swag_path) as yaml_file:
                 return yaml_file.read()
@@ -710,7 +716,7 @@ def parse_definition_docstring(obj, process_doc):
         if yaml_sep != -1:
             doc_lines = process_doc(
                 full_doc[:yaml_sep - 1]
-            )
+            ) if yaml_sep else None
             swag = yaml.safe_load(full_doc[yaml_sep:])
         else:
             doc_lines = process_doc(full_doc)
@@ -1021,3 +1027,10 @@ def validate_annotation(an, var):
             return f(*args, **kwargs, **{var: payload})
         return wrapper
     return decorator
+
+
+def is_openapi3(openapi_version):
+    """
+    Returns True if openapi_version is 3
+    """
+    return openapi_version and str(openapi_version).split('.')[0] == '3'

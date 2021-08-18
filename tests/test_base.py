@@ -39,14 +39,33 @@ def test_init_config(monkeypatch):
     assert t.config == Swagger.DEFAULT_CONFIG
 
     # keys in DEFAULT_CONFIG will be overridden
-    d = {"specs": [
-        {
-            "endpoint": "swagger",
-            "route": "/characteristics/swagger.json",
-            "rule_filter": lambda rule: True,  # all in
-            "model_filter": lambda tag: True,  # all in
-        }
-    ],}
+    d = {
+        "specs": [
+            {
+                "endpoint": "swagger",
+                "route": "/characteristics/swagger.json",
+                "rule_filter": lambda rule: True,  # all in
+                "model_filter": lambda tag: True,  # all in
+            }
+        ],
+    }
     t = Swagger(config=d, merge=True)
-    assert all( t.config[k] == v for k, v in d.items() )
+    assert all(t.config[k] == v for k, v in d.items())
     assert t.config["specs"] == d["specs"]
+
+
+def test_get_apispecs_with_invalid_endpoint(app):
+    swagger = Swagger(app)
+
+    with app.app_context():
+        with pytest.raises(RuntimeError) as e:
+            bad_endpoint = "Bad endpoint"
+            swagger.get_apispecs(bad_endpoint)
+            assert bad_endpoint in e
+
+
+def test_get_apispecs_with_valid_endpoint(app):
+    swagger = Swagger(app)
+
+    with app.app_context():
+        assert swagger.get_apispecs(Swagger.DEFAULT_ENDPOINT)
