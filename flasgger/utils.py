@@ -972,10 +972,13 @@ def swag_annotation(f):
                 function = validate_annotation(annotation, variable)(function)
 
             elif issubclass(annotation, int):
-                specs["parameters"].append({"name": variable,
-                                            "in": "path",
-                                            "type": "integer",
-                                            "required": True})
+                m = {"name": variable,
+                     "in": "path",
+                     "type": "integer",
+                     "required": True}
+                if ("int(signed=True):" + variable) in args[0]:
+                    m['minimum'] = 0
+                specs["parameters"].append(m)
 
             elif issubclass(annotation, str):
                 specs["parameters"].append({"name": variable,
