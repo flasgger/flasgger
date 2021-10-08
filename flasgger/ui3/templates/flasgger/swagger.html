@@ -11,7 +11,11 @@ window.onload = function() {
     Object.assign(
     {
 
+    {% if urls %}
+    urls: {{ urls | tojson }},
+    {% else %}
     url: "{{ specs[0]['url'] }}",
+    {% endif %}
     dom_id: '#swagger-ui',
     validatorUrl: null,
     displayOperationId: true,

@@ -78,13 +78,22 @@ class APIDocsView(MethodView):
             {
                 "url": url_for(".".join((base_endpoint, spec['endpoint']))),
                 "title": spec.get('title', 'API Spec 1'),
+                "name": spec.get('name', None),
                 "version": spec.get("version", '0.0.1'),
                 "endpoint": spec.get('endpoint')
             }
             for spec in self.config.get('specs', [])
         ]
+        urls = [
+            {
+                "name": spec["name"],
+                "url": spec["url"]
+            }
+            for spec in specs if spec["name"]
+        ]
         data = {
             "specs": specs,
+            "urls": urls,
             "title": self.config.get('title', 'Flasgger')
         }
         if request.args.get('json'):
