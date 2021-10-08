@@ -416,7 +416,6 @@ if __name__ == "__main__":
 Flasgger is compatible with Flask-RESTful you only need to install `pip install flask-restful` and then:
 
 ```python
-
 from flask import Flask
 from flasgger import Swagger
 from flask_restful import Api, Resource
@@ -427,25 +426,25 @@ swagger = Swagger(app)
 
 class Username(Resource):
     def get(self, username):
-       """
-       This examples uses FlaskRESTful Resource
-       It works also with swag_from, schemas and spec_dict
-       ---
-       parameters:
-         - in: path
-           name: username
-           type: string
-           required: true
-       responses:
-         200:
-           description: A single user item
-           schema:
-             id: User
-             properties:
-               username:
-                 type: string
-                 description: The name of the user
-                 default: Steven Wilson
+        """
+        This examples uses FlaskRESTful Resource
+        It works also with swag_from, schemas and spec_dict
+        ---
+        parameters:
+          - in: path
+            name: username
+            type: string
+            required: true
+        responses:
+          200:
+            description: A single user item
+            schema:
+              id: User
+              properties:
+                username:
+                  type: string
+                  description: The name of the user
+                  default: Steven Wilson
         """
         return {'username': username}, 200
 
@@ -453,7 +452,6 @@ class Username(Resource):
 api.add_resource(Username, '/username/<username>')
 
 app.run(debug=True)
-
 ```
 
 ## Auto-parsing external YAML docs and `MethodView`s
