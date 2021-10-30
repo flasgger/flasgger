@@ -118,7 +118,7 @@ def colors(palette):
     # values here overrides the specs dict
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':
