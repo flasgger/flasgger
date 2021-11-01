@@ -25,7 +25,7 @@ def colors(palette):
     deprecated: true
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':

@@ -141,7 +141,7 @@ def colors(palette):
           rgb: ['red', 'green', 'blue']
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':
@@ -332,7 +332,7 @@ class PaletteView(SwaggerView):
         This example is using marshmallow schemas
         """
         all_colors = {
-            'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+            'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
             'rgb': ['red', 'green', 'blue']
         }
         if palette == 'all':
@@ -898,7 +898,7 @@ def colors(palette):
           rgb: ['red', 'green', 'blue']
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':
