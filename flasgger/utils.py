@@ -48,7 +48,7 @@ def merge_specs(target, source):
             target[key] = value
 
 
-def get_schema_specs(schema_id, swagger):
+def get_schema_specs(schema_id, swagger, openapi_version):
     ignore_verbs = set(
         swagger.config.get('ignore_verbs', ("HEAD", "OPTIONS")))
 
@@ -59,7 +59,7 @@ def get_schema_specs(schema_id, swagger):
     with swagger.app.app_context():
         specs = get_specs(
             current_app.url_map.iter_rules(), ignore_verbs,
-            optional_fields, swagger.sanitizer)
+            optional_fields, openapi_version, swagger.sanitizer)
 
         swags = (swag for _, verbs in specs for _, swag in verbs
                  if swag is not None)
@@ -72,7 +72,8 @@ def get_schema_specs(schema_id, swagger):
                 return swag
 
 
-def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
+def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
+              openapi_version, doc_dir=None):
 
     specs = []
     for rule in rules:
@@ -124,6 +125,8 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                 )
 
             swag = {}
+            swag_def = {}
+
             swagged = False
 
             if getattr(method, 'specs_dict', None):
@@ -132,12 +135,15 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                     swag,
                     convert_schemas(deepcopy(method.specs_dict), definition)
                 )
-                swag['definitions'] = definition
+                swag_def = definition
                 swagged = True
 
             view_class = getattr(endpoint, 'view_class', None)
             if view_class and issubclass(view_class, SwaggerView):
                 apispec_swag = {}
+
+                # Don't need to alter definitions here
+                # Since it only stays in apispec_attrs
                 apispec_attrs = optional_fields + [
                     'parameters', 'definitions', 'responses',
                     'summary', 'description'
@@ -146,12 +152,13 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                     value = getattr(view_class, attr)
                     if value:
                         apispec_swag[attr] = value
-
+                # Don't need to change 'definitions' here
+                # Since it would be appended later according to openapi
                 apispec_definitions = apispec_swag.get('definitions', {})
                 swag.update(
                     convert_schemas(apispec_swag, apispec_definitions)
                 )
-                swag['definitions'] = apispec_definitions
+                swag_def = apispec_definitions
 
                 swagged = True
 
@@ -170,6 +177,12 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
 
             doc_summary, doc_description, doc_swag = parse_docstring(
                 method, sanitizer, endpoint=rule.endpoint, verb=verb)
+
+            if is_openapi3(openapi_version):
+                swag['components'] = {'schemas': {}}
+                swag['schemas'] = swag_def
+            else:  # openapi2
+                swag['definition'] = swag_def
 
             if doc_swag:
                 merge_specs(swag, doc_swag)
@@ -436,9 +449,11 @@ def validate(
             definitions[defi['id']] = defi
 
     # support definitions informed in dict
-    if schema_id in swag.get('definitions', {}):
-        main_def = swag.get('definitions', {}).get(schema_id)
+    if schema_id in extract_schema(swag):
+        main_def = extract_schema(swag).get(schema_id)
 
+    # Doensn't need to alter 'definitions' according to open api
+    # Since it main_def exists only in this function
     main_def['definitions'] = definitions
 
     for key, value in definitions.items():
@@ -1028,3 +1043,16 @@ def is_openapi3(openapi_version):
     Returns True if openapi_version is 3
     """
     return openapi_version and str(openapi_version).split('.')[0] == '3'
+
+
+def extract_schema(openapi_version: str, spec: dict) -> dict:
+    """
+    Returns schema resources according to openapi version
+    """
+
+    if is_openapi3(openapi_version):
+        # return spec['components']['schemas']
+        return spec.get('components', {}).get('schemas', {})
+    else:  # openapi2
+        # return spec['definitions']
+        return spec.get('definitions', {})
