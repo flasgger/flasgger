@@ -2,7 +2,7 @@
 In this example `openapi` version is used instead of `swagger` version.
 """
 from flask import Flask, jsonify, request
-from flasgger import Swagger, swag_from
+from flasgger import Swagger, swag_from, utils
 
 app = Flask(__name__)
 swag = Swagger(app, config={
@@ -64,8 +64,9 @@ def test_swag(client, specs_data):
     :param client: Flask app test client
     :param specs_data: {'url': {swag_specs}} for every spec in app
     """
+    print('SPEC+'+str(specs_data))
     for url, spec in specs_data.items():
-        assert 'Pet' in spec['definitions']
+        assert 'Pet' in utils.extract_schema(spec)
 
         assert 'paths' in spec
         paths = spec['paths']
