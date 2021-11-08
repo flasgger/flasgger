@@ -97,6 +97,15 @@ pip install https://github.com/rochacbruno/flasgger/tarball/master
 
 > NOTE: If you want to use **Marshmallow Schemas** you also need to run `pip install marshmallow apispec`
 
+## How to run tests
+
+In your virtualenv:
+```
+pip requirements-dev.txt
+make test
+```
+
+
 # Getting started
 
 ## Using docstrings as specification
