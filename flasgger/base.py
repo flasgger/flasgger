@@ -43,6 +43,7 @@ from .utils import parse_definition_docstring
 from .utils import parse_imports
 from .utils import swag_annotation
 from .utils import validate
+from .utils import extract_schema
 from . import __version__
 
 
@@ -404,7 +405,8 @@ class Swagger(object):
             data.update(self.template)
 
         paths = data['paths']
-        definitions = data['definitions']
+        openapi_ver = self.config.get('openapi')
+        definitions = extract_schema(openapi_ver, data['definitions'])
         ignore_verbs = set(
             self.config.get('ignore_verbs', ("HEAD", "OPTIONS"))
         )
@@ -424,13 +426,19 @@ class Swagger(object):
         specs = get_specs(
             self.get_url_mappings(spec.get('rule_filter')), ignore_verbs,
             optional_fields, self.sanitizer,
+            openapi_version=openapi_ver,
             doc_dir=self.config.get('doc_dir'))
 
         http_methods = ['get', 'post', 'put', 'delete']
         for rule, verbs in specs:
             operations = dict()
             for verb, swag in verbs:
-                update_dict = swag.get('definitions', {})
+
+                if is_openapi3(openapi_version):
+                    update_dict = swag.get('components', {}).get('schemas', {})
+                else:  # openapi2
+                    update_dict = swag.get('definitions', {})
+
                 if type(update_dict) == list and type(update_dict[0]) == dict:
                     # pop, assert single element
                     update_dict, = update_dict
@@ -557,6 +565,10 @@ class Swagger(object):
                     else:
                         paths[srule][key] = val
         self.apispecs[endpoint] = data
+
+        if is_openapi3(openapi_version):
+            del data['definitions']
+
         return data
 
     def definition(self, name, tags=None):
@@ -693,7 +705,8 @@ class Swagger(object):
                         if request.method.lower() in apispec['paths'][path]:
                             doc = apispec['paths'][path][
                                 request.method.lower()]
-                            definitions = apispec.get('definitions', {})
+                            openapi_ver = self.config.get('openapi')
+                            definitions = extract_schema(openapi_ver, apispec)
                             break
                 if not doc:
                     return
@@ -706,7 +719,7 @@ class Swagger(object):
                     location = self.SCHEMA_LOCATIONS[param['in']]
                     if location == 'json':  # load data from 'request.json'
                         schemas[location] = param['schema']
-                        schemas[location]['definitions'] = dict(definitions)
+                        self.set_schemas(schemas, location, definitions)
                     else:
                         name = param['name']
                         if location != 'path':
@@ -741,6 +754,14 @@ class Swagger(object):
                     self.validation_error_handler(e, data, schemas[location])
 
             setattr(request, 'parsed_data', parsed_data)
+
+    def set_schemas(self, schemas: dict, location: str,
+                    definitions: dict):
+        if is_openapi3(self.config.get('openapi')):
+            schemas[location]['components'] = {'schemas':
+                                               {definitions}}
+        else:
+            schemas[location]['definitions'] = dict(definitions)
 
     def validate(
             self, schema_id, validation_function=None,
