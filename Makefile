@@ -12,7 +12,6 @@ flasgger_package:
 
 .PHONY: test
 test: pep8 flasgger_package
-	@pip install -r requirements-dev.txt
 	@py.test tests -s -vv --cov --cov-config=.coveragerc --doctest-modules flasgger
 
 .PHONY: sdist
