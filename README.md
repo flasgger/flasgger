@@ -97,24 +97,6 @@ pip install https://github.com/rochacbruno/flasgger/tarball/master
 
 > NOTE: If you want to use **Marshmallow Schemas** you also need to run `pip install marshmallow apispec`
 
-## How to run tests
-
-You may check the settings in .travis.yml
-Example:
-```
-before_install:
-  - pip install -r requirements.txt
-  - pip install -r requirements-dev.txt
-  - python setup.py check --strict
-
-script:
-  - make test
-
-after_success:
-  - coveralls
-```
-
-
 # Getting started
 
 ## Using docstrings as specification
@@ -936,4 +918,3 @@ your schemas.
 
 Version `0.9.5.*` will be the last verison that supports Python2. 
 Please direct discussions to [#399](https://github.com/flasgger/flasgger/issues/399). 
-
