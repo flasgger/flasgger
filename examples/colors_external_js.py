@@ -4,7 +4,7 @@ The simple example using declared definitions, and external static js/css.
 
 from flask import Flask, jsonify
 
-from flasgger import Swagger, utils
+from flasgger import Swagger
 
 app = Flask(__name__)
 app.config['SWAGGER'] = {
@@ -84,8 +84,8 @@ def test_swag(client, specs_data):
     :param specs_data: {'url': {swag_specs}} for every spec in app
     """
     for url, spec in specs_data.items():
-        assert 'Palette' in utils.extract_schema(spec)
-        assert 'Color' in utils.extract_schema(spec)
+        assert 'Palette' in spec['definitions']
+        assert 'Color' in spec['definitions']
         assert 'colors' in spec['paths']['/colors/{palette}/']['get']['tags']
 
 

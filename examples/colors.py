@@ -80,8 +80,8 @@ def test_swag(client, specs_data):
     :param specs_data: {'url': {swag_specs}} for every spec in app
     """
     for url, spec in specs_data.items():
-        assert 'Palette' in utils.extract_schema(spec)
-        assert 'Color' in utils.extract_schema(spec)
+        assert 'Palette' in spec['definitions']
+        assert 'Color' in spec['definitions']
         assert 'colors' in spec['paths']['/colors/{palette}/']['get']['tags']
 
 

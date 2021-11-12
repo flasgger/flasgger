@@ -4,7 +4,7 @@ Test the use of LazyString to populate a template at runtime.
 
 from flask import Flask, jsonify, request
 
-from flasgger import Swagger, LazyString, LazyJSONEncoder, utils
+from flasgger import Swagger, LazyString, LazyJSONEncoder
 
 app = Flask(__name__)
 
@@ -97,8 +97,8 @@ def test_swag(client, specs_data):
     :param specs_data: {'url': {swag_specs}} for every spec in app
     """
     for url, spec in specs_data.items():
-        assert 'Palette' in utils.extract_schema(spec)
-        assert 'Color' in utils.extract_schema(spec)
+        assert 'Palette' in spec['definitions']
+        assert 'Color' in spec['definitions']
         assert 'colors' in spec['paths']['/colors/{palette}/']['get']['tags']
         assert spec['schemes'] == ['http']
         assert spec['foo'] == 'Bar'
