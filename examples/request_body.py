@@ -44,7 +44,7 @@ def request_body_endpoint():
         content:
             application/json:
                 schema:
-                    $ref: '#/definitions/Pet'
+                    $ref: '#/components/schemas/Pet'
         required: true
     responses:
         200:
@@ -52,7 +52,7 @@ def request_body_endpoint():
             content:
                 application/json:
                     schema:
-                        $ref: '#/definitions/Pet'
+                        $ref: '#/components/schemas/Pet'
     """
     return jsonify(request.json)
 
