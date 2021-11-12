@@ -668,10 +668,7 @@ def parse_docstring(obj, process_doc, endpoint=None, verb=None):
         if yaml_sep != -1:
             line_feed = full_doc.find('\n')
             if line_feed != -1:
-                try:
-                    first_line = process_doc(full_doc[:line_feed])
-                except Exception as e:
-                    print(str(e))
+                first_line = process_doc(full_doc[:line_feed])
                 other_lines = process_doc(
                     full_doc[line_feed + 1: yaml_sep]
                 )
