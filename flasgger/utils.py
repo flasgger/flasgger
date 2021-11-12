@@ -13,7 +13,7 @@ from six import string_types, text_type
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from flask import Response
 from flask import abort
 from flask import current_app
@@ -48,7 +48,7 @@ def merge_specs(target, source):
             target[key] = value
 
 
-def get_schema_specs(schema_id, swagger, openapi_version):
+def get_schema_specs(schema_id, swagger):
     ignore_verbs = set(
         swagger.config.get('ignore_verbs', ("HEAD", "OPTIONS")))
 
@@ -56,10 +56,12 @@ def get_schema_specs(schema_id, swagger, openapi_version):
     optional_fields \
         = swagger.config.get('optional_fields') or OPTIONAL_FIELDS
 
+    openapi_version=swagger.config.get('openapi')
+
     with swagger.app.app_context():
         specs = get_specs(
             current_app.url_map.iter_rules(), ignore_verbs,
-            optional_fields, openapi_version, swagger.sanitizer)
+            optional_fields, swagger.sanitizer, openapi_version)
 
         swags = (swag for _, verbs in specs for _, swag in verbs
                  if swag is not None)
@@ -179,10 +181,9 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
                 method, sanitizer, endpoint=rule.endpoint, verb=verb)
 
             if is_openapi3(openapi_version):
-                swag['components'] = {'schemas': {}}
-                swag['schemas'] = swag_def
+                swag.setdefault('components',{})['schemas']=swag_def
             else:  # openapi2
-                swag['definition'] = swag_def
+                swag['definitions'] = swag_def
 
             if doc_swag:
                 merge_specs(swag, doc_swag)
@@ -354,7 +355,7 @@ def __replace_ref(schema, relative_path, swag):
 def validate(
         data=None, schema_id=None, filepath=None, root=None, definition=None,
         specs=None, validation_function=None, validation_error_handler=None,
-        require_data=True):
+        require_data=True, openapi_version=None):
     """
     This method is available to use YAML swagger definitions file
     or specs (dict or object) to validate data against its jsonschema.
@@ -427,7 +428,8 @@ def validate(
 
     definitions = {}
     main_def = {}
-    raw_definitions = extract_definitions(params, endpoint=endpoint, verb=verb)
+    raw_definitions = extract_definitions(params, endpoint=endpoint, verb=verb,
+                                          openapi_version=openapi_version)
 
     if schema_id is None:
         for param in params:
@@ -666,7 +668,10 @@ def parse_docstring(obj, process_doc, endpoint=None, verb=None):
         if yaml_sep != -1:
             line_feed = full_doc.find('\n')
             if line_feed != -1:
-                first_line = process_doc(full_doc[:line_feed])
+                try:
+                    first_line = process_doc(full_doc[:line_feed])
+                except Exception as e:
+                    print(str(e))
                 other_lines = process_doc(
                     full_doc[line_feed + 1: yaml_sep]
                 )
@@ -753,7 +758,7 @@ def parse_imports(full_doc, root_path=None):
 
 
 def extract_definitions(alist, level=None, endpoint=None, verb=None,
-                        prefix_ids=False):
+                        prefix_ids=False, openapi_version=None):
     """
     Since we couldn't be bothered to register models elsewhere
     our definitions need to be extracted from the parameters.
@@ -774,7 +779,8 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
         items = source.get('items')
         if items is not None and 'schema' in items:
             ret += extract_definitions(
-                [items], level + 1, endpoint, verb, prefix_ids)
+                [items], level + 1, endpoint, verb, prefix_ids,
+                openapi_version)
         return ret
 
     # for tracking level of recursion
@@ -798,7 +804,14 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
                 # ... for backwards compatibility with <= 0.5.14
 
                 defs.append(schema)
-                ref = {"$ref": "#/definitions/{}".format(schema_id)}
+
+                ref_path = None
+                if is_openapi3(openapi_version):
+                    ref_path = "#/components/schemas/"
+                else:
+                    ref_path = "#/definitions/"
+                ref = {"$ref": "{}{}".format(ref_path, schema_id)}
+
                 # only add the reference as a schema if we are in a
                 # response or a parameter i.e. at the top level
                 # directly ref if a definition is used within another
@@ -814,7 +827,8 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
             properties = schema.get('properties')
             if properties is not None:
                 defs += extract_definitions(
-                    properties.values(), level + 1, endpoint, verb, prefix_ids)
+                    properties.values(), level + 1, endpoint, verb, prefix_ids,
+                    openapi_version)
 
             defs += _extract_array_defs(schema)
 
@@ -1031,6 +1045,7 @@ def validate_annotation(an, var):
                     validation_function=an.swag_validation_function,
                     validation_error_handler=an.swag_validation_error_handler,
                     require_data=an.swag_require_data
+                    # handle openapiversion later
                 )
 
             return f(*args, **kwargs, **{var: payload})
@@ -1045,14 +1060,13 @@ def is_openapi3(openapi_version):
     return openapi_version and str(openapi_version).split('.')[0] == '3'
 
 
-def extract_schema(openapi_version: str, spec: dict) -> dict:
+def extract_schema(spec: dict) -> defaultdict:
     """
     Returns schema resources according to openapi version
     """
-
+    openapi_version=spec.get('openapi', None)
     if is_openapi3(openapi_version):
-        # return spec['components']['schemas']
-        return spec.get('components', {}).get('schemas', {})
+        return spec.get('components', {}
+                        ).get('schemas', defaultdict(dict))
     else:  # openapi2
-        # return spec['definitions']
-        return spec.get('definitions', {})
+        return spec.get('definitions', defaultdict(dict))

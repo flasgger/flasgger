@@ -365,6 +365,11 @@ class Swagger(object):
         }
 
         openapi_version = self.config.get('openapi')
+
+        # If it's openapi3, #/components/schemas replaces #/definitions
+        if is_openapi3(openapi_version):
+            data.setdefault('components',{})['schemas']=data['definitions']
+
         if openapi_version:
             data["openapi"] = openapi_version
         else:
@@ -405,8 +410,7 @@ class Swagger(object):
             data.update(self.template)
 
         paths = data['paths']
-        openapi_ver = self.config.get('openapi')
-        definitions = extract_schema(openapi_ver, data['definitions'])
+        definitions = extract_schema(data)
         ignore_verbs = set(
             self.config.get('ignore_verbs', ("HEAD", "OPTIONS"))
         )
@@ -426,7 +430,7 @@ class Swagger(object):
         specs = get_specs(
             self.get_url_mappings(spec.get('rule_filter')), ignore_verbs,
             optional_fields, self.sanitizer,
-            openapi_version=openapi_ver,
+            openapi_version=openapi_version,
             doc_dir=self.config.get('doc_dir'))
 
         http_methods = ['get', 'post', 'put', 'delete']
@@ -446,7 +450,8 @@ class Swagger(object):
                 defs = []  # swag.get('definitions', [])
                 defs += extract_definitions(
                     defs, endpoint=rule.endpoint, verb=verb,
-                    prefix_ids=prefix_ids
+                    prefix_ids=prefix_ids,
+                    openapi_version=openapi_version
                 )
 
                 params = swag.get('parameters', [])
@@ -458,7 +463,8 @@ class Swagger(object):
                 defs += extract_definitions(params,
                                             endpoint=rule.endpoint,
                                             verb=verb,
-                                            prefix_ids=prefix_ids)
+                                            prefix_ids=prefix_ids,
+                                            openapi_version=openapi_version)
 
                 request_body = swag.get('requestBody')
                 if request_body:
@@ -467,7 +473,8 @@ class Swagger(object):
                         list(content.values()),
                         endpoint=rule.endpoint,
                         verb=verb,
-                        prefix_ids=prefix_ids
+                        prefix_ids=prefix_ids,
+                        openapi_version=openapi_version
                     )
 
                 callbacks = swag.get("callbacks", {})
@@ -480,7 +487,8 @@ class Swagger(object):
                         list(callbacks.values()),
                         endpoint=rule.endpoint,
                         verb=verb,
-                        prefix_ids=prefix_ids
+                        prefix_ids=prefix_ids,
+                        openapi_version=openapi_version
                     )
 
                 responses = None
@@ -495,7 +503,8 @@ class Swagger(object):
                             responses.values(),
                             endpoint=rule.endpoint,
                             verb=verb,
-                            prefix_ids=prefix_ids
+                            prefix_ids=prefix_ids,
+                            openapi_version=openapi_version
                         )
                     for definition in defs:
                         if 'id' not in definition:
@@ -705,8 +714,7 @@ class Swagger(object):
                         if request.method.lower() in apispec['paths'][path]:
                             doc = apispec['paths'][path][
                                 request.method.lower()]
-                            openapi_ver = self.config.get('openapi')
-                            definitions = extract_schema(openapi_ver, apispec)
+                            definitions = extract_schema(apispec)
                             break
                 if not doc:
                     return
@@ -811,7 +819,9 @@ class Swagger(object):
                 validate(
                     schema_id=schema_id, specs=specs,
                     validation_function=validation_function,
-                    validation_error_handler=validation_error_handler)
+                    validation_error_handler=validation_error_handler,
+                    openapi_version=self.config.get('openapi')
+                    )
                 return func(*args, **kwargs)
 
             return wrapper
