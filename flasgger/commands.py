@@ -36,8 +36,7 @@ def generate_api_schema(file, endpoint):
 
     # See also: https://github.com/flasgger/flasgger/issues/267
     if is_openapi3(spec.get("openapi")):
-        if "definitions" in spec:
-            del spec["definitions"]
+        del spec["definitions"]
 
     json.dump(spec, file, indent=4)
 
