@@ -368,7 +368,7 @@ class Swagger(object):
 
         # If it's openapi3, #/components/schemas replaces #/definitions
         if is_openapi3(openapi_version):
-            data.setdefault('components',{})['schemas']=data['definitions']
+            data.setdefault('components', {})['schemas'] = data['definitions']
 
         if openapi_version:
             data["openapi"] = openapi_version
@@ -821,7 +821,7 @@ class Swagger(object):
                     validation_function=validation_function,
                     validation_error_handler=validation_error_handler,
                     openapi_version=self.config.get('openapi')
-                    )
+                )
                 return func(*args, **kwargs)
 
             return wrapper

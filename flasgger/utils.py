@@ -56,7 +56,7 @@ def get_schema_specs(schema_id, swagger):
     optional_fields \
         = swagger.config.get('optional_fields') or OPTIONAL_FIELDS
 
-    openapi_version=swagger.config.get('openapi')
+    openapi_version = swagger.config.get('openapi')
 
     with swagger.app.app_context():
         specs = get_specs(
@@ -181,7 +181,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
                 method, sanitizer, endpoint=rule.endpoint, verb=verb)
 
             if is_openapi3(openapi_version):
-                swag.setdefault('components',{})['schemas']=swag_def
+                swag.setdefault('components', {})['schemas'] = swag_def
             else:  # openapi2
                 swag['definitions'] = swag_def
 
@@ -1064,7 +1064,7 @@ def extract_schema(spec: dict) -> defaultdict:
     """
     Returns schema resources according to openapi version
     """
-    openapi_version=spec.get('openapi', None)
+    openapi_version = spec.get('openapi', None)
     if is_openapi3(openapi_version):
         return spec.get('components', {}
                         ).get('schemas', defaultdict(dict))
