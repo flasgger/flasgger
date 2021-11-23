@@ -723,7 +723,6 @@ class Swagger(object):
                 schemas = defaultdict(
                     lambda: {'type': 'object', 'properties': defaultdict(dict)}
                 )
-
                 self.update_schemas_parsers(doc, schemas, parsers, definitions)
                 self.schemas[path_key] = schemas
                 self.parsers[path_key] = parsers
