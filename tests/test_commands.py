@@ -47,6 +47,5 @@ def test_definitions_is_removed_for_openapi_3(app, cli_runner):
     Swagger(app)
 
     result = cli_runner.invoke(generate_api_schema)
-
     assert result.exit_code == 0
     assert "definitions" not in json.loads(result.output)

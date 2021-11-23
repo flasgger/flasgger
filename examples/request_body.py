@@ -44,7 +44,7 @@ def request_body_endpoint():
         content:
             application/json:
                 schema:
-                    $ref: '#/definitions/Pet'
+                    $ref: '#/components/schemas/Pet'
         required: true
     responses:
         200:
@@ -52,7 +52,7 @@ def request_body_endpoint():
             content:
                 application/json:
                     schema:
-                        $ref: '#/definitions/Pet'
+                        $ref: '#/components/schemas/Pet'
     """
     return jsonify(request.json)
 
@@ -64,8 +64,9 @@ def test_swag(client, specs_data):
     :param client: Flask app test client
     :param specs_data: {'url': {swag_specs}} for every spec in app
     """
+    print('SPEC+'+str(specs_data))
     for url, spec in specs_data.items():
-        assert 'Pet' in spec['definitions']
+        assert 'Pet' in spec['components']['schemas']
 
         assert 'paths' in spec
         paths = spec['paths']

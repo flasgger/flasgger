@@ -4,7 +4,7 @@ The simple example using declared definitions.
 
 from flask import Flask, jsonify
 
-from flasgger import Swagger
+from flasgger import Swagger, utils
 
 app = Flask(__name__)
 app.config['SWAGGER'] = {

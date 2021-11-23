@@ -15,6 +15,7 @@ from flasgger import SwaggerView
 from flasgger import fields
 from flasgger import swag_from
 from flasgger import validate
+from flasgger import utils
 
 # Examples include intentionally invalid defaults to demonstrate validation.
 _TEST_META_SKIP_FULL_VALIDATION = True
@@ -436,7 +437,7 @@ def test_swag(client, specs_data):
 
     assert paths is not None and len(paths) > 0
 
-    definitions = apispec.get('definitions')
+    definitions = utils.extract_schema(apispec)
 
     assert definitions is not None
     assert definitions.get('User') is not None
