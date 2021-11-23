@@ -723,32 +723,9 @@ class Swagger(object):
                 schemas = defaultdict(
                     lambda: {'type': 'object', 'properties': defaultdict(dict)}
                 )
-                for param in doc.get('parameters', []):
-                    location = self.SCHEMA_LOCATIONS[param['in']]
-                    if location == 'json':  # load data from 'request.json'
-                        schemas[location] = param['schema']
-                        self.set_schemas(schemas, location, definitions)
-                    else:
-                        name = param['name']
-                        if location != 'path':
-                            parsers[location].add_argument(
-                                name,
-                                type=self.SCHEMA_TYPES[
-                                    param['schema'].get('type', None)
-                                    if 'schema' in param
-                                    else param.get('type', None)],
-                                required=param.get('required', False),
-                                location=self.SCHEMA_LOCATIONS[
-                                    param['in']],
-                                store_missing=False)
-
-                        for k in param:
-                            if k != 'required':
-                                schemas[
-                                    location]['properties'][name][k] = param[k]
-
-                    self.schemas[path_key] = schemas
-                    self.parsers[path_key] = parsers
+                self.update_schemas_parsers(doc, schemas, parsers, definitions)
+                self.schemas[path_key] = schemas
+                self.parsers[path_key] = parsers
 
             parsed_data = {'path': request.view_args}
             for location in parsers.keys():
@@ -757,17 +734,78 @@ class Swagger(object):
                 parsed_data['json'] = request.json or {}
             for location, data in parsed_data.items():
                 try:
-                    self.validation_function(data, schemas[location])
+                    ret = self.validation_function(data, schemas[location])
+                    print(ret)
                 except jsonschema.ValidationError as e:
                     self.validation_error_handler(e, data, schemas[location])
 
             setattr(request, 'parsed_data', parsed_data)
 
+    def update_schemas_parsers(self, doc, schemas, parsers, definitions):
+        '''
+        Schemas and parsers would be updated here from doc
+        '''
+        if self.is_openapi3():
+            # 'json' to comply with self.SCHEMA_LOCATIONS's {'body':'json'}
+            location = 'json'
+            json_schema = None
+
+            # For openapi3, currently only support single schema
+            for name, value in doc.get('requestBody', {}).get('content', {})\
+                    .items():
+                if 'application/json' in name:
+                    # `$ref` to json, lookup in #/components/schema
+                    json_schema = value.get('schema', {})
+                else:  # schema set in requesty body
+                    # Since osa3 might changed, repeat openapi2's code
+                    parsers[location].add_argument(
+                        name,
+                        type=self.SCHEMA_TYPES[
+                            value['schema'].get('type', None)
+                            if 'schema' in value
+                            else value.get('type', None)],
+                        required=value.get('required', False),
+
+                        # Parsed in body
+                        location=self.SCHEMA_LOCATIONS['body'],
+                        store_missing=False
+                    )
+
+            # TODO support anyOf and oneOf in the future
+            if (json_schema is not None) and type(json_schema) == dict:
+
+                schemas[location] = json_schema
+                self.set_schemas(schemas, location, definitions)
+
+        else:  # openapi2
+            for param in doc.get('parameters', []):
+                location = self.SCHEMA_LOCATIONS[param['in']]
+                if location == 'json':  # load data from 'request.json'
+                    schemas[location] = param['schema']
+                    self.set_schemas(schemas, location, definitions)
+                else:
+                    name = param['name']
+                    if location != 'path':
+                        parsers[location].add_argument(
+                            name,
+                            type=self.SCHEMA_TYPES[
+                                param['schema'].get('type', None)
+                                if 'schema' in param
+                                else param.get('type', None)],
+                            required=param.get('required', False),
+                            location=self.SCHEMA_LOCATIONS[
+                                param['in']],
+                            store_missing=False)
+
+                    for k in param:
+                        if k != 'required':
+                            schemas[
+                                location]['properties'][name][k] = param[k]
+
     def set_schemas(self, schemas: dict, location: str,
                     definitions: dict):
         if is_openapi3(self.config.get('openapi')):
-            schemas[location]['components'] = {'schemas':
-                                               {definitions}}
+            schemas[location]['components'] = {'schemas': dict(definitions)}
         else:
             schemas[location]['definitions'] = dict(definitions)
 
@@ -848,6 +886,9 @@ class Swagger(object):
                 schema_specs['parameters']):
             if schema is not None and schema.get('id').lower() == schema_id:
                 return schema
+
+    def is_openapi3(self):
+        return is_openapi3(self.config.get('openapi'))
 
 
 # backwards compatibility
