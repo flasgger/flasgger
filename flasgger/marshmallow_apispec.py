@@ -53,9 +53,9 @@ except ImportError:
 
 def check_openapi_version():
     if (
-        not current_app
-        or not hasattr(current_app, 'swag')
-        or getattr(openapi_converter, 'configured', False)
+        not current_app or not hasattr(
+            current_app, 'swag'
+        ) or getattr(openapi_converter, 'configured', False)
     ):
         return
     openapi_converter.openapi_version = OpenAPIVersion(
