@@ -104,6 +104,7 @@ In your virtualenv:
 
 ```
 pip install -r requirements.txt
+```
 
 ```
 pip requirements-dev.txt
