@@ -99,7 +99,8 @@ pip install https://github.com/rochacbruno/flasgger/tarball/master
 
 ## How to run tests
 
-(You may see the command in .travis.yml for "-before install" part)
+(You may see the command in [.travis.yml](./.travis.yml) for `before_install` part)
+
 In your virtualenv:
 
 ```
