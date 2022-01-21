@@ -99,14 +99,13 @@ pip install https://github.com/rochacbruno/flasgger/tarball/master
 
 ## How to run tests
 
-(You may see the command in .travis.yml for "-before install" part)
+(You may see the command in [.travis.yml](./.travis.yml) for `before_install` part)
+
 In your virtualenv:
 
 ```
 pip install -r requirements.txt
-
-```
-pip requirements-dev.txt
+pip install -r requirements-dev.txt
 make test
 ```
 
@@ -844,7 +843,7 @@ app.json_encoder = LazyJSONEncoder
 template = dict(swaggerUiPrefix=LazyString(lambda : request.environ.get('HTTP_X_SCRIPT_NAME', '')))
 swagger = Swagger(app, template=template)
 
-``` 
+```
 
 # Customize default configurations
 
@@ -929,6 +928,6 @@ your schemas.
 
 ## Python2 Compatibility
 
-Version `0.9.5.*` will be the last verison that supports Python2. 
-Please direct discussions to [#399](https://github.com/flasgger/flasgger/issues/399). 
+Version `0.9.5.*` will be the last verison that supports Python2.
+Please direct discussions to [#399](https://github.com/flasgger/flasgger/issues/399).
 
