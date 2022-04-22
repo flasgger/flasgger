@@ -734,7 +734,7 @@ class Swagger(object):
                 parsed_data['json'] = request.json or {}
             for location, data in parsed_data.items():
                 try:
-                    ret = self.validation_function(data, schemas[location])
+                    self.validation_function(data, schemas[location])
                 except jsonschema.ValidationError as e:
                     self.validation_error_handler(e, data, schemas[location])
 
