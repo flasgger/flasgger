@@ -519,6 +519,8 @@ class Swagger(object):
                     operation['summary'] = swag.get('summary')
                 if swag.get('description'):
                     operation['description'] = swag.get('description')
+                if swag.get('x-codeSamples'):
+                    operation['x-codeSamples'] = swag.get('x-codeSamples')
                 if request_body:
                     operation['requestBody'] = request_body
                 if callbacks:
