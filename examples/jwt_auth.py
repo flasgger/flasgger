@@ -31,10 +31,9 @@ protect your Flasgger page in order to prevent unauthorized access to it by
 using basic HTTP auth on some web-server you will have to.
 """
 
-
+import hmac
 from flask import Flask, jsonify, request
 from flask_jwt import JWT, jwt_required, current_identity, JWTError
-from werkzeug.security import safe_str_cmp
 from flasgger import Swagger
 
 
@@ -58,7 +57,7 @@ userid_table = {u.id: u for u in users}
 
 def authenticate(username, password):
     user = username_table.get(username, None)
-    if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
+    if user and hmac.compare_digest(user.password.encode('utf-8'), password.encode('utf-8')):
         return user
 
 
