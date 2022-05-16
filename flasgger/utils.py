@@ -148,7 +148,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
                 # Since it only stays in apispec_attrs
                 apispec_attrs = optional_fields + [
                     'parameters', 'definitions', 'responses',
-                    'summary', 'description'
+                    'summary', 'description', 'requestBody'
                 ]
                 for attr in apispec_attrs:
                     value = getattr(view_class, attr)

@@ -70,6 +70,7 @@ class SwaggerView(MethodView):
     """
     A Swagger view
     """
+    requestBody = {}
     parameters = []
     responses = {}
     definitions = {}
@@ -95,7 +96,7 @@ class SwaggerView(MethodView):
             specs = {}
             attrs = flasgger.constants.OPTIONAL_FIELDS + [
                 'parameters', 'definitions', 'responses',
-                'summary', 'description'
+                'summary', 'description', 'requestBody'
             ]
             for attr in attrs:
                 specs[attr] = getattr(self, attr)
