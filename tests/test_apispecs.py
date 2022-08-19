@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 import pytest
 import sys
-import flasgger
+import flask_openapi
 import flask
 import json
 from collections import defaultdict
@@ -15,8 +15,8 @@ def test_client():
             raise TypeError
     flask.json._json = FakeJson()
     app = flask.Flask('test-app')
-    flasgger.base.jsonify = flask.jsonify
+    flask_openapi.base.jsonify = flask.jsonify
     with app.app_context():
-        specs = flasgger.base.APISpecsView(loader=lambda: {'test': 'test'})
+        specs = flask_openapi.base.APISpecsView(loader=lambda: {'test': 'test'})
         assert specs.get() != None
     flask.json._json = json

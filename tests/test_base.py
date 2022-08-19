@@ -1,5 +1,5 @@
 import pytest
-from flasgger.base import Swagger
+from flask_openapi.base import Swagger
 
 
 def test_init_config(monkeypatch):

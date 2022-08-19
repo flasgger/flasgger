@@ -1,7 +1,7 @@
 import json
 
-from flasgger.base import Swagger
-from flasgger.commands import generate_api_schema
+from flask_openapi.base import Swagger
+from flask_openapi.commands import generate_api_schema
 
 
 def test_default_specs(app, cli_runner):

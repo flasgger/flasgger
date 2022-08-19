@@ -17,9 +17,9 @@ def desc():
     return read('README.md')
 
 
-# grep flasgger/__init__.py since python 3.x cannot
+# grep flask_openapi/__init__.py since python 3.x cannot
 # import it before using 2to3
-file_text = read(fpath('flasgger/__init__.py'))
+file_text = read(fpath('flask_openapi/__init__.py'))
 
 
 def grep(attrname):
@@ -29,13 +29,13 @@ def grep(attrname):
 
 
 setup(
-    name='flasgger',
+    name='Flask-OpenAPI',
     version=grep('__version__'),
-    url='https://github.com/flasgger/flasgger/',
+    url='https://github.com/overflowdigital/Flask-OpenAPI/',
     license='MIT',
     author=grep('__author__'),
     author_email=grep('__email__'),
-    description='Extract swagger specs from your flask project',
+    description='Next generation OpenAPI v3 Integration for Flask based APIs. Based on Flasgger.',
     long_description=desc(),
     long_description_content_type="text/markdown",
     packages=find_packages(

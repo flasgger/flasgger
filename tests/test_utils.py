@@ -1,4 +1,4 @@
-from flasgger.utils import is_openapi3
+from flask_openapi.utils import is_openapi3
 
 
 def test_isopenapi_3_false():
