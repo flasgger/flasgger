@@ -1,7 +1,7 @@
 
-__version__ = '0.9.5'
-__author__ = 'Zixuan Rao'
-__email__ = 'billrao@me.com'
+__version__ = '1.0.0'
+__author__ = 'Overflow Digital'
+__email__ = 'team@overflow.digital'
 
 # Based on works of Bruno Rocha and the Flasgger open source community
 

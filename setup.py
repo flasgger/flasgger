@@ -50,11 +50,11 @@ setup(
     zip_safe=False,
     platforms='any',
     install_requires=[
-        'Flask>=0.10',
-        'PyYAML>=3.0',
-        'jsonschema>=3.0.1',
+        'Flask',
+        'PyYAML',
+        'jsonschema',
         'mistune',
-        'six>=1.10.0'
+        'six'
     ],
     classifiers=[
         'Intended Audience :: Developers',

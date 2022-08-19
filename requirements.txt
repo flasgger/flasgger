@@ -1,7 +1,7 @@
 # required
-Flask>=0.10
-PyYAML>=3.0
-jsonschema>=3.0.1
-six>=1.10.0
+Flask
+PyYAML
+jsonschema
+six
 mistune
 werkzeug

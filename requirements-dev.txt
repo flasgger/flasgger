@@ -1,23 +1,23 @@
 # optional (for dev)
 marshmallow
-apispec>=1.0.0b5
+apispec
 apispec-webframeworks
 flask-restful
-pep8==1.7.1
-flake8==3.8.4
-pytest>=4.6
+pep8
+flake8
+pytest
 flex
 coveralls
 pytest-cov
 decorator
 wheel
 flask-jwt
-twine>=1.11.0
+twine
 
 # for pypi markdown support
 readme_renderer
-setuptools>=40.4.2
+setuptools
 
-# install flasgger itself as editable
+# install Flask-OpenAPI itself as editable
 -e .
--e etc/flasgger_package
+-e etc/flask_openapi_package
