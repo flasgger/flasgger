@@ -2,13 +2,13 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    {% include 'flasgger/head.html' %}
+    {% include 'flask_openapi/head.html' %}
     <!-- To add custom code here override the template templates/flasgger/custom_head.html -->
-    {% include 'flasgger/custom_head.html' %}
+    {% include 'flask_openapi/custom_head.html' %}
   </head>
 
   <body>
-      {% include 'flasgger/top.html' %}
+      {% include 'flask_openapi/top.html' %}
 
       <div id="swagger-ui">
           <div data-reactroot="" class="swagger-ui">
@@ -25,12 +25,12 @@
 
     <div id="swagger-ui"></div>
 
-    {% include 'flasgger/body_scripts.html' %}
+    {% include 'flask_openapi/body_scripts.html' %}
 
   <!-- To customize the script that loads swagger, override templates/flasgger/swagger.html -->
-  {% include 'flasgger/swagger.html' %}
+  {% include 'flask_openapi/swagger.html' %}
 
   <!-- To customize the footer and include custom script on templates/flasgger/footer.html -->
-  {% include 'flasgger/footer.html' %}
+  {% include 'flask_openapi/footer.html' %}
   </body>
 </html>

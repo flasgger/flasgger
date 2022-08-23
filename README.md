@@ -477,7 +477,7 @@ Additionally, when using **Flask RESTful** per above, by passing `parse=True` wh
 You can separate specifications by endpoint or methods
 
 ```python
-from flasgger.utils import swag_from
+from flask_openapi.utils import swag_from
 
 @app.route('/api/<string:username>', endpoint='with_user_name', methods=['PUT', 'GET'])
 @app.route('/api/', endpoint='without_user_name')

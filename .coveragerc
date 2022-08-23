@@ -1,6 +1,6 @@
 [run]
 include =
-  flasgger/*.py
+  flask_openapi/*.py
 
 [report]
 exclude_lines =

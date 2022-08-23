@@ -6,45 +6,38 @@ If a swagger yaml description is found in the docstrings for an endpoint
 we add the endpoint to swagger specification output
 
 """
-import re
-import os
 import codecs
+import os
+import re
+
 import yaml
+
 try:
     import simplejson as json
 except ImportError:
     import json
-from functools import wraps, partial
+
 from collections import defaultdict
-from flask import Blueprint
-from flask import Markup
-from flask import current_app
-from flask import jsonify, Response
-from flask import redirect
-from flask import render_template
-from flask import request, url_for
-from flask import abort
-from flask.views import MethodView
+from functools import partial, wraps
+
+from flask import (abort, Blueprint, current_app, jsonify, Markup, redirect,
+                   render_template, request, Response, url_for)
 from flask.json import JSONEncoder
+from flask.views import MethodView
+
 try:
     from flask_restful.reqparse import RequestParser
 except ImportError:
     RequestParser = None
 import jsonschema
 from mistune import markdown
-from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
-from .utils import LazyString
-from .utils import extract_definitions
-from .utils import get_schema_specs
-from .utils import get_specs
-from .utils import get_vendor_extension_fields
-from .utils import is_openapi3
-from .utils import parse_definition_docstring
-from .utils import parse_imports
-from .utils import swag_annotation
-from .utils import validate
-from .utils import extract_schema
+
 from . import __version__
+from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
+from .utils import (extract_definitions, extract_schema, get_schema_specs,
+                    get_specs, get_vendor_extension_fields, is_openapi3,
+                    LazyString, parse_definition_docstring, parse_imports,
+                    swag_annotation, validate)
 
 
 def NO_SANITIZER(text):
@@ -74,7 +67,7 @@ class APIDocsView(MethodView):
         The data under /apidocs
         json or Swagger UI
         """
-        base_endpoint = self.config.get('endpoint', 'flasgger')
+        base_endpoint = self.config.get('endpoint', 'flask_openapi')
         specs = [
             {
                 "url": url_for(".".join((base_endpoint, spec['endpoint']))),
@@ -106,27 +99,27 @@ class APIDocsView(MethodView):
             data['flasgger_version'] = __version__
             data['favicon'] = self.config.get(
                 'favicon',
-                url_for('flasgger.static', filename='favicon-32x32.png')
+                url_for('flask_openapi.static', filename='favicon-32x32.png')
             )
             data['swagger_ui_bundle_js'] = self.config.get(
                 'swagger_ui_bundle_js',
-                url_for('flasgger.static', filename='swagger-ui-bundle.js')
+                url_for('flask_openapi.static', filename='swagger-ui-bundle.js')
             )
             data['swagger_ui_standalone_preset_js'] = self.config.get(
                 'swagger_ui_standalone_preset_js',
-                url_for('flasgger.static',
+                url_for('flask_openapi.static',
                         filename='swagger-ui-standalone-preset.js')
             )
             data['jquery_js'] = self.config.get(
                 'jquery_js',
-                url_for('flasgger.static', filename='lib/jquery.min.js')
+                url_for('flask_openapi.static', filename='lib/jquery.min.js')
             )
             data['swagger_ui_css'] = self.config.get(
                 'swagger_ui_css',
-                url_for('flasgger.static', filename='swagger-ui.css')
+                url_for('flask_openapi.static', filename='swagger-ui.css')
             )
             return render_template(
-                'flasgger/index.html',
+                'flask_openapi/index.html',
                 **data
             )
 
@@ -137,7 +130,7 @@ class OAuthRedirect(MethodView):
     """
     def get(self):
         return render_template(
-            ['flasgger/oauth2-redirect.html', 'flasgger/o2c.html'],
+            ['flask_openapi/oauth2-redirect.html', 'flask_openapi/o2c.html'],
         )
 
 
@@ -611,7 +604,7 @@ class Swagger(object):
         if self.config.get('swagger_ui', True):
             uiversion = self.config.get('uiversion', 3)
             blueprint = Blueprint(
-                self.config.get('endpoint', 'flasgger'),
+                self.config.get('endpoint', 'flask_openapi'),
                 __name__,
                 url_prefix=self.config.get('url_prefix', None),
                 subdomain=self.config.get('subdomain', None),
@@ -650,11 +643,11 @@ class Swagger(object):
             # backwards compatibility with old url style
             blueprint.add_url_rule(
                 '/apidocs/index.html',
-                view_func=lambda: redirect(url_for('flasgger.apidocs'))
+                view_func=lambda: redirect(url_for('flask_openapi.apidocs'))
             )
         else:
             blueprint = Blueprint(
-                self.config.get('endpoint', 'flasgger'),
+                self.config.get('endpoint', 'flask_openapi'),
                 __name__
             )
 
