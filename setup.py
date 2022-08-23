@@ -1,8 +1,8 @@
 # Fix for older setuptools
-import re
 import os
+import re
 
-from setuptools import setup, find_packages
+from setuptools import find_packages, setup
 
 
 def fpath(name):
@@ -63,7 +63,7 @@ setup(
     ],
     entry_points={
         'flask.commands': [
-            'generate-api-schema=flasgger.commands:generate_api_schema',
+            'generate-api-schema=flask_openapi.commands:generate_api_schema',
         ],
     },
 )
