@@ -330,7 +330,7 @@ class Swagger(object):
         if not spec:
             raise RuntimeError(
                 'Can`t find specs by endpoint {},'
-                ' check your flasger`s config'.format(endpoint))
+                ' check your flasgger`s config'.format(endpoint))
 
         data = {
             # try to get from config['SWAGGER']['info']
