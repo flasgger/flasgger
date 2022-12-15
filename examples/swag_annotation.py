@@ -33,8 +33,14 @@ class Query(Schema):
     swag_in = "query"
 
 
+# In this case: id is positive or nul
 @app.route("/color/<id>/<name>", methods=["POST"], **swag)
 def index(body: Body, query: Query, id: int, name: str):
+    return {"body": body, "query": query, "id": id, "name": name}
+
+# In this case: id is an integer
+@app.route("/color2/<int(signed=True):id>/<name>", methods=["POST"], **swag)
+def index2(body: Body, query: Query, id: int, name: str):
     return {"body": body, "query": query, "id": id, "name": name}
 
 

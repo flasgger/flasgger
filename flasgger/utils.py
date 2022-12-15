@@ -13,7 +13,7 @@ from six import string_types, text_type
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from flask import Response
 from flask import abort
 from flask import current_app
@@ -56,10 +56,12 @@ def get_schema_specs(schema_id, swagger):
     optional_fields \
         = swagger.config.get('optional_fields') or OPTIONAL_FIELDS
 
+    openapi_version = swagger.config.get('openapi')
+
     with swagger.app.app_context():
         specs = get_specs(
             current_app.url_map.iter_rules(), ignore_verbs,
-            optional_fields, swagger.sanitizer)
+            optional_fields, swagger.sanitizer, openapi_version)
 
         swags = (swag for _, verbs in specs for _, swag in verbs
                  if swag is not None)
@@ -72,7 +74,8 @@ def get_schema_specs(schema_id, swagger):
                 return swag
 
 
-def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
+def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
+              openapi_version, doc_dir=None):
 
     specs = []
     for rule in rules:
@@ -124,6 +127,8 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                 )
 
             swag = {}
+            swag_def = {}
+
             swagged = False
 
             if getattr(method, 'specs_dict', None):
@@ -132,12 +137,15 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                     swag,
                     convert_schemas(deepcopy(method.specs_dict), definition)
                 )
-                swag['definitions'] = definition
+                swag_def = definition
                 swagged = True
 
             view_class = getattr(endpoint, 'view_class', None)
             if view_class and issubclass(view_class, SwaggerView):
                 apispec_swag = {}
+
+                # Don't need to alter definitions here
+                # Since it only stays in apispec_attrs
                 apispec_attrs = optional_fields + [
                     'parameters', 'definitions', 'responses',
                     'summary', 'description'
@@ -146,12 +154,13 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
                     value = getattr(view_class, attr)
                     if value:
                         apispec_swag[attr] = value
-
+                # Don't need to change 'definitions' here
+                # Since it would be appended later according to openapi
                 apispec_definitions = apispec_swag.get('definitions', {})
                 swag.update(
                     convert_schemas(apispec_swag, apispec_definitions)
                 )
-                swag['definitions'] = apispec_definitions
+                swag_def = apispec_definitions
 
                 swagged = True
 
@@ -170,6 +179,11 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer, doc_dir=None):
 
             doc_summary, doc_description, doc_swag = parse_docstring(
                 method, sanitizer, endpoint=rule.endpoint, verb=verb)
+
+            if is_openapi3(openapi_version):
+                swag.setdefault('components', {})['schemas'] = swag_def
+            else:  # openapi2
+                swag['definitions'] = swag_def
 
             if doc_swag:
                 merge_specs(swag, doc_swag)
@@ -341,7 +355,7 @@ def __replace_ref(schema, relative_path, swag):
 def validate(
         data=None, schema_id=None, filepath=None, root=None, definition=None,
         specs=None, validation_function=None, validation_error_handler=None,
-        require_data=True):
+        require_data=True, openapi_version=None):
     """
     This method is available to use YAML swagger definitions file
     or specs (dict or object) to validate data against its jsonschema.
@@ -414,7 +428,8 @@ def validate(
 
     definitions = {}
     main_def = {}
-    raw_definitions = extract_definitions(params, endpoint=endpoint, verb=verb)
+    raw_definitions = extract_definitions(params, endpoint=endpoint, verb=verb,
+                                          openapi_version=openapi_version)
 
     if schema_id is None:
         for param in params:
@@ -436,9 +451,11 @@ def validate(
             definitions[defi['id']] = defi
 
     # support definitions informed in dict
-    if schema_id in swag.get('definitions', {}):
-        main_def = swag.get('definitions', {}).get(schema_id)
+    if schema_id in extract_schema(swag):
+        main_def = extract_schema(swag).get(schema_id)
 
+    # Doensn't need to alter 'definitions' according to open api
+    # Since it main_def exists only in this function
     main_def['definitions'] = definitions
 
     for key, value in definitions.items():
@@ -747,7 +764,7 @@ def parse_imports(full_doc, root_path=None):
 
 
 def extract_definitions(alist, level=None, endpoint=None, verb=None,
-                        prefix_ids=False):
+                        prefix_ids=False, openapi_version=None):
     """
     Since we couldn't be bothered to register models elsewhere
     our definitions need to be extracted from the parameters.
@@ -768,7 +785,8 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
         items = source.get('items')
         if items is not None and 'schema' in items:
             ret += extract_definitions(
-                [items], level + 1, endpoint, verb, prefix_ids)
+                [items], level + 1, endpoint, verb, prefix_ids,
+                openapi_version)
         return ret
 
     # for tracking level of recursion
@@ -792,7 +810,14 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
                 # ... for backwards compatibility with <= 0.5.14
 
                 defs.append(schema)
-                ref = {"$ref": "#/definitions/{}".format(schema_id)}
+
+                ref_path = None
+                if is_openapi3(openapi_version):
+                    ref_path = "#/components/schemas/"
+                else:
+                    ref_path = "#/definitions/"
+                ref = {"$ref": "{}{}".format(ref_path, schema_id)}
+
                 # only add the reference as a schema if we are in a
                 # response or a parameter i.e. at the top level
                 # directly ref if a definition is used within another
@@ -808,7 +833,8 @@ def extract_definitions(alist, level=None, endpoint=None, verb=None,
             properties = schema.get('properties')
             if properties is not None:
                 defs += extract_definitions(
-                    properties.values(), level + 1, endpoint, verb, prefix_ids)
+                    properties.values(), level + 1, endpoint, verb, prefix_ids,
+                    openapi_version)
 
             defs += _extract_array_defs(schema)
 
@@ -981,10 +1007,13 @@ def swag_annotation(f):
                 function = validate_annotation(annotation, variable)(function)
 
             elif issubclass(annotation, int):
-                specs["parameters"].append({"name": variable,
-                                            "in": "path",
-                                            "type": "integer",
-                                            "required": True})
+                m = {"name": variable,
+                     "in": "path",
+                     "type": "integer",
+                     "required": True}
+                if ("int(signed=True):" + variable) in args[0]:
+                    m['minimum'] = 0
+                specs["parameters"].append(m)
 
             elif issubclass(annotation, str):
                 specs["parameters"].append({"name": variable,
@@ -1022,6 +1051,7 @@ def validate_annotation(an, var):
                     validation_function=an.swag_validation_function,
                     validation_error_handler=an.swag_validation_error_handler,
                     require_data=an.swag_require_data
+                    # handle openapiversion later
                 )
 
             return f(*args, **kwargs, **{var: payload})
@@ -1034,3 +1064,15 @@ def is_openapi3(openapi_version):
     Returns True if openapi_version is 3
     """
     return openapi_version and str(openapi_version).split('.')[0] == '3'
+
+
+def extract_schema(spec: dict) -> defaultdict:
+    """
+    Returns schema resources according to openapi version
+    """
+    openapi_version = spec.get('openapi', None)
+    if is_openapi3(openapi_version):
+        return spec.get('components', {}
+                        ).get('schemas', defaultdict(dict))
+    else:  # openapi2
+        return spec.get('definitions', defaultdict(dict))
