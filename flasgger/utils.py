@@ -132,6 +132,8 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
             swagged = False
 
             if getattr(method, 'specs_dict', None):
+                if not rule.rule in getattr(method, 'swag_dict_rule', None): continue
+                
                 definition = {}
                 merge_specs(
                     swag,
@@ -207,7 +209,7 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
 def swag_from(
         specs=None, filetype=None, endpoint=None, methods=None,
         validation=False, schema_id=None, data=None, definition=None,
-        validation_function=None, validation_error_handler=None):
+        validation_function=None, validation_error_handler=None, rule=None):
     """
     Takes a filename.yml, a dictionary or object and loads swagger specs.
 
@@ -265,6 +267,7 @@ def swag_from(
 
     def set_from_specs_dict(function):
         function.specs_dict = specs
+        function.swag_dict_rule = rule
 
     def is_path(specs):
         """ Returns True if specs is a string or pathlib.Path
