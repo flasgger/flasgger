@@ -133,8 +133,9 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
 
             if getattr(method, 'specs_dict', None):
                 swag_dict_rule = getattr(method, 'swag_dict_rule', None)
-                if swag_dict_rule is not None and rule.rule not in swag_dict_rule:
-                    continue
+                if swag_dict_rule is not None:
+                    if rule.rule not in swag_dict_rule:
+                        continue
 
                 definition = {}
                 merge_specs(
