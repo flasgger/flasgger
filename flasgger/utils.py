@@ -171,11 +171,16 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
                 else:
                     file_path = os.path.join(
                         doc_dir, endpoint.__name__ + '.yml')
+                func = method.__func__ \
+                    if hasattr(method, '__func__') else method
                 if os.path.isfile(file_path):
-                    func = method.__func__ \
-                        if hasattr(method, '__func__') else method
                     setattr(func, 'swag_type', 'yml')
                     setattr(func, 'swag_path', file_path)
+                else:
+                    # Reset in case of inheritance.
+                    setattr(func, 'swag_type', None)
+                    setattr(func, 'swag_path', None)
+
 
             doc_summary, doc_description, doc_swag = parse_docstring(
                 method, sanitizer, endpoint=rule.endpoint, verb=verb)
