@@ -17,7 +17,6 @@ except ImportError:
 from functools import wraps, partial
 from collections import defaultdict
 from flask import Blueprint
-from flask import Markup
 from flask import current_app
 from flask import jsonify, Response
 from flask import redirect
@@ -31,6 +30,7 @@ try:
 except ImportError:
     RequestParser = None
 import jsonschema
+from markupsafe import Markup
 from mistune import markdown
 from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
 from .utils import LazyString
