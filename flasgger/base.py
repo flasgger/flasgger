@@ -25,7 +25,7 @@ from flask import render_template
 from flask import request, url_for
 from flask import abort
 from flask.views import MethodView
-from flask.json import JSONEncoder
+from flask.json.provider import DefaultJSONProvider
 try:
     from flask_restful.reqparse import RequestParser
 except ImportError:
@@ -895,7 +895,7 @@ class Swagger(object):
 Flasgger = Swagger  # noqa
 
 
-class LazyJSONEncoder(JSONEncoder):
+class LazyJSONEncoder(DefaultJSONProvider):
     def default(self, obj):
         if isinstance(obj, LazyString):
             return str(obj)
