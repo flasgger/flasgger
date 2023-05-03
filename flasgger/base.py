@@ -24,13 +24,19 @@ from flask import render_template
 from flask import request, url_for
 from flask import abort
 from flask.views import MethodView
-from flask.json.provider import DefaultJSONProvider
+try:
+    from flask.json.provider import DefaultJSONProvider
+except ImportError:
+    from flask.json import JSONEncoder as DefaultJSONProvider
 try:
     from flask_restful.reqparse import RequestParser
 except ImportError:
     RequestParser = None
 import jsonschema
-from markupsafe import Markup
+try:
+    from markupsafe import Markup
+except ImportError:
+    from flask import Markup
 from mistune import markdown
 from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
 from .utils import LazyString
