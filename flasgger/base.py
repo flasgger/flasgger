@@ -17,7 +17,6 @@ except ImportError:
 from functools import wraps, partial
 from collections import defaultdict
 from flask import Blueprint
-from flask import Markup
 from flask import current_app
 from flask import jsonify, Response
 from flask import redirect
@@ -25,12 +24,19 @@ from flask import render_template
 from flask import request, url_for
 from flask import abort
 from flask.views import MethodView
-from flask.json import JSONEncoder
+try:
+    from flask.json.provider import DefaultJSONProvider
+except ImportError:
+    from flask.json import JSONEncoder as DefaultJSONProvider
 try:
     from flask_restful.reqparse import RequestParser
 except ImportError:
     RequestParser = None
 import jsonschema
+try:
+    from markupsafe import Markup
+except ImportError:
+    from flask import Markup
 from mistune import markdown
 from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
 from .utils import LazyString
@@ -895,7 +901,7 @@ class Swagger(object):
 Flasgger = Swagger  # noqa
 
 
-class LazyJSONEncoder(JSONEncoder):
+class LazyJSONEncoder(DefaultJSONProvider):
     def default(self, obj):
         if isinstance(obj, LazyString):
             return str(obj)
