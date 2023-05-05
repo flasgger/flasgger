@@ -3,5 +3,6 @@ Flask>=0.10
 PyYAML>=3.0
 jsonschema>=3.0.1
 six>=1.10.0
-mistune
-werkzeug
+mistune==2.0.2
+werkzeug==2.1.1
+click==8.1.2
