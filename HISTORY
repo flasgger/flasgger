@@ -3,6 +3,45 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
+0.9.6b1
+-----
+- chore: python 3.11 and flasklatest travis config
+- removed usage of safe_str_cmp of werkzeug. using hmac.compare_digest instead (#532)
+- Resolve #562 - Incompatibility with flask 2.3 (#564)
+- Fix the wrong code block separation in README (#516)
+- Fix openapi3 request parse validation (#505)
+- Remove top level definitions, move #/definitions to #/components/schemas if configured to openapi3 (#504)
+- Fix required body if one parameter is required (#476)
+- change cian -> cyan (#502)
+- Implemented the SwaggerUI urls config parameter which displays a dropdown of API specs instead of an editable textbox (#473)
+- Fix indentation in readme example (#480)
+- fix path parameter bug for integers (#485)
+- Wrapping APISpecsView get response in a try except (#420)
+- Merge branch 'master' into generate-schema-command
+- Trivial flake issue resolved for docker build of flasgger (#452)
+- Deprecate imp [Breaks py2.7 compatibility] (#413) Resolves #434
+- Fix line too long error
+- Remove python2
+- Add command to generate the specs
+- Fix error format and add regression tests
+- Extract is_openapi3 in utils and test it
+- Add flask_mongorest
+- Set displayOperationId to true
+- Pep8
+- Fix chinese table of contents
+- Fix for apispec 4
+- Add chinese docs
+- Fix definition docstring splitting
+- Add use func validate from utils
+- add test case for post request
+- Change test for swag_schema
+- Easy usage Marshmallow and flasgger
+- PEP 8 compliance for oauth static html default
+- Add Swagger UI auth config to ui.inioauth
+- Make available oauth2 redirect html
+
+NOTE: python2 is deprecated and no longer supported in flasgger
+
 0.9.5
 -----
 - 'swag_from' supports 'pathlib.Path'
