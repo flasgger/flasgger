@@ -38,7 +38,9 @@ try:
 except ImportError:
     from flask import Markup
 from mistune import markdown
-from .constants import OPTIONAL_FIELDS, OPTIONAL_OAS3_FIELDS
+from .constants import OAS3_SUB_COMPONENTS
+from .constants import OPTIONAL_FIELDS
+from .constants import OPTIONAL_OAS3_FIELDS
 from .utils import LazyString
 from .utils import extract_definitions
 from .utils import get_schema_specs
@@ -439,20 +441,36 @@ class Swagger(object):
             openapi_version=openapi_version,
             doc_dir=self.config.get('doc_dir'))
 
+        def merge_sub_component(dest, key, source):
+            if len(source) > 0 and dest.get(key) is None:
+                dest[key] = {}
+            if len(source) > 0 and len(dest[key]) >= 0:
+                dest[key].update(source)
+
         http_methods = ['get', 'post', 'put', 'delete']
         for rule, verbs in specs:
             operations = dict()
             for verb, swag in verbs:
 
                 if is_openapi3(openapi_version):
-                    update_dict = swag.get('components', {}).get('schemas', {})
+                    source_components = swag.get('components', {})
+                    update_schemas = source_components.get('schemas', {})
+                    # clone list so we can modify
+                    active_sub_components = OAS3_SUB_COMPONENTS[:]
+                    # schemas are handled separately, so remove them here
+                    active_sub_components.remove("schemas")
+                    for subcomponent in OAS3_SUB_COMPONENTS:
+                        merge_sub_component(data['components'], subcomponent,
+                                            source_components.get(subcomponent,
+                                            {}))
                 else:  # openapi2
-                    update_dict = swag.get('definitions', {})
+                    update_schemas = swag.get('definitions', {})
 
-                if type(update_dict) == list and type(update_dict[0]) == dict:
+                if type(update_schemas) == list \
+                        and type(update_schemas[0]) == dict:
                     # pop, assert single element
-                    update_dict, = update_dict
-                definitions.update(update_dict)
+                    update_schemas, = update_schemas
+                definitions.update(update_schemas)
                 defs = []  # swag.get('definitions', [])
                 defs += extract_definitions(
                     defs, endpoint=rule.endpoint, verb=verb,
