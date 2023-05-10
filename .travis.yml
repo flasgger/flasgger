@@ -38,6 +38,7 @@ before_install:
   - python setup.py check --strict
 
 script:
+  - tox
   - make test
 
 after_success:
