@@ -32,12 +32,15 @@ matrix:
   allow_failures:
     - env: TOXENV=py38-dev-flasklatest
 
+install: pip install tox-travis
+
 before_install:
   - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
   - python setup.py check --strict
 
 script:
+  - tox
   - make test
 
 after_success:
