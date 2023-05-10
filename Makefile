@@ -12,6 +12,7 @@ flasgger_package:
 
 .PHONY: test
 test: pep8 flasgger_package
+	@pip freeze
 	@py.test tests -s -vv --cov --cov-config=.coveragerc --doctest-modules flasgger
 
 .PHONY: sdist
