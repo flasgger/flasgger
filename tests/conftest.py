@@ -44,7 +44,10 @@ def get_specs_data(mod):
         url = spec['url']
         response = client.get(url)
         decoded = response.data.decode("utf-8")
-        specs_data[url] = json.loads(decoded)
+        if 200 <= response.status_code < 300:
+            specs_data[url] = json.loads(decoded)
+        else:
+            raise ValueError(f'specs failure: {mod.__name__} {response.status}')
 
     return specs_data
 
