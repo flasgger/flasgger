@@ -28,3 +28,6 @@ setuptools>=40.4.2
 # install flasgger itself as editable
 -e .
 -e etc/flasgger_package
+
+# Dependency debugging
+pipdeptree

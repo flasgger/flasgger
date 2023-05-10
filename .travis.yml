@@ -8,37 +8,43 @@ matrix:
       env: TOXENV=py36-flask10
     - python: 3.6
       env: TOXENV=py36-flask104
-    - python: 3.7
-      env: TOXENV=py37-flask010
-      dist: xenial
-      sudo: true
-    - python: 3.7
-      env: TOXENV=py37-flask10
-      dist: xenial
-      sudo: true
+#    - python: 3.7
+#      env: TOXENV=py37-flask010
+#      dist: xenial
+#      sudo: true
+#    - python: 3.7
+#      env: TOXENV=py37-flask10
+#      dist: xenial
+#      sudo: true
     - python: 3.7
       env: TOXENV=py37-flask104
       dist: xenial
       sudo: true
     - python: 3.7
-      env: TOXENV=py37-marshmallow-apispec
+      env: TOXENV=py37-flask104-marshmallow-apispec
     - python: 3.8-dev
       env: TOXENV=py38-dev-flasklatest
       dist: xenial
       sudo: true
+    - python: 3.9
+      env: TOXENV=py39-flask104
+      dist: jammy
     - python: 3.11
       env: TOXENV=py311-flasklatest
       dist: jammy
+    - python: 3.11
+      env: TOXENV=py311-marshmallow-apispec
+      dist: jammy
   allow_failures:
     - env: TOXENV=py38-dev-flasklatest
+    - env: TOXENV=py36-flask010
+    - env: TOXENV=py36-flask10
 
 before_install:
-  - pip install -r requirements.txt
-  - pip install -r requirements-dev.txt
-  - python setup.py check --strict
+  - pip install tox
 
 script:
-  - make test
+  - tox
 
 after_success:
   - coveralls
