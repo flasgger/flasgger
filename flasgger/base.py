@@ -162,7 +162,7 @@ class APISpecsView(MethodView):
         """
         try:
             return jsonify(self.loader())
-        except:
+        except:  # noqa
             import logging
             logging.exception('jsonify failure; defaulting to json.dumps')
             specs = json.dumps(self.loader())
