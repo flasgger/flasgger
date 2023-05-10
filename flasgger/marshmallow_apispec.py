@@ -1,14 +1,20 @@
 # coding: utf-8
 import inspect
 
+from flask import current_app
 from flask.views import MethodView
 
 import flasgger
+
+
+DEFAULT_OPENAPI_VERSION = '2.0'
+
 
 try:
     import marshmallow
     from marshmallow import fields
     from apispec.ext.marshmallow import openapi
+    from apispec.utils import OpenAPIVersion
     from apispec import APISpec as BaseAPISpec
 
     # Note that openapi_converter is initialized with trivial
@@ -16,7 +22,7 @@ try:
     #   supported for now. See issue #314 .
     # Also see: https://github.com/marshmallow-code/apispec/pull/447
     openapi_converter = openapi.OpenAPIConverter(
-        openapi_version='2.0',
+        openapi_version=DEFAULT_OPENAPI_VERSION,
         schema_name_resolver=lambda schema: None,
         spec=None
     )
@@ -43,6 +49,19 @@ except ImportError:
     schema2jsonschema = lambda schema: {}  # noqa
     schema2parameters = lambda schema, location: []  # noqa
     BaseAPISpec = object
+
+
+def check_openapi_version():
+    if (
+        not current_app or not hasattr(
+            current_app, 'swag'
+        ) or getattr(openapi_converter, 'configured', False)
+    ):
+        return
+    openapi_converter.openapi_version = OpenAPIVersion(
+        current_app.swag.config.get('openapi', DEFAULT_OPENAPI_VERSION)
+    )
+    openapi_converter.configured = True
 
 
 class APISpec(BaseAPISpec):
@@ -116,6 +135,8 @@ def convert_schemas(d, definitions=None):
     Also updates the optional definitions argument with any definitions
     entries contained within the schema.
     """
+    check_openapi_version()
+
     if definitions is None:
         definitions = {}
     definitions.update(d.get('definitions', {}))
@@ -139,7 +160,13 @@ def convert_schemas(d, definitions=None):
 
             definitions[v.__name__] = schema2jsonschema(v)
             ref = {
-                "$ref": "#/definitions/{0}".format(v.__name__)
+                "$ref": (
+                    "#/components/schemas/{0}".format(v.__name__)
+                    if flasgger.utils.is_openapi3(
+                        openapi_converter.openapi_version
+                    ) else
+                    "#/definitions/{0}".format(v.__name__)
+                )
             }
             if k == 'parameters':
                 new[k] = schema2parameters(v, location=v.swag_in)
