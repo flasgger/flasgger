@@ -22,6 +22,38 @@ Flasgger is compatible with `Flask-RESTful` so you can use `Resources` and `swag
 
 Flasgger also supports `Marshmallow APISpec` as base template for specification, if you are using APISPec from Marshmallow take a look at [apispec example.](examples/apispec_example.py)
 
+Table of Contents
+=================
+
+* [Top Contributors](#top-contributors)
+* [Examples and demo app](#examples-and-demo-app)
+  * [Docker](#docker)
+* [Installation](#installation)
+* [Getting started](#getting-started)
+  * [Using docstrings as specification](#using-docstrings-as-specification)
+  * [Using external YAML files](#using-external-yaml-files)
+  * [Using dictionaries as raw specs](#using-dictionaries-as-raw-specs)
+  * [Using Marshmallow Schemas](#using-marshmallow-schemas)
+  * [Using <strong>Flask RESTful</strong> Resources](#using-flask-restful-resources)
+  * [Auto-parsing external YAML docs and MethodViews](#auto-parsing-external-yaml-docs-and-methodviews)
+  * [Handling multiple http methods and routes for a single function](#handling-multiple-http-methods-and-routes-for-a-single-function)
+* [Use the same data to validate your API POST body.](#use-the-same-data-to-validate-your-api-post-body)
+     * [Custom validation](#custom-validation)
+     * [Validation Error handling](#validation-error-handling)
+* [Get defined schemas as python dictionaries](#get-defined-schemas-as-python-dictionaries)
+* [HTML sanitizer](#html-sanitizer)
+* [Swagger UI and templates](#swagger-ui-and-templates)
+* [OpenAPI 3.0 Support](#openapi-30-support)
+  * [Externally loading Swagger UI and jQuery JS/CSS](#externally-loading-swagger-ui-and-jquery-jscss)
+* [Initializing Flasgger with default data.](#initializing-flasgger-with-default-data)
+  * [Getting default data at runtime](#getting-default-data-at-runtime)
+  * [Behind a reverse proxy](#behind-a-reverse-proxy)
+* [Customize default configurations](#customize-default-configurations)
+  * [Extracting Definitions](#extracting-definitions)
+  * [Python2 Compatibility](#python2-compatibility)
+
+Created by [gh-md-toc](https://github.com/ekalinin/github-markdown-toc)
+
 # Top Contributors
 
 [![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/0)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/0)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/1)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/1)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/2)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/2)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/3)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/3)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/4)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/4)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/5)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/5)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/6)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/6)[![](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/images/7)](https://sourcerer.io/fame/rochacbruno/rochacbruno/flasgger/links/7)
@@ -64,6 +96,18 @@ pip install https://github.com/rochacbruno/flasgger/tarball/master
 ```
 
 > NOTE: If you want to use **Marshmallow Schemas** you also need to run `pip install marshmallow apispec`
+
+## How to run tests
+
+(You may see the command in [.travis.yml](./.travis.yml) for `before_install` part)
+
+In your virtualenv:
+
+```
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+make test
+```
 
 # Getting started
 
@@ -109,7 +153,7 @@ def colors(palette):
           rgb: ['red', 'green', 'blue']
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':
@@ -262,6 +306,8 @@ def colors(palette):
 
 > FIRST: `pip install marshmallow apispec`
 
+> USAGE #1: `SwaggerView`
+
 ```python
 from flask import Flask, jsonify
 from flasgger import Swagger, SwaggerView, Schema, fields
@@ -298,7 +344,7 @@ class PaletteView(SwaggerView):
         This example is using marshmallow schemas
         """
         all_colors = {
-            'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+            'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
             'rgb': ['red', 'green', 'blue']
         }
         if palette == 'all':
@@ -320,6 +366,57 @@ app.run(debug=True)
 
 ```
 
+> USAGE #2: `Custom Schema from flasgger`
+
+- `Body` - support all fields in marshmallow
+- `Query` - support simple fields in marshmallow (Int, String and etc)
+- `Path` - support only int and str
+
+```python
+from flask import Flask, abort
+from flasgger import Swagger, Schema, fields
+from marshmallow.validate import Length, OneOf
+
+app = Flask(__name__)
+Swagger(app)
+
+swag = {"swag": True,
+        "tags": ["demo"],
+        "responses": {200: {"description": "Success request"},
+                      400: {"description": "Validation error"}}}
+
+
+class Body(Schema):
+    color = fields.List(fields.String(), required=True, validate=Length(max=5), example=["white", "blue", "red"])
+
+    def swag_validation_function(self, data, main_def):
+        self.load(data)
+
+    def swag_validation_error_handler(self, err, data, main_def):
+        abort(400, err)
+
+
+class Query(Schema):
+    color = fields.String(required=True, validate=OneOf(["white", "blue", "red"]))
+
+    def swag_validation_function(self, data, main_def):
+        self.load(data)
+
+    def swag_validation_error_handler(self, err, data, main_def):
+        abort(400, err)
+
+    swag_in = "query"
+
+
+@app.route("/color/<id>/<name>", methods=["POST"], **swag)
+def index(body: Body, query: Query, id: int, name: str):
+    return {"body": body, "query": query, "id": id, "name": name}
+
+if __name__ == "__main__":
+    app.run(debug=True)
+```
+
+
 > NOTE: take a look at `examples/validation.py` for a more complete example.
 
 
@@ -331,7 +428,6 @@ app.run(debug=True)
 Flasgger is compatible with Flask-RESTful you only need to install `pip install flask-restful` and then:
 
 ```python
-
 from flask import Flask
 from flasgger import Swagger
 from flask_restful import Api, Resource
@@ -342,25 +438,25 @@ swagger = Swagger(app)
 
 class Username(Resource):
     def get(self, username):
-       """
-       This examples uses FlaskRESTful Resource
-       It works also with swag_from, schemas and spec_dict
-       ---
-       parameters:
-         - in: path
-           name: username
-           type: string
-           required: true
-       responses:
-         200:
-           description: A single user item
-           schema:
-             id: User
-             properties:
-               username:
-                 type: string
-                 description: The name of the user
-                 default: Steven Wilson
+        """
+        This examples uses FlaskRESTful Resource
+        It works also with swag_from, schemas and spec_dict
+        ---
+        parameters:
+          - in: path
+            name: username
+            type: string
+            required: true
+        responses:
+          200:
+            description: A single user item
+            schema:
+              id: User
+              properties:
+                username:
+                  type: string
+                  description: The name of the user
+                  default: Steven Wilson
         """
         return {'username': username}, 200
 
@@ -368,7 +464,6 @@ class Username(Resource):
 api.add_resource(Username, '/username/<username>')
 
 app.run(debug=True)
-
 ```
 
 ## Auto-parsing external YAML docs and `MethodView`s
@@ -748,7 +843,7 @@ app.json_encoder = LazyJSONEncoder
 template = dict(swaggerUiPrefix=LazyString(lambda : request.environ.get('HTTP_X_SCRIPT_NAME', '')))
 swagger = Swagger(app, template=template)
 
-``` 
+```
 
 # Customize default configurations
 
@@ -815,7 +910,7 @@ def colors(palette):
           rgb: ['red', 'green', 'blue']
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':
@@ -833,6 +928,6 @@ your schemas.
 
 ## Python2 Compatibility
 
-Version `0.9.5.*` will be the last verison that supports Python2. 
-Please direct discussions to [#399](https://github.com/flasgger/flasgger/issues/399). 
+Version `0.9.5.*` will be the last verison that supports Python2.
+Please direct discussions to [#399](https://github.com/flasgger/flasgger/issues/399).
 

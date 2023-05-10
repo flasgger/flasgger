@@ -12,6 +12,7 @@ flasgger_package:
 
 .PHONY: test
 test: pep8 flasgger_package
+	@pip freeze
 	@py.test tests -s -vv --cov --cov-config=.coveragerc --doctest-modules flasgger
 
 .PHONY: sdist
@@ -25,6 +26,11 @@ clean:
 	@find ./ -name '*.pyc' -exec rm -f {} \;
 	@find ./ -name 'Thumbs.db' -exec rm -f {} \;
 	@find ./ -name '*~' -exec rm -f {} \;
+
+.PHONY: release
+	@rm -rf dist/*
+	@python setup.py sdist bdist_wheel
+	@twine upload dist/*
 
 # Updates swagger_ui_dist files
 # Need to manually remove extra files added by this command

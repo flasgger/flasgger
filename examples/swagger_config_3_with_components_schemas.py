@@ -1,13 +1,36 @@
 """
 In this example `openapi` version is used instead of `swagger` version.
 """
-from flask import Flask, jsonify
-from flasgger import Swagger, swag_from
+from flask import Flask
+from flasgger import Swagger
 
 app = Flask(__name__)
 
 swagger_config = {
     "headers": [],
+    "openapi": "3.0.2",
+    "components": {
+        "securitySchemes": {
+            "oAuthSample": {
+                "type": "oauth2",
+                "flows": {
+                    "clientCredentials": {
+                        "tokenUrl": "https://api.pgsmartshopassistant.com/o/token/",
+                    }
+                }
+            }
+        },
+    },
+    "servers": [
+        {
+            "url": "https://api.example.com/v1",
+            "description": "Production server (uses live data)"
+        },
+        {
+            "url": "https://sandbox-api.example.com:8443/v1",
+            "description": "Sandbox server (uses test data)"
+        }
+    ],
     "specs": [
         {
             "endpoint": "swagger",
@@ -16,22 +39,14 @@ swagger_config = {
             "model_filter": lambda tag: True,  # all in
         }
     ],
-    "title": "Product Characteristics APIs",
+    "title": "Product Characteristics API",
     "version": '',
     "termsOfService": "",
     "static_url_path": "/characteristics/static",
     "swagger_ui": True,
     "specs_route": "/characteristics/swagger/",
     "description": "",
-    "securityDefinitions": {
-        "oAuthSample": {
-            "type": "oauth2",
-            "flow": "application",
-            "tokenUrl": "https://api.pgsmartshopassistant.com/o/token/",
-        }
-    }
 }
-
 
 colors_spec = {
   "tags": [
@@ -60,39 +75,43 @@ colors_spec = {
     "application/json"
   ],
   "security": {
-    "colors_oauth": {
-        "$ref": "#/securityDefinitions/oAuthSample"
-    }
+    "colors_auth": [
+      "write:colors",
+      "read:colors"
+    ]
   },
   "schemes": [
     "http",
     "https"
   ],
+  "deprecated": False,
   "externalDocs": {
     "description": "Project repository",
     "url": "http://github.com/rochacbruno/flasgger"
   },
-  "definitions": {
-    "Palette": {
-      "type": "object",
-      "properties": {
-        "palette_name": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/Color"
+  "components":{
+    "schemas":{
+      "Palette": {
+        "type": "object",
+        "properties": {
+          "palette_name": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Color"
+            }
           }
         }
+      },
+      "Color": {
+        "type": "string"
       }
-    },
-    "Color": {
-      "type": "string"
     }
   },
   "responses": {
     "200": {
       "description": "A list of colors (may be filtered by palette)",
       "schema": {
-        "$ref": "#/definitions/Palette"
+        "$ref": "#/components/schemas/Palette"
       },
       "examples": {
         "rgb": [
@@ -106,28 +125,6 @@ colors_spec = {
 }
 
 
-@app.route('/colors/<palette>/')
-@swag_from(colors_spec)
-def colors(palette):
-    """
-    Example using a dictionary as specification
-    This is the description
-    You can also set 'summary' and 'description' in
-    specs_dict
-    ---
-    # values here overrides the specs dict
-    """
-    all_colors = {
-        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
-        'rgb': ['red', 'green', 'blue']
-    }
-    if palette == 'all':
-        result = all_colors
-    else:
-        result = {palette: all_colors.get(palette)}
-
-    return jsonify(result)
-
 swag = Swagger(app, config=swagger_config)
 
 
@@ -139,8 +136,14 @@ def test_swag(client, specs_data):
     :param specs_data: {'url': {swag_specs}} for every spec in app
     """
     for spec in specs_data.values():
-        assert 'securityDefinitions' in spec
-        assert 'oAuthSample' in spec['securityDefinitions']
+        assert 'openapi' in spec
+        assert '3.0.2' == spec['openapi']
+        assert 'swagger' not in spec
+        assert 'components' in spec
+        assert 'securitySchemes' in spec['components']
+        assert 'oAuthSample' in spec['components']['securitySchemes']
+
+        assert 'servers' in spec  # See issue #366
 
 
 if __name__ == '__main__':

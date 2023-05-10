@@ -6,7 +6,8 @@ from flask.views import MethodView
 import flasgger
 
 try:
-    from marshmallow import Schema, fields
+    import marshmallow
+    from marshmallow import fields
     from apispec.ext.marshmallow import openapi
     from apispec import APISpec as BaseAPISpec
 
@@ -21,11 +22,26 @@ try:
     )
     schema2jsonschema = openapi_converter.schema2jsonschema
     schema2parameters = openapi_converter.schema2parameters
+
+    class Schema(marshmallow.Schema):
+        swag_in = "body"
+        swag_validate = True
+        swag_validation_function = None
+        swag_validation_error_handler = None
+        swag_require_data = True
+
+        def to_specs_dict(self):
+            specs = {'parameters': self.__class__}
+            definitions = {}
+            specs.update(convert_schemas(specs, definitions))
+            specs['definitions'] = definitions
+            return specs
+
 except ImportError:
     Schema = None
     fields = None
     schema2jsonschema = lambda schema: {}  # noqa
-    schema2parameters = lambda schema: []  # noqa
+    schema2parameters = lambda schema, location: []  # noqa
     BaseAPISpec = object
 
 
@@ -33,6 +49,7 @@ class APISpec(BaseAPISpec):
     """
     Wrapper around APISpec to add `to_flasgger` method
     """
+
     def to_flasgger(self, app=None, definitions=None, paths=None):
         """
         Converts APISpec dict to flasgger suitable dict
@@ -125,8 +142,10 @@ def convert_schemas(d, definitions=None):
                 "$ref": "#/definitions/{0}".format(v.__name__)
             }
             if k == 'parameters':
-                new[k] = schema2parameters(v)
+                new[k] = schema2parameters(v, location=v.swag_in)
                 new[k][0]['schema'] = ref
+                if len(definitions[v.__name__]['required']) != 0:
+                    new[k][0]['required'] = True
             else:
                 new[k] = ref
         else:
