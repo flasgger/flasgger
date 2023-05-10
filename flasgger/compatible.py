@@ -20,7 +20,10 @@ def get_python_version() -> version.Version:
     import sys
     version_str = sys.version.split(' ')[0]
     if '+' in version_str:
-        logging.debug(f"version_str: {version_str} interpreted as {version_str.rstrip('+')}")
+        logging.debug(
+            f"version_str: {version_str} "
+            f"interpreted as {version_str.rstrip('+')}"
+        )
         version_str = version_str.rstrip('+')
     return version.parse(version_str)
 
