@@ -12,7 +12,7 @@ class CustomFlaskAppWithEncoder(Flask):
 
 
 app = CustomFlaskAppWithEncoder(__name__)
-app.config['TESTING'] = True
+app.testing = True
 
 # Set the LAzyString JSON Encoder
 """
