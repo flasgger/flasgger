@@ -26,6 +26,9 @@ matrix:
       env: TOXENV=py38-dev-flasklatest
       dist: xenial
       sudo: true
+    - python: 3.9
+      env: TOXENV=py39-flask104
+      dist: jammy
     - python: 3.11
       env: TOXENV=py311-flasklatest
       dist: jammy
