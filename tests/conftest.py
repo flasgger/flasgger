@@ -13,7 +13,8 @@ def get_specs_data(mod):
     return all specs dictionary for some app
     """
     # for each example app in /examples folder
-    client = mod.app.test_client()
+    from flask.testing import FlaskClient
+    client: FlaskClient = mod.app.test_client()
     # init swag if not yet inititalized (no-routes example)
     specs_route = None
     specs_data = {}
@@ -37,17 +38,20 @@ def get_specs_data(mod):
         specs_route = '/apidocs/'
 
     apidocs = client.get('?'.join((specs_route, 'json=true')))
-    specs = json.loads(apidocs.data.decode("utf-8")).get('specs')
+    if 200 <= apidocs.status_code < 300:
+        specs = json.loads(apidocs.data.decode("utf-8")).get('specs')
 
-    for spec in specs:
-        # for each spec get the spec url
-        url = spec['url']
-        response = client.get(url)
-        decoded = response.data.decode("utf-8")
-        if 200 <= response.status_code < 300:
-            specs_data[url] = json.loads(decoded)
-        else:
-            raise ValueError(f'specs failure: {mod.__name__} {response.status}')
+        for spec in specs:
+            # for each spec get the spec url
+            url = spec['url']
+            response = client.get(url)
+            decoded = response.data.decode("utf-8")
+            if 200 <= response.status_code < 300:
+                specs_data[url] = json.loads(decoded)
+            else:
+                raise ValueError(f'specs failure: {mod.__name__} {response.status}')
+    else:
+        raise ValueError(f'specs meta failure: {mod.__name__} {apidocs.status}')
 
     return specs_data
 
