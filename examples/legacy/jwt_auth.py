@@ -29,12 +29,15 @@ maintained anymore, making it impossible to add JWT_AUTH_HEADER_NAME to it. In
 normal circumstances, you will not need to use this field, but if you want to
 protect your Flasgger page in order to prevent unauthorized access to it by
 using basic HTTP auth on some web-server you will have to.
+
+NOTE (May 9, 2023): Python 3.11 not supported by this script
+(suspected flask_jwt incompatibility with python 3.11)
 """
 
 
+import hmac
 from flask import Flask, jsonify, request
 from flask_jwt import JWT, jwt_required, current_identity, JWTError
-from werkzeug.security import safe_str_cmp
 from flasgger import Swagger
 
 
@@ -58,7 +61,7 @@ userid_table = {u.id: u for u in users}
 
 def authenticate(username, password):
     user = username_table.get(username, None)
-    if user and safe_str_cmp(user.password.encode('utf-8'), password.encode('utf-8')):
+    if user and hmac.compare_digest(user.password.encode('utf-8'), password.encode('utf-8')):
         return user
 
 
@@ -75,11 +78,12 @@ app.config["SWAGGER"] = {
     "uiversion": 3,
 }
 app.config['JWT_AUTH_URL_RULE'] = '/api/auth'
-app.config['JWT_AUTH_HEADER_NAME'] = 'JWTAuthorization'
+app.config['JWT_AUTH_HEADER_NAME'] = 'Jwtauthorization'
+app.config['JWT_AUTH_HEADER_PREFIX'] = 'Bearer'
 
 swag = Swagger(app,
     template={
-        "openapi": "3.0.0",
+        "swagger": "2.0.0",
         "info": {
             "title": "Swagger Basic Auth App",
             "version": "1.0",

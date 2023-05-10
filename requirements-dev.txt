@@ -7,12 +7,19 @@ pep8==1.7.1
 flake8==3.8.4
 pytest>=4.6
 flex
+# flex:  ImportError: urllib3 v2.0 only supports OpenSSL 1.1.1+,
+# currently the 'ssl' module is compiled with OpenSSL 1.0.2g  1 Mar 2016.
+# See: https://github.com/urllib3/urllib3/issues/2168
+urllib3<2.0.0
+
 coveralls
 pytest-cov
 decorator
 wheel
 flask-jwt
 twine>=1.11.0
+
+
 
 # for pypi markdown support
 readme_renderer
@@ -21,3 +28,6 @@ setuptools>=40.4.2
 # install flasgger itself as editable
 -e .
 -e etc/flasgger_package
+
+# Dependency debugging
+pipdeptree

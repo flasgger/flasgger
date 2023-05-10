@@ -6,10 +6,20 @@ from flask import Flask, jsonify, request
 
 from flasgger import Swagger, LazyString, LazyJSONEncoder
 
-app = Flask(__name__)
+
+class CustomFlaskAppWithEncoder(Flask):
+    json_provider_class = LazyJSONEncoder
+
+
+app = CustomFlaskAppWithEncoder(__name__)
+app.testing = True
 
 # Set the LAzyString JSON Encoder
-app.json_encoder = LazyJSONEncoder
+"""
+DeprecationWarning: 'app.json_encoder' is deprecated 
+and will be removed in Flask 2.3. Customize 'app.json_provider_class' or 'app.json' instead.
+"""
+app.json_encoder = LazyJSONEncoder  # flask < 2.3
 
 app.config['SWAGGER'] = {
     'uiversion': 2
@@ -78,7 +88,7 @@ def colors(palette):
           rgb: ['red', 'green', 'blue']
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':

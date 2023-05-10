@@ -97,6 +97,18 @@ pip install https://github.com/rochacbruno/flasgger/tarball/master
 
 > NOTE: If you want to use **Marshmallow Schemas** you also need to run `pip install marshmallow apispec`
 
+## How to run tests
+
+(You may see the command in [.travis.yml](./.travis.yml) for `before_install` part)
+
+In your virtualenv:
+
+```
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+make test
+```
+
 # Getting started
 
 ## Using docstrings as specification
@@ -141,7 +153,7 @@ def colors(palette):
           rgb: ['red', 'green', 'blue']
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':
@@ -332,7 +344,7 @@ class PaletteView(SwaggerView):
         This example is using marshmallow schemas
         """
         all_colors = {
-            'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+            'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
             'rgb': ['red', 'green', 'blue']
         }
         if palette == 'all':
@@ -416,7 +428,6 @@ if __name__ == "__main__":
 Flasgger is compatible with Flask-RESTful you only need to install `pip install flask-restful` and then:
 
 ```python
-
 from flask import Flask
 from flasgger import Swagger
 from flask_restful import Api, Resource
@@ -427,25 +438,25 @@ swagger = Swagger(app)
 
 class Username(Resource):
     def get(self, username):
-       """
-       This examples uses FlaskRESTful Resource
-       It works also with swag_from, schemas and spec_dict
-       ---
-       parameters:
-         - in: path
-           name: username
-           type: string
-           required: true
-       responses:
-         200:
-           description: A single user item
-           schema:
-             id: User
-             properties:
-               username:
-                 type: string
-                 description: The name of the user
-                 default: Steven Wilson
+        """
+        This examples uses FlaskRESTful Resource
+        It works also with swag_from, schemas and spec_dict
+        ---
+        parameters:
+          - in: path
+            name: username
+            type: string
+            required: true
+        responses:
+          200:
+            description: A single user item
+            schema:
+              id: User
+              properties:
+                username:
+                  type: string
+                  description: The name of the user
+                  default: Steven Wilson
         """
         return {'username': username}, 200
 
@@ -453,7 +464,6 @@ class Username(Resource):
 api.add_resource(Username, '/username/<username>')
 
 app.run(debug=True)
-
 ```
 
 ## Auto-parsing external YAML docs and `MethodView`s
@@ -833,7 +843,7 @@ app.json_encoder = LazyJSONEncoder
 template = dict(swaggerUiPrefix=LazyString(lambda : request.environ.get('HTTP_X_SCRIPT_NAME', '')))
 swagger = Swagger(app, template=template)
 
-``` 
+```
 
 # Customize default configurations
 
@@ -900,7 +910,7 @@ def colors(palette):
           rgb: ['red', 'green', 'blue']
     """
     all_colors = {
-        'cmyk': ['cian', 'magenta', 'yellow', 'black'],
+        'cmyk': ['cyan', 'magenta', 'yellow', 'black'],
         'rgb': ['red', 'green', 'blue']
     }
     if palette == 'all':
@@ -920,4 +930,3 @@ your schemas.
 
 Version `0.9.5.*` will be the last version that supports Python2. 
 Please direct discussions to [#399](https://github.com/flasgger/flasgger/issues/399). 
-

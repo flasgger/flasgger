@@ -5,3 +5,4 @@ jsonschema>=3.0.1
 six>=1.10.0
 mistune
 werkzeug
+packaging

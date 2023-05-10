@@ -162,7 +162,13 @@ def test_swag(client, specs_data):
     res = client.get('/api/items/1/')
     assert res.status_code == 200
     res = client.put('/api/items/1/')
-    assert res.status_code == 400
+    if res.status_code == 400:
+        pass
+    elif res.status_code == 415:
+        import logging
+        logging.warning('new flask versions will return 415 error instead')
+    else:
+        raise AssertionError(f'unexpected status code {res.status_code}')
     res = client.put('/api/items/1/', json={'name': 'test'})
     assert res.status_code == 200
 
