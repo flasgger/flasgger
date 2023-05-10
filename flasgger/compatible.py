@@ -16,7 +16,7 @@ flask_version = get_flask_version()
 
 def get_python_version() -> version.Version:
     import platform
-    return version.parse(platform.python_version())
+    return version.parse(platform.python_version()[:-1])
 
 
 python_version = get_python_version()
