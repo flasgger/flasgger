@@ -29,7 +29,11 @@ maintained anymore, making it impossible to add JWT_AUTH_HEADER_NAME to it. In
 normal circumstances, you will not need to use this field, but if you want to
 protect your Flasgger page in order to prevent unauthorized access to it by
 using basic HTTP auth on some web-server you will have to.
+
+NOTE (May 9, 2023): Python 3.11 not supported by this script
+(suspected flask_jwt incompatibility with python 3.11)
 """
+
 
 import hmac
 from flask import Flask, jsonify, request
