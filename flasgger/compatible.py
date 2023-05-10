@@ -1,3 +1,5 @@
+import logging
+
 from packaging import version
 
 
@@ -17,6 +19,9 @@ flask_version = get_flask_version()
 def get_python_version() -> version.Version:
     import sys
     version_str = sys.version.split(' ')[0]
+    if '+' in version_str:
+        logging.debug(f"version_str: {version_str} interpreted as {version_str.rstrip('+')}")
+        version_str = version_str.rstrip('+')
     return version.parse(version_str)
 
 
@@ -24,5 +29,5 @@ python_version = get_python_version()
 
 v = version.parse
 
-# if __name__ == "__main__":
-#     print(python_version)
+if __name__ == "__main__":
+    print(python_version)
