@@ -27,6 +27,11 @@ clean:
 	@find ./ -name 'Thumbs.db' -exec rm -f {} \;
 	@find ./ -name '*~' -exec rm -f {} \;
 
+.PHONY: release
+	@rm -rf dist/*
+	@python setup.py sdist bdist_wheel
+	@twine upload dist/*
+
 # Updates swagger_ui_dist files
 # Need to manually remove extra files added by this command
 upgrade_swagger_ui:

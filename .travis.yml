@@ -34,11 +34,9 @@ matrix:
 
 before_install:
   - pip install tox
-  - tox
-  - python setup.py check --strict
 
 script:
-  - make test
+  - tox
 
 after_success:
   - coveralls
