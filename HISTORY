@@ -3,8 +3,10 @@ Changelog
 
 These are all the changes in Flasgger since the 0.6.0 release
 
-0.9.6b1
+0.9.7b2
 -----
+- chore: noqa for APISpecsView.get bare exception with json.dumps fallback (exception logging preserved)
+- fix: flask >== 2.3 json encoder change
 - chore: python 3.11 and flasklatest travis config
 - removed usage of safe_str_cmp of werkzeug. using hmac.compare_digest instead (#532)
 - Resolve #562 - Incompatibility with flask 2.3 (#564)
