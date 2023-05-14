@@ -83,16 +83,22 @@ Ensure you have latest setuptools
 pip install -U setuptools
 ```
 
-then
+then install beta version (recommended)
 
 ```
-pip install flasgger
+pip install flasgger==0.9.7b2
+```
+
+or (latest stable for legacy apps)
+
+```
+pip install flasgger==0.9.5
 ```
 
 or (dev version)
 
 ```
-pip install https://github.com/rochacbruno/flasgger/tarball/master
+pip install https://github.com/flasgger/flasgger/tarball/master
 ```
 
 > NOTE: If you want to use **Marshmallow Schemas** you also need to run `pip install marshmallow apispec`
