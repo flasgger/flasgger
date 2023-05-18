@@ -1,5 +1,5 @@
 
-__version__ = '0.9.7b2'
+__version__ = '0.9.7.1'
 __author__ = 'Bruno Rocha, Zixuan Rao, Flasgger team'
 __email__ = 'flasgger@flasgger.org'
 
