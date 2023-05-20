@@ -216,7 +216,7 @@ def swag_from(
     :param endpoint: endpoint to build definition name
     :param methods: method to build method based specs
     :param validation: perform validation?
-    :param schema_id: Definition id ot name to use for validation
+    :param schema_id: Definition id or name to use for validation
     :param data: data to validate (default is request.json)
     :param definition: alias to schema_id
     :param validation_function:
