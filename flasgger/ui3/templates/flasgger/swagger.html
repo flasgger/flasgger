@@ -21,6 +21,9 @@ window.onload = function() {
     displayOperationId: true,
     deepLinking: true,
     jsonEditor: true,
+    {% if flasgger_config.oauth2RedirectUrl -%}
+        oauth2RedirectUrl: '{{flasgger_config.oauth2RedirectUrl}}',
+    {%- endif %}
     {% if flasgger_config.doc_expansion -%}
         docExpansion: "{{flasgger_config.doc_expansion | safe }}",
     {%- endif %}
