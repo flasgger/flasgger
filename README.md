@@ -814,8 +814,7 @@ from flasgger import, Swagger, LazyString, LazyJSONEncoder
 app = Flask(__init__)
 
 # Set the custom Encoder (Inherit it if you need to customize)
-app.json_encoder = LazyJSONEncoder
-
+app.json_provider_class = LazyJSONEncoder
 
 template = dict(
     info={
@@ -844,7 +843,7 @@ from flask import Flask, request
 from flasgger import Swagger, LazyString, LazyJSONEncoder
 
 app = Flask(__name__)
-app.json_encoder = LazyJSONEncoder
+app.json_provider_class = LazyJSONEncoder
 
 template = dict(swaggerUiPrefix=LazyString(lambda : request.environ.get('HTTP_X_SCRIPT_NAME', '')))
 swagger = Swagger(app, template=template)
