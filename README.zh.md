@@ -710,8 +710,7 @@ from flasgger import, Swagger, LazyString, LazyJSONEncoder
 app = Flask(__init__)
 
 # 设置自定义编码器（如果需要自定义，则继承它）
-app.json_encoder = LazyJSONEncoder
-
+app.json_provider_class = LazyJSONEncoder
 
 template = dict(
     info={
