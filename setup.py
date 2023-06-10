@@ -96,8 +96,9 @@ class MixinSwaggerUiInstall:
     def run(self):
         super().run()
         # Your custom script logic goes here
+        version = self._get_swagger_ui_version_string()
         # print("Running custom script during installation...")
-        if version := self._get_swagger_ui_version_string():
+        if version:
             logging.info(f"Running custom script during installation... swagger-ui=={version}")
             download_swagger_ui(version=version)
 
