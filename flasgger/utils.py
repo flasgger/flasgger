@@ -9,7 +9,6 @@ import re
 import sys
 import jsonschema
 import yaml
-from six import string_types, text_type
 from copy import deepcopy
 from functools import wraps
 from importlib import import_module
@@ -269,7 +268,7 @@ def swag_from(
     def is_path(specs):
         """ Returns True if specs is a string or pathlib.Path
         """
-        is_str_path = isinstance(specs, string_types)
+        is_str_path = isinstance(specs, str)
         try:
             from pathlib import Path
             is_py3_path = isinstance(specs, Path)
@@ -879,56 +878,52 @@ class StringLike(object):
         Forwards any non-magic methods to the resulting string's class. This
         allows support for string methods like `upper()`, `lower()`, etc.
         """
-        string = self.text_type(self)
+        string = str(self)
         if hasattr(string, attr):
             return getattr(string, attr)
         raise AttributeError(attr)
 
     def __len__(self):
-        return len(self.text_type(self))
+        return len(str(self))
 
     def __getitem__(self, key):
-        return self.text_type(self)[key]
+        return str(self)[key]
 
     def __iter__(self):
-        return iter(self.text_type(self))
+        return iter(str(self))
 
     def __contains__(self, item):
-        return item in self.text_type(self)
+        return item in str(self)
 
     def __add__(self, other):
-        return self.text_type(self) + other
+        return str(self) + other
 
     def __radd__(self, other):
-        return other + self.text_type(self)
+        return other + str(self)
 
     def __mul__(self, other):
-        return self.text_type(self) * other
+        return str(self) * other
 
     def __rmul__(self, other):
-        return other * self.text_type(self)
+        return other * str(self)
 
     def __lt__(self, other):
-        return self.text_type(self) < other
+        return str(self) < other
 
     def __le__(self, other):
-        return self.text_type(self) <= other
+        return str(self) <= other
 
     def __eq__(self, other):
-        return self.text_type(self) == other
+        return str(self) == other
 
     def __ne__(self, other):
-        return self.text_type(self) != other
+        return str(self) != other
 
     def __gt__(self, other):
-        return self.text_type(self) > other
+        return str(self) > other
 
     def __ge__(self, other):
-        return self.text_type(self) >= other
-
-    @property
-    def text_type(self):
-        return text_type
+        return str(self) >= other
 
 
 class LazyString(StringLike):
@@ -948,7 +943,7 @@ class LazyString(StringLike):
         """
         Returns the actual string.
         """
-        return self.text_type(self._func())
+        return str(self._func())
 
 
 class CachedLazyString(LazyString):
@@ -968,7 +963,7 @@ class CachedLazyString(LazyString):
         Returns the actual string and caches the result.
         """
         if not self._cache:
-            self._cache = self.text_type(self._func())
+            self._cache = str(self._func())
         return self._cache
 
 
