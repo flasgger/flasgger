@@ -47,10 +47,10 @@ def random_pet():
                 $ref: '#/definitions/Pet'
     """
     pet = {'category': [{'id': 1, 'name': 'rodent'}], 'name': 'Mickey'}
-    return jsonify(PetSchema().dump(pet).data)
+    return jsonify(PetSchema().dump(pet))
 
 @app.route("/add", methods=["POST"])
-def create_pet(body: PetSchema) :
+def create_pet() :
     """Create a cute furry animal endpoint.
     ---
     post:
