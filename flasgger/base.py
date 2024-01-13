@@ -81,9 +81,11 @@ class APIDocsView(MethodView):
         json or Swagger UI
         """
         base_endpoint = self.config.get('endpoint', 'flasgger')
+        proxy_url = self.config.get('proxy_url', '')
         specs = [
             {
-                "url": url_for(".".join((base_endpoint, spec['endpoint']))),
+                "url": proxy_url + url_for(".".join((base_endpoint,
+                                                     spec['endpoint']))),
                 "title": spec.get('title', 'API Spec 1'),
                 "name": spec.get('name', None),
                 "version": spec.get("version", '0.0.1'),
@@ -112,24 +114,28 @@ class APIDocsView(MethodView):
             data['flasgger_version'] = __version__
             data['favicon'] = self.config.get(
                 'favicon',
-                url_for('flasgger.static', filename='favicon-32x32.png')
+                proxy_url + url_for('flasgger.static',
+                                    filename='favicon-32x32.png')
             )
             data['swagger_ui_bundle_js'] = self.config.get(
                 'swagger_ui_bundle_js',
-                url_for('flasgger.static', filename='swagger-ui-bundle.js')
+                proxy_url + url_for('flasgger.static',
+                                    filename='swagger-ui-bundle.js')
             )
             data['swagger_ui_standalone_preset_js'] = self.config.get(
                 'swagger_ui_standalone_preset_js',
-                url_for('flasgger.static',
-                        filename='swagger-ui-standalone-preset.js')
+                proxy_url + url_for('flasgger.static',
+                                    filename='swagger-ui-standalone-preset.js')
             )
             data['jquery_js'] = self.config.get(
                 'jquery_js',
-                url_for('flasgger.static', filename='lib/jquery.min.js')
+                proxy_url + url_for('flasgger.static',
+                                    filename='lib/jquery.min.js')
             )
             data['swagger_ui_css'] = self.config.get(
                 'swagger_ui_css',
-                url_for('flasgger.static', filename='swagger-ui.css')
+                proxy_url + url_for('flasgger.static',
+                                    filename='swagger-ui.css')
             )
             return render_template(
                 'flasgger/index.html',
