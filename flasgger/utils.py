@@ -165,12 +165,16 @@ def get_specs(rules, ignore_verbs, optional_fields, sanitizer,
                 swagged = True
 
             if doc_dir:
+                endpoint_name = rule.endpoint
+                if "." in endpoint_name:
+                    endpoint_name = endpoint_name.split(".")[-1]
+
                 if view_class:
                     file_path = os.path.join(
-                        doc_dir, endpoint.__name__, method.__name__ + '.yml')
+                        doc_dir, endpoint_name, method.__name__ + '.yml')
                 else:
                     file_path = os.path.join(
-                        doc_dir, endpoint.__name__ + '.yml')
+                        doc_dir, endpoint_name + '.yml')
                 func = method.__func__ \
                     if hasattr(method, '__func__') else method
                 if os.path.isfile(file_path):
