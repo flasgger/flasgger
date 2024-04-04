@@ -112,24 +112,38 @@ class APIDocsView(MethodView):
             data['flasgger_version'] = __version__
             data['favicon'] = self.config.get(
                 'favicon',
-                url_for('flasgger.static', filename='favicon-32x32.png')
+                url_for(
+                    '{0}.static'.format(base_endpoint),
+                    filename='favicon-32x32.png'
+                )
             )
             data['swagger_ui_bundle_js'] = self.config.get(
                 'swagger_ui_bundle_js',
-                url_for('flasgger.static', filename='swagger-ui-bundle.js')
+                url_for(
+                    '{0}.static'.format(base_endpoint),
+                    filename='swagger-ui-bundle.js'
+                )
             )
             data['swagger_ui_standalone_preset_js'] = self.config.get(
                 'swagger_ui_standalone_preset_js',
-                url_for('flasgger.static',
-                        filename='swagger-ui-standalone-preset.js')
+                url_for(
+                    '{0}.static'.format(base_endpoint),
+                    filename='swagger-ui-standalone-preset.js'
+                )
             )
             data['jquery_js'] = self.config.get(
                 'jquery_js',
-                url_for('flasgger.static', filename='lib/jquery.min.js')
+                url_for(
+                    '{0}.static'.format(base_endpoint),
+                    filename='lib/jquery.min.js'
+                )
             )
             data['swagger_ui_css'] = self.config.get(
                 'swagger_ui_css',
-                url_for('flasgger.static', filename='swagger-ui.css')
+                url_for(
+                    '{0}.static'.format(base_endpoint),
+                    filename='swagger-ui.css'
+                )
             )
             return render_template(
                 'flasgger/index.html',
