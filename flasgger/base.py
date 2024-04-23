@@ -631,7 +631,7 @@ class Swagger(object):
             return view
 
         if self.config.get('swagger_ui', True):
-            uiversion = self.config.get('uiversion', 3)
+            uiversion = int(self.config.get('uiversion', 3))
             blueprint = Blueprint(
                 self.config.get('endpoint', 'flasgger'),
                 __name__,
