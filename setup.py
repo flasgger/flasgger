@@ -54,7 +54,6 @@ setup(
         'PyYAML>=3.0',
         'jsonschema>=3.0.1',
         'mistune',
-        'six>=1.10.0',
         'packaging',
     ],
     classifiers=[
