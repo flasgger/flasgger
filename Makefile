@@ -35,4 +35,4 @@ clean:
 # Updates swagger_ui_dist files
 # Need to manually remove extra files added by this command
 upgrade_swagger_ui:
-	@tar --strip-components 1 -C flasgger/ui3/static/ -xvf `npm pack swagger-ui-dist@3.28.0` package/
+	@tar --strip-components 1 -C flasgger/ui3/static/ -xvf `npm pack swagger-ui-dist@3.52.5` package/
