@@ -756,8 +756,7 @@ class Swagger(object):
                 parsed_data['json'] = request.json or {}
             for location, data in parsed_data.items():
                 try:
-                    ret = self.validation_function(data, schemas[location])
-                    print(ret)
+                    self.validation_function(data, schemas[location])
                 except jsonschema.ValidationError as e:
                     self.validation_error_handler(e, data, schemas[location])
 
@@ -767,6 +766,30 @@ class Swagger(object):
         '''
         Schemas and parsers would be updated here from doc
         '''
+        for param in doc.get('parameters', []):
+            location = self.SCHEMA_LOCATIONS[param['in']]
+            if location == 'json':  # load data from 'request.json'
+                schemas[location] = param['schema']
+                self.set_schemas(schemas, location, definitions)
+            else:
+                name = param['name']
+                if location != 'path':
+                    parsers[location].add_argument(
+                        name,
+                        type=self.SCHEMA_TYPES[
+                            param['schema'].get('type', None)
+                            if 'schema' in param
+                            else param.get('type', None)],
+                        required=param.get('required', False),
+                        location=self.SCHEMA_LOCATIONS[
+                            param['in']],
+                        store_missing=False)
+
+                for k in param:
+                    if k != 'required':
+                        schemas[
+                            location]['properties'][name][k] = param[k]
+
         if self.is_openapi3():
             # 'json' to comply with self.SCHEMA_LOCATIONS's {'body':'json'}
             location = 'json'
@@ -798,31 +821,6 @@ class Swagger(object):
 
                 schemas[location] = json_schema
                 self.set_schemas(schemas, location, definitions)
-
-        else:  # openapi2
-            for param in doc.get('parameters', []):
-                location = self.SCHEMA_LOCATIONS[param['in']]
-                if location == 'json':  # load data from 'request.json'
-                    schemas[location] = param['schema']
-                    self.set_schemas(schemas, location, definitions)
-                else:
-                    name = param['name']
-                    if location != 'path':
-                        parsers[location].add_argument(
-                            name,
-                            type=self.SCHEMA_TYPES[
-                                param['schema'].get('type', None)
-                                if 'schema' in param
-                                else param.get('type', None)],
-                            required=param.get('required', False),
-                            location=self.SCHEMA_LOCATIONS[
-                                param['in']],
-                            store_missing=False)
-
-                    for k in param:
-                        if k != 'required':
-                            schemas[
-                                location]['properties'][name][k] = param[k]
 
     def set_schemas(self, schemas: dict, location: str,
                     definitions: dict):
