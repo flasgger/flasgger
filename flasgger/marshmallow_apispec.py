@@ -144,7 +144,7 @@ def convert_schemas(d, definitions=None):
             if k == 'parameters':
                 new[k] = schema2parameters(v, location=v.swag_in)
                 new[k][0]['schema'] = ref
-                if len(definitions[v.__name__]['required']) != 0:
+                if 'required' in definitions[v.__name__] and len(definitions[v.__name__]['required']) != 0:
                     new[k][0]['required'] = True
             else:
                 new[k] = ref
