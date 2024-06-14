@@ -289,6 +289,10 @@ def swag_from(
                 'root': getattr(function, 'root_path', None)
             }
         if isinstance(specs, dict):
+            definitions = {}
+            specs.update(convert_schemas(specs, definitions))
+            specs['definitions'] = definitions
+
             set_from_specs_dict(function)
             validate_args = {'specs': specs}
 
