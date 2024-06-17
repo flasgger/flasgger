@@ -28,7 +28,10 @@ from flask import render_template
 from flask import request, url_for
 from flask import abort
 from flask.views import MethodView
-from flask.json import JSONEncoder
+try:
+    from flask.json import JSONEncoder
+except ImportError:
+    from json import JSONEncoder
 try:
     from flask_restful.reqparse import RequestParser
 except ImportError:
