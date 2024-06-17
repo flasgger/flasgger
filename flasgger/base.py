@@ -17,7 +17,10 @@ except ImportError:
 from functools import wraps, partial
 from collections import defaultdict
 from flask import Blueprint
-from flask import Markup
+try:
+    from flask import Markup
+except ImportError:
+    from markupsafe import Markup
 from flask import current_app
 from flask import jsonify, Response
 from flask import redirect
