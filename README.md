@@ -499,6 +499,16 @@ def fromfile_decorated(username=None):
 And the same can be achieved with multiple methods in a `MethodView` or `SwaggerView` by
 registering the `url_rule` many times. Take a look at `examples/example_app`
 
+When using python dictionaries as raw spec, exception rules can be added when rendering swagger routes
+
+```python
+api.add_resource(Username, *['/api/<string:username>', '/api/'])
+
+
+@swag_from(specs_dict, rule='/api/')
+def get(current_user):
+  pass
+```
 
 # Use the same data to validate your API POST body.
 
