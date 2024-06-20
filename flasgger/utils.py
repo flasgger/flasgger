@@ -634,22 +634,30 @@ def parse_docstring(obj, process_doc, endpoint=None, verb=None):
     swag_path = getattr(obj, 'swag_path', None)
     swag_type = getattr(obj, 'swag_type', 'yml')
     swag_paths = getattr(obj, 'swag_paths', None)
-    root_path = get_root_path(obj)
-    from_file = False
 
-    if swag_path is not None:
-        full_doc = load_from_file(swag_path, swag_type)
-        from_file = True
-    elif swag_paths is not None:
-        for key in ("{}_{}".format(endpoint, verb), endpoint, verb.lower()):
-            if key in swag_paths:
-                full_doc = load_from_file(swag_paths[key], swag_type)
-                break
-        from_file = True
-        # TODO: handle multiple root_paths
-        # to support `import: ` from multiple places
-    else:
+    from_file = False
+    try:
+        root_path = get_root_path(obj)
+    except TypeError:
+        # obj may be a wrapper for a Cython builtin function
+        # because flask expects functions to have __dict__, but Cython
+        # compiles them without one
         full_doc = inspect.getdoc(obj)
+        root_path = None
+    else:
+        if swag_path is not None:
+            full_doc = load_from_file(swag_path, swag_type)
+            from_file = True
+        elif swag_paths is not None:
+            for key in ("{}_{}".format(endpoint, verb), endpoint, verb.lower()):
+                if key in swag_paths:
+                    full_doc = load_from_file(swag_paths[key], swag_type)
+                    break
+            from_file = True
+            # TODO: handle multiple root_paths
+            # to support `import: ` from multiple places
+        else:
+            full_doc = inspect.getdoc(obj)
 
     if full_doc:
 
@@ -661,7 +669,8 @@ def parse_docstring(obj, process_doc, endpoint=None, verb=None):
             full_doc = load_from_file(doc_filepath, swag_type)
             from_file = True
 
-        full_doc = parse_imports(full_doc, root_path)
+        if root_path is not None:
+            full_doc = parse_imports(full_doc, root_path)
 
         yaml_sep = full_doc.find('---')
 
