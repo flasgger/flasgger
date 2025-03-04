@@ -1,7 +1,9 @@
+import inspect
 import json
 import random
 
 import pytest
+from click.testing import CliRunner
 from flasgger import Swagger
 from flasgger.utils import get_examples
 
@@ -99,4 +101,8 @@ def app():
 
 @pytest.fixture(scope="function")
 def cli_runner(app):
-    yield app.test_cli_runner(mix_stderr=False)
+    kwargs = {}
+    if "mix_stderr" in inspect.signature(CliRunner).parameters:
+        # click < 8.2
+        kwargs["mix_stderr"] = False
+    yield app.test_cli_runner(**kwargs)
