@@ -1,0 +1,10 @@
+# PEP 517/518 build system metadata to enable modern builds and wheels
+# This allows pip to build a wheel without using legacy `setup.py install`.
+# Keep setuptools constraint compatible with older Python versions supported by the project.
+
+[build-system]
+requires = [
+    "setuptools>=40.8.0",  # PEP 517 support in setuptools
+    "wheel"                # ensure wheel is available for building
+]
+build-backend = "setuptools.build_meta"
