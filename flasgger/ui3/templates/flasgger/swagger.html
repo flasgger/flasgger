@@ -79,7 +79,7 @@ window.onload = function() {
     
     )
 
-    let auth_config = {{ flasgger_config.get("auth") | safe }};
+    let auth_config = {{ flasgger_config.get("auth") | tojson }};
 
     ui.initOAuth(auth_config);
 
