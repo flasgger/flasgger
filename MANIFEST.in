@@ -26,3 +26,5 @@ recursive-include tests *
 
 recursive-exclude flasgger __pycache__
 recursive-exclude flasgger *.py[co]
+
+include tox.ini requirements-dev.txt Makefile .coveragerc
