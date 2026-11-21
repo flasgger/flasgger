@@ -5,6 +5,7 @@ These are all the changes in Flasgger since the 0.6.0 release
 
 0.9.7b2
 -----
+- Resolve references inside allOf, anyOf and oneOf during validation (#179)
 - chore: noqa for APISpecsView.get bare exception with json.dumps fallback (exception logging preserved)
 - fix: flask >== 2.3 json encoder change
 - chore: python 3.11 and flasklatest travis config
