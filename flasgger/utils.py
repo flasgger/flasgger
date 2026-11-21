@@ -321,6 +321,12 @@ def __replace_ref(schema, relative_path, swag):
     for key, value in schema.items():
         if isinstance(value, dict):
             new_value[key] = __replace_ref(value, relative_path, swag)
+        elif key in ('allOf', 'anyOf', 'oneOf') and isinstance(value, list):
+            new_value[key] = [
+                __replace_ref(item, relative_path, swag)
+                if isinstance(item, dict) else item
+                for item in value
+            ]
         elif key == '$ref':
             # see:
             # https://swagger.io/docs/specification/describing-request-body/
